@@ -14,7 +14,7 @@ const geotabServerSchema = z
 	.string()
 	.regex(
 		/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+geotab\.com$/i,
-		"Use a Geotab server hostname",
+		"Usa un servidor de Geotab, por ejemplo my.geotab.com",
 	);
 
 class GeotabSessionError extends Error {}
