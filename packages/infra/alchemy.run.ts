@@ -7,6 +7,7 @@ import { scraper } from "./scraper.ts";
 import { server } from "./server.ts";
 import { web } from "./web.ts";
 
+export { type IllapaEnv, illapa } from "./illapa.ts";
 export { type ScraperEnv, scraper } from "./scraper.ts";
 export { type ServerEnv, server } from "./server.ts";
 

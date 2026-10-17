@@ -9,7 +9,7 @@
 	"scripts": {
 		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
 		"dev:web": "pnpm --filter web dev:bare",
-		"dev:illapa": "pnpm --filter illapa dev",
+		"dev:illapa": "pnpm --filter @hack-the-andes-project/infra dev --include illapa",
 		"dev:native": "pnpm --filter native dev",
 		"build": "pnpm -r --if-present build",
 		"check-types": "pnpm -r check-types",

@@ -1,0 +1,4 @@
+{
+	"extends": "@hack-the-andes-project/config/tsconfig.base.json",
+	"include": ["src/**/*.ts"]
+}

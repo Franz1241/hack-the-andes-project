@@ -1,4 +1,10 @@
 ---
+import DemoRequestDialog from "@hack-the-andes-project/ui/components/demo-request-dialog";
+import {
+	CONTACT_PHONE_DISPLAY,
+	CONTACT_PHONE_E164,
+	DEMO_REQUESTS_PATH,
+} from "@/constants";
 import { ENV } from "@/env.public";
 import { HERO_FEED } from "@/hero-data";
 import HeroMap from "./hero-map";
@@ -33,12 +39,13 @@ const stateDot = {
 				tramos se ven afectados y por cuánto tiempo.
 			</p>
 			<div class="mt-8 flex flex-wrap items-center gap-3">
-				<a
-					href="#demo"
-					class="inline-flex h-11 items-center bg-foreground px-5 font-medium text-background hover:bg-puna"
-				>
-					Solicitar una demo
-				</a>
+				<DemoRequestDialog
+					client:load
+					endpoint={DEMO_REQUESTS_PATH}
+					contactPhone={CONTACT_PHONE_E164}
+					contactPhoneDisplay={CONTACT_PHONE_DISPLAY}
+					triggerClassName="h-11 px-5 text-base"
+				/>
 				<a
 					href={`${ENV.PUBLIC_APP_URL}/login`}
 					class="inline-flex h-11 items-center px-3 font-medium underline-offset-4 hover:underline"
