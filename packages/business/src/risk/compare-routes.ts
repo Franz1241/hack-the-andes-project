@@ -1,0 +1,257 @@
+import type { Database } from "@hack-the-andes-project/db";
+import {
+	type RiskHorizonHours,
+	roadEdge,
+	roadNode,
+	roadSegment,
+	segmentRiskAssessment,
+} from "@hack-the-andes-project/db/schema/risk";
+import { incident, poi } from "@hack-the-andes-project/db/schema/scraper";
+import { nearestPointOnLine } from "@turf/nearest-point-on-line";
+import { and, eq, gte, inArray, lte } from "drizzle-orm";
+import type { MySqlColumn } from "drizzle-orm/mysql-core";
+import type { Geometry, LineString, Position } from "geojson";
+
+import type { LatLng } from "../hazards/types";
+import {
+	CLOSURE_CANDIDATE_RADIUS_DEG,
+	CLOSURE_MATCH_RADIUS_M,
+	GEOMETRY_FETCH_BATCH_ROWS,
+	ROUTING_BOUNDS_MARGIN_DEG,
+} from "./constants";
+import { findRiskAwareRoutes, type RouteEvaluation } from "./route";
+
+export interface CompareRiskAwareRoutesInput {
+	db: Database;
+	origin: LatLng;
+	destination: LatLng;
+	horizonHours: RiskHorizonHours;
+}
+
+export interface EvaluatedRoute extends Omit<RouteEvaluation, "edgeIds"> {
+	geometry: LineString;
+}
+
+export interface RouteClosure extends LatLng {
+	id: string;
+	title: string;
+	roadCode: string | null;
+}
+
+export interface OfficialDetour {
+	id: string;
+	name: string;
+	geometry: Geometry | null;
+	roadCodes: string[] | null;
+}
+
+export interface RiskAwareRouteComparison {
+	fastest: EvaluatedRoute | null;
+	safest: EvaluatedRoute | null;
+	closures: RouteClosure[];
+	// Only filled when the graph finds no viable route.
+	officialDetours: OfficialDetour[];
+	assessedFrom: Date | null;
+	assessedUntil: Date | null;
+}
+
+interface Bounds {
+	west: number;
+	south: number;
+	east: number;
+	north: number;
+}
+
+function withinBounds(
+	columns: { lat: MySqlColumn; lng: MySqlColumn },
+	bounds: Bounds,
+) {
+	return and(
+		gte(columns.lat, bounds.south),
+		lte(columns.lat, bounds.north),
+		gte(columns.lng, bounds.west),
+		lte(columns.lng, bounds.east),
+	);
+}
+
+async function fetchEdgeGeometries(
+	db: Database,
+	edgeIds: string[],
+): Promise<Map<string, LineString>> {
+	const geometries = new Map<string, LineString>();
+	for (
+		let offset = 0;
+		offset < edgeIds.length;
+		offset += GEOMETRY_FETCH_BATCH_ROWS
+	) {
+		const rows = await db
+			.select({ id: roadEdge.id, geometry: roadEdge.geometry })
+			.from(roadEdge)
+			.where(
+				inArray(
+					roadEdge.id,
+					edgeIds.slice(offset, offset + GEOMETRY_FETCH_BATCH_ROWS),
+				),
+			);
+		for (const row of rows) geometries.set(row.id, row.geometry);
+	}
+	return geometries;
+}
+
+async function withGeometry(
+	db: Database,
+	route: RouteEvaluation | null,
+): Promise<EvaluatedRoute | null> {
+	if (!route) return null;
+	const geometries = await fetchEdgeGeometries(db, route.edgeIds);
+	const coordinates: Position[] = [];
+	for (const edgeId of route.edgeIds) {
+		const edgeCoordinates = geometries.get(edgeId)?.coordinates ?? [];
+		// Consecutive edges share their junction vertex.
+		coordinates.push(...edgeCoordinates.slice(coordinates.length > 0 ? 1 : 0));
+	}
+	const { edgeIds: _edgeIds, ...evaluation } = route;
+	return { ...evaluation, geometry: { type: "LineString", coordinates } };
+}
+
+export async function compareRiskAwareRoutes({
+	db,
+	origin,
+	destination,
+	horizonHours,
+}: CompareRiskAwareRoutesInput): Promise<RiskAwareRouteComparison> {
+	const bounds: Bounds = {
+		west: Math.min(origin.lng, destination.lng) - ROUTING_BOUNDS_MARGIN_DEG,
+		east: Math.max(origin.lng, destination.lng) + ROUTING_BOUNDS_MARGIN_DEG,
+		south: Math.min(origin.lat, destination.lat) - ROUTING_BOUNDS_MARGIN_DEG,
+		north: Math.max(origin.lat, destination.lat) + ROUTING_BOUNDS_MARGIN_DEG,
+	};
+
+	// Geometry stays out of the bulk load: only the chosen routes' edges and
+	// closure candidates need it.
+	const [edges, nodes, risks, closureIncidents] = await Promise.all([
+		db
+			.select({
+				id: roadEdge.id,
+				fromNodeId: roadEdge.fromNodeId,
+				toNodeId: roadEdge.toNodeId,
+				lengthM: roadEdge.lengthM,
+				travelTimeS: roadEdge.travelTimeS,
+				segmentId: roadEdge.segmentId,
+				lat: roadEdge.lat,
+				lng: roadEdge.lng,
+			})
+			.from(roadEdge)
+			.where(withinBounds(roadEdge, bounds)),
+		db
+			.select({ id: roadNode.id, lat: roadNode.lat, lng: roadNode.lng })
+			.from(roadNode)
+			.where(withinBounds(roadNode, bounds)),
+		db
+			.select({
+				segmentId: segmentRiskAssessment.segmentId,
+				score: segmentRiskAssessment.score,
+				assessedAt: segmentRiskAssessment.assessedAt,
+			})
+			.from(segmentRiskAssessment)
+			.innerJoin(
+				roadSegment,
+				eq(roadSegment.id, segmentRiskAssessment.segmentId),
+			)
+			.where(
+				and(
+					eq(segmentRiskAssessment.horizonHours, horizonHours),
+					withinBounds(roadSegment, bounds),
+				),
+			),
+		db
+			.select({
+				id: incident.id,
+				title: incident.title,
+				roadCode: incident.roadCode,
+				lat: incident.lat,
+				lng: incident.lng,
+			})
+			.from(incident)
+			.where(
+				and(
+					eq(incident.active, true),
+					eq(incident.roadStatus, "interrumpido"),
+					withinBounds(incident, bounds),
+				),
+			),
+	]);
+
+	const closures = closureIncidents.flatMap((closure) =>
+		closure.lat === null || closure.lng === null
+			? []
+			: [{ ...closure, lat: closure.lat, lng: closure.lng }],
+	);
+	const candidateEdgeIds = edges
+		.filter((edge) =>
+			closures.some(
+				(closure) =>
+					Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
+					Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
+			),
+		)
+		.map((edge) => edge.id);
+	const candidateGeometries = await fetchEdgeGeometries(db, candidateEdgeIds);
+	const blockedEdgeIds = new Set(
+		candidateEdgeIds.filter((edgeId) => {
+			const geometry = candidateGeometries.get(edgeId);
+			return (
+				geometry &&
+				closures.some(
+					(closure) =>
+						nearestPointOnLine(geometry, [closure.lng, closure.lat], {
+							units: "meters",
+						}).properties.pointDistance <= CLOSURE_MATCH_RADIUS_M,
+				)
+			);
+		}),
+	);
+
+	const routes = findRiskAwareRoutes({
+		nodes,
+		edges,
+		riskBySegment: new Map(risks.map((risk) => [risk.segmentId, risk.score])),
+		blockedEdgeIds,
+		origin,
+		destination,
+	});
+
+	const officialDetours = routes.fastest
+		? []
+		: await db
+				.select({
+					id: poi.id,
+					name: poi.name,
+					geometry: poi.geometry,
+					roadCodes: poi.roadCodes,
+				})
+				.from(poi)
+				.where(
+					and(
+						eq(poi.active, true),
+						eq(poi.kind, "alt_route"),
+						withinBounds(poi, bounds),
+					),
+				);
+
+	const assessedAtTimes = risks.map((risk) => risk.assessedAt.getTime());
+	return {
+		fastest: await withGeometry(db, routes.fastest),
+		safest: await withGeometry(db, routes.safest),
+		closures,
+		officialDetours,
+		assessedFrom:
+			assessedAtTimes.length > 0
+				? new Date(Math.min(...assessedAtTimes))
+				: null,
+		assessedUntil:
+			assessedAtTimes.length > 0
+				? new Date(Math.max(...assessedAtTimes))
+				: null,
+	};
+}

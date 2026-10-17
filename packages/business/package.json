@@ -24,6 +24,8 @@
 		"@turf/nearest-point-on-line": "catalog:",
 		"drizzle-orm": "catalog:",
 		"evlog": "catalog:",
+		"ngraph.graph": "catalog:",
+		"ngraph.path": "catalog:",
 		"zod": "catalog:",
 		"@turf/bbox": "catalog:",
 		"@turf/distance": "catalog:"

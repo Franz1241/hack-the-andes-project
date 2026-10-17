@@ -70,3 +70,18 @@ export const OFFICIAL_ALERT_CATEGORIES = [
 	"road_block",
 ] as const;
 export const ASSESSMENT_BOUNDS_MARGIN_DEG = 0.05;
+
+// Safest-route cost: each second on a segment scored 100 counts as
+// 1 + RISK_TIME_PENALTY_FACTOR seconds, so the router accepts detours that are
+// meaningfully slower only when they avoid high scores.
+export const RISK_TIME_PENALTY_FACTOR = 3;
+export const HIGH_RISK_MIN_SCORE = 50;
+export const MAX_SNAP_DISTANCE_M = 5_000;
+// Upper bound on road speed keeps the A* heuristic admissible.
+export const MAX_ROAD_SPEED_MPS = 120 / 3.6;
+export const ROUTING_BOUNDS_MARGIN_DEG = 0.3;
+// Simplified OSMnx edges in the Andes can run several km, so closures look for
+// candidate edges by midpoint well beyond the match radius.
+export const CLOSURE_CANDIDATE_RADIUS_DEG = 0.05;
+export const CLOSURE_MATCH_RADIUS_M = 300;
+export const GEOMETRY_FETCH_BATCH_ROWS = 1_000;
