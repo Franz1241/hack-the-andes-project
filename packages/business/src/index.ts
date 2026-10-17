@@ -12,5 +12,6 @@ export * from "./providers/index";
 export * from "./route-review/places";
 export * from "./route-review/ranking";
 export * from "./route-review/risk";
+export * from "./route-review/trips";
 export * from "./route-review/vehicle-types";
 export * from "./routing/osrm";
