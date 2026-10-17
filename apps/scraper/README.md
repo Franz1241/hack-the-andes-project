@@ -6,7 +6,8 @@ Cloudflare Worker on Cron Triggers that polls public Peruvian road and emergency
 
 | Cron | Sources |
 | --- | --- |
-| `*/5 * * * *` (`frequent`) | SUTRAN road alerts, INDECI COEN emergencies (24h + 2 days), Bomberos Perú last-24h emergencies, SENAMHI rain / quebrada / hydrological warnings, IGP last earthquake, SERFOR wildfire alerts, RPP latest news (classified by Jev) |
+| `*/5 * * * *` (`frequent`) | SUTRAN road alerts, INDECI COEN emergencies (24h + 2 days), Bomberos Perú last-24h emergencies, SENAMHI rain / quebrada / hydrological warnings, IGP last earthquake, SERFOR wildfire alerts |
+| `0 * * * *` (`hourly`) | RPP latest news (classified by Jev) |
 | `0 9 * * *` (`daily`) | SUTRAN alternative routes (with CDN geometry), fire stations, police stations, health facilities, bus terminals, weighing stations; INDECI national relief warehouses |
 
 Both expressions live in `packages/infra/constants.ts` and are attached in `packages/infra/scraper.ts`.

@@ -119,7 +119,7 @@ async function expandEntry(
 export const rppNewsSource: NewsSource = {
 	kind: "news",
 	id: "rpp_latest_news",
-	schedule: "frequent",
+	schedule: "hourly",
 	snapshot: "partial",
 	async fetch(context) {
 		const listing = parseRppListing(await fetchText(RPP_LATEST_NEWS_URL));

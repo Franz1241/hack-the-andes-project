@@ -6,7 +6,7 @@ import type {
 import type { InferInsertModel } from "drizzle-orm";
 import type { RequestLogger } from "evlog";
 
-export const SCHEDULES = ["frequent", "daily"] as const;
+export const SCHEDULES = ["frequent", "hourly", "daily"] as const;
 export type Schedule = (typeof SCHEDULES)[number];
 
 type ManagedColumns =

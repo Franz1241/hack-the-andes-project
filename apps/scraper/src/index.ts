@@ -1,5 +1,9 @@
 import { createDb } from "@hack-the-andes-project/db";
-import { SCRAPER_DAILY_CRON } from "@hack-the-andes-project/infra/constants";
+import {
+	SCRAPER_DAILY_CRON,
+	SCRAPER_FREQUENT_CRON,
+	SCRAPER_HOURLY_CRON,
+} from "@hack-the-andes-project/infra/constants";
 import { createLogger } from "evlog";
 import { initWorkersLogger } from "evlog/workers";
 
@@ -83,6 +87,12 @@ async function fanOut(
 	return { ok, results };
 }
 
+const SCHEDULE_BY_CRON: Record<string, Schedule> = {
+	[SCRAPER_FREQUENT_CRON]: "frequent",
+	[SCRAPER_HOURLY_CRON]: "hourly",
+	[SCRAPER_DAILY_CRON]: "daily",
+};
+
 function isSchedule(value: string | null): value is Schedule {
 	return SCHEDULES.some((schedule) => schedule === value);
 }
@@ -93,8 +103,10 @@ export default {
 		_env: Env,
 		ctx: ExecutionContext,
 	) {
-		const schedule: Schedule =
-			controller.cron === SCRAPER_DAILY_CRON ? "daily" : "frequent";
+		const schedule = SCHEDULE_BY_CRON[controller.cron];
+		if (!schedule) {
+			throw new Error(`No schedule registered for cron "${controller.cron}"`);
+		}
 		ctx.waitUntil(
 			fanOut(`cron:${controller.cron}`, sourcesForSchedule(schedule)),
 		);
@@ -132,7 +144,7 @@ export default {
 			return Response.json(
 				{
 					error: "bad_request",
-					message: "Pass ?source=<id> or ?schedule=frequent|daily",
+					message: "Pass ?source=<id> or ?schedule=frequent|hourly|daily",
 				},
 				{ status: 400 },
 			);

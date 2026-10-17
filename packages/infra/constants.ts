@@ -13,9 +13,10 @@ export const WEB_WORKER_NAME = "hack-the-andes-web";
 
 export const SCRAPER_DEV_PORT = 3002;
 export const SCRAPER_WORKER_NAME = "hack-the-andes-scraper";
-// Incident feeds every 5 minutes; reference directories (alt routes, fire
-// stations, terminals...) once a day at 09:00 UTC (04:00 Lima).
+// Incident feeds every 5 minutes; news listings hourly; reference directories
+// (alt routes, fire stations, terminals...) once a day at 09:00 UTC (04:00 Lima).
 export const SCRAPER_FREQUENT_CRON = "*/5 * * * *";
+export const SCRAPER_HOURLY_CRON = "0 * * * *";
 export const SCRAPER_DAILY_CRON = "0 9 * * *";
 
 // Workers Logs keeps the evlog wide events and stamps each invocation with its

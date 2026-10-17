@@ -7,6 +7,7 @@ import {
 	SCRAPER_DAILY_CRON,
 	SCRAPER_DEV_PORT,
 	SCRAPER_FREQUENT_CRON,
+	SCRAPER_HOURLY_CRON,
 	SCRAPER_WORKER_NAME,
 	WORKER_OBSERVABILITY,
 } from "./constants.ts";
@@ -20,7 +21,7 @@ export const scraper = Cloudflare.Worker("scraper", {
 		flags: ["nodejs_compat"],
 	},
 	observability: WORKER_OBSERVABILITY,
-	crons: [SCRAPER_FREQUENT_CRON, SCRAPER_DAILY_CRON],
+	crons: [SCRAPER_FREQUENT_CRON, SCRAPER_HOURLY_CRON, SCRAPER_DAILY_CRON],
 	env: {
 		HYPERDRIVE: hyperdriveRef(),
 		SELF: Cloudflare.Workers.Self,
