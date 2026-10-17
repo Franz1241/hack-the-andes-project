@@ -85,3 +85,12 @@ export const ROUTING_BOUNDS_MARGIN_DEG = 0.3;
 export const CLOSURE_CANDIDATE_RADIUS_DEG = 0.05;
 export const CLOSURE_MATCH_RADIUS_M = 300;
 export const GEOMETRY_FETCH_BATCH_ROWS = 1_000;
+
+// Imputation for model features; mirrored by IMPUTED_FEATURES in
+// tools/risk-pipeline/illapa_risk/train.py so training and inference agree.
+export const IMPUTED_TERRAIN_SLOPE_DEG = 22.5;
+export const IMPUTED_MASS_MOVEMENT_CLASS = 3;
+export const IMPUTED_FLOOD_CLASS = 2.5;
+// The pipeline's WATER_SEARCH_RADIUS_M: no river found within it.
+export const IMPUTED_WATER_DISTANCE_M = 5_000;
+export const LIMA_UTC_OFFSET_HOURS = -5;

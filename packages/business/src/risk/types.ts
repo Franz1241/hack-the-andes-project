@@ -25,3 +25,14 @@ export interface SegmentRiskScore {
 	level: RiskLevel;
 	components: RiskComponents;
 }
+
+// Shape of the module tools/risk-pipeline/illapa_risk/train.py generates
+// into model.generated.ts once a trained model beats the heuristic.
+export interface RiskModel {
+	version: string;
+	featureNames: readonly string[];
+	// Out-of-fold probability quantiles (ascending) used to turn probabilities
+	// into the same relative 0–100 index the heuristic produces.
+	scoreQuantiles: readonly number[];
+	predictProbability: (features: number[]) => number;
+}
