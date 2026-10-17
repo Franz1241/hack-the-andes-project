@@ -3,7 +3,7 @@ name: Mayu
 product: ILLAPA (dash.illapa.app, illapa.app)
 base: shadcn/ui on Base UI (style base-lyra components, restyled)
 preset: b4DfkM0rNw # approximation on ui.shadcn.com/create; this file is the source of truth
-modes: [dark, light] # equal; the app defaults to dark, the marketing site is dark only
+modes: [light, dark] # both first-class; light is the default everywhere, a switch selects dark
 colors:
   light:
     background: "#F2F7F8"
@@ -83,7 +83,7 @@ spacing: tailwind default 4px scale; section rhythm py-16 to py-24, card padding
 
 Illapa is the Andean god of thunder, lightning and rain. In the stories he fills his jug from **Mayu**, the river of stars we call the Milky Way, and breaks it with his sling to make the rain. Rain is also the hazard ILLAPA reports most: lluvias, huaicos, deslizamientos.
 
-Mayu turns that into a calm, nocturnal interface: deep river-night surfaces, an aqua current as the one brand colour, starlight for warmth, and soft rounded geometry. The product has to stay calm when a road is closing; the risk colours carry the urgency, the brand never does.
+Mayu turns that into a calm interface: misty river-light by day and deep river-night after dark, an aqua current as the one brand colour, starlight for warmth, and soft rounded geometry. The product has to stay calm when a road is closing; the risk colours carry the urgency, the brand never does.
 
 The same system serves the dashboard (`apps/web`, dash.illapa.app), the marketing site (`apps/illapa`, illapa.app) and the native app later. The pitch deck does **not** use Mayu: it keeps the Hack the Andes black with the phoenix colours of Equipo Fénix.
 
@@ -129,6 +129,19 @@ Contrast: every text pair passes WCAG AA (4.5:1) in both modes; the `/design-sys
 - Pages: `max-w-7xl` container, `px-5 sm:px-8`, sections `py-16 md:py-24`, hairline separators between sections.
 - Dashboard: dense but breathable; cards pad 16px (12px for `size="sm"`), tables use `type-data` cells and `type-label` heads.
 - Everything must work at 375px with no horizontal page scroll; wide tables and matrices scroll inside their own container.
+
+### Theme
+
+- Light is the default for everyone, in the app and on illapa.app. Dark is an explicit choice made with the theme switch (`ThemeSwitch`: sun, switch, moon), never a dropdown and never "system".
+- The choice persists per device under the `illapa-theme` key; the marketing site applies it in an inline head script so the page never flashes.
+
+### Navigation shell
+
+The dashboard uses one collapsible rail built on the shadcn `Sidebar` with `collapsible="icon"` (`DashboardSidebar`):
+
+- Expanded on desktop (1280px and up), collapsed to an icon rail on tablets (768 to 1279px), a drawer on phones. Only an explicit choice is saved (`useSidebarPreference`, key `illapa-sidebar`).
+- Toggle with the button in the rail head, the rail edge, `[` or Ctrl/Cmd+B. Collapsed items keep their icon and show their label in a tooltip; badges become a dot.
+- The rail holds everything global: brand, navigation, a Preferencias group (theme switch and language ES | EN) and the account at the bottom. The page header keeps only the page title (and the drawer button on phones).
 
 ## Shapes
 
