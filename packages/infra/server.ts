@@ -6,6 +6,7 @@ import * as Cloudflare from "alchemy/Cloudflare";
 import * as Config from "effect/Config";
 
 import {
+	API_DOMAIN,
 	SERVER_DEV_PORT,
 	SERVER_WORKER_NAME,
 	WORKER_OBSERVABILITY,
@@ -30,6 +31,8 @@ export const serviceVersion = resolveServiceVersion();
 
 export const server = Cloudflare.Worker("server", {
 	name: SERVER_WORKER_NAME,
+	domain: API_DOMAIN,
+	workersDev: true,
 	main: "../../apps/server/src/index.ts",
 	compatibility: {
 		flags: ["nodejs_compat"],
@@ -40,7 +43,9 @@ export const server = Cloudflare.Worker("server", {
 		APP_ENV: Config.String("APP_ENV"),
 		ALLOWED_ORIGINS: Config.String("ALLOWED_ORIGINS"),
 		BETTER_AUTH_SECRET: Config.Redacted("BETTER_AUTH_SECRET"),
-		BETTER_AUTH_URL: Cloudflare.Worker.URL,
+		BETTER_AUTH_URL: Config.String("BETTER_AUTH_URL"),
+		CREDENTIALS_ENCRYPTION_KEY: Config.Redacted("CREDENTIALS_ENCRYPTION_KEY"),
+		OSRM_BASE_URL: Config.String("OSRM_BASE_URL"),
 		SERVICE_VERSION: serviceVersion,
 	},
 	dev: {

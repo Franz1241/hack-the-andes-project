@@ -1,8 +1,10 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { expo } from "@better-auth/expo";
+import { MIN_PASSWORD_LENGTH_CHARS } from "@hack-the-andes-project/business/constants";
 import type { Database } from "@hack-the-andes-project/db";
 import * as schema from "@hack-the-andes-project/db/schema/auth";
 import { betterAuth } from "better-auth";
+import { organization } from "better-auth/plugins";
 
 import {
 	EXPO_DEV_ORIGINS,
@@ -13,6 +15,7 @@ import {
 	SIGN_IN_RATE_LIMIT_MAX_REQUESTS,
 	SIGN_UP_RATE_LIMIT_MAX_REQUESTS,
 } from "./constants";
+import { ensurePersonalOrganization } from "./organization";
 import { parseAllowedOrigins } from "./origins";
 import { hashPassword, verifyPassword } from "./password";
 
@@ -40,12 +43,57 @@ export function createAuth(env: AuthConfig, database: Database) {
 		],
 		emailAndPassword: {
 			enabled: true,
+			minPasswordLength: MIN_PASSWORD_LENGTH_CHARS,
 			password: { hash: hashPassword, verify: verifyPassword },
 		},
 		session: {
 			cookieCache: {
 				enabled: true,
 				maxAge: SESSION_COOKIE_CACHE_MAX_AGE_S,
+			},
+		},
+		databaseHooks: {
+			user: {
+				create: {
+					after: async (user) => {
+						await ensurePersonalOrganization(database, user);
+					},
+				},
+			},
+			session: {
+				create: {
+					before: async (session) => {
+						if (session.activeOrganizationId) return;
+
+						const firstMembership = await database.query.member.findFirst({
+							where: { userId: session.userId },
+							orderBy: { createdAt: "asc", id: "asc" },
+						});
+						if (firstMembership) {
+							return {
+								data: {
+									...session,
+									activeOrganizationId: firstMembership.organizationId,
+								},
+							};
+						}
+
+						// Better Auth 1.7.7 defers user.create.after until after sign-up's
+						// first session, so both hooks must be able to provision safely.
+						const user = await database.query.user.findFirst({
+							where: { id: session.userId },
+						});
+						if (!user) return;
+
+						const organizationId = await ensurePersonalOrganization(
+							database,
+							user,
+						);
+						return {
+							data: { ...session, activeOrganizationId: organizationId },
+						};
+					},
+				},
 			},
 		},
 		secret: env.BETTER_AUTH_SECRET,
@@ -85,7 +133,7 @@ export function createAuth(env: AuthConfig, database: Database) {
 				ipAddressHeaders: ["cf-connecting-ip"],
 			},
 		},
-		plugins: [expo()],
+		plugins: [expo(), organization()],
 	});
 }
 

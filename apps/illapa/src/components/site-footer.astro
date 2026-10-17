@@ -1,4 +1,6 @@
 ---
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_E164 } from "@/constants";
+
 const currentYear = new Date().getFullYear();
 ---
 
@@ -9,6 +11,11 @@ const currentYear = new Date().getFullYear();
 			<p class="type-body text-muted-foreground">Inteligencia climática para la logística del Perú.</p>
 			<p class="type-label text-muted-foreground">Equipo Fénix · Hack the Andes</p>
 		</div>
-		<p class="type-data text-muted-foreground">Lima, Perú. {currentYear}.</p>
+		<p class="type-data text-muted-foreground">
+			<a href={`tel:${CONTACT_PHONE_E164}`} class="underline-offset-4 hover:text-foreground hover:underline">
+				{CONTACT_PHONE_DISPLAY}
+			</a>
+			· Lima, Perú. {currentYear}.
+		</p>
 	</div>
 </footer>

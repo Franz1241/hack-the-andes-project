@@ -1,7 +1,13 @@
 ---
 import { badgeVariants } from "@hack-the-andes-project/ui/components/badge";
 import { buttonVariants } from "@hack-the-andes-project/ui/components/button";
-import { HERO_CORRIDOR_COUNT } from "@/constants";
+import DemoRequestDialog from "@hack-the-andes-project/ui/components/demo-request-dialog";
+import {
+	CONTACT_PHONE_DISPLAY,
+	CONTACT_PHONE_E164,
+	DEMO_REQUESTS_PATH,
+	HERO_CORRIDOR_COUNT,
+} from "@/constants";
 import { ENV } from "@/env.public";
 import { HERO_FEED, HERO_HAZARD_STATES } from "@/hero-data";
 import HeroMap from "./hero-map";
@@ -30,12 +36,12 @@ import HeroMap from "./hero-map";
 				tramos se ven afectados y por cuánto tiempo.
 			</p>
 			<div class="mt-8 flex flex-wrap items-center gap-3">
-				<a
-					href="#demo"
-					class={buttonVariants({ variant: "default", size: "lg" })}
-				>
-					Solicitar una demo
-				</a>
+				<DemoRequestDialog
+					client:load
+					endpoint={DEMO_REQUESTS_PATH}
+					contactPhone={CONTACT_PHONE_E164}
+					contactPhoneDisplay={CONTACT_PHONE_DISPLAY}
+				/>
 				<a
 					href={`${ENV.PUBLIC_APP_URL}/login`}
 					class={buttonVariants({ variant: "link", size: "lg" })}

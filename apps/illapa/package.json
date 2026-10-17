@@ -8,13 +8,16 @@
 		"build": "astro build",
 		"preview": "astro preview",
 		"check-types": "astro check",
+		"test": "vitest run",
 		"env:generate": "varlock codegen"
 	},
 	"dependencies": {
 		"@astrojs/react": "^7.1.0",
+		"@hack-the-andes-project/business": "workspace:*",
 		"@hack-the-andes-project/ui": "workspace:*",
 		"@tailwindcss/vite": "^4.3.3",
 		"astro": "^7.4.0",
+		"evlog": "catalog:",
 		"lucide-react": "^1.56.0",
 		"react": "^19.3.0",
 		"react-dom": "^19.3.0",
@@ -23,9 +26,12 @@
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.10",
+		"@cloudflare/workers-types": "catalog:",
 		"@hack-the-andes-project/config": "workspace:*",
+		"@hack-the-andes-project/infra": "workspace:*",
 		"@types/react": "^19.3.0",
 		"@types/react-dom": "^19.3.0",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"vitest": "catalog:"
 	}
 }

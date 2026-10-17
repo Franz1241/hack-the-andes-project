@@ -2,10 +2,11 @@ import { Button } from "@hack-the-andes-project/ui/components/button";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
+	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuTrigger,
 } from "@hack-the-andes-project/ui/components/dropdown-menu";
-import { Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "@hack-the-andes-project/ui/components/icons";
 
 import { useTheme } from "@/components/theme-provider";
 import { m } from "@/paraglide/messages";
@@ -21,15 +22,17 @@ export function ModeToggle() {
 				<span className="sr-only">{m.theme_toggle()}</span>
 			</DropdownMenuTrigger>
 			<DropdownMenuContent align="end">
-				<DropdownMenuItem onClick={() => setTheme("light")}>
-					{m.theme_light()}
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setTheme("dark")}>
-					{m.theme_dark()}
-				</DropdownMenuItem>
-				<DropdownMenuItem onClick={() => setTheme("system")}>
-					{m.theme_system()}
-				</DropdownMenuItem>
+				<DropdownMenuGroup>
+					<DropdownMenuItem onClick={() => setTheme("light")}>
+						{m.theme_light()}
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setTheme("dark")}>
+						{m.theme_dark()}
+					</DropdownMenuItem>
+					<DropdownMenuItem onClick={() => setTheme("system")}>
+						{m.theme_system()}
+					</DropdownMenuItem>
+				</DropdownMenuGroup>
 			</DropdownMenuContent>
 		</DropdownMenu>
 	);

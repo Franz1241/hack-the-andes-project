@@ -25,7 +25,7 @@ export default function UserMenu() {
 	if (!session) {
 		return (
 			<Link to="/login">
-				<Button variant="outline">{m.auth_sign_in()}</Button>
+				<Button variant="outline">Entrar</Button>
 			</Link>
 		);
 	}
@@ -37,7 +37,7 @@ export default function UserMenu() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-card">
 				<DropdownMenuGroup>
-					<DropdownMenuLabel>{m.account_title()}</DropdownMenuLabel>
+					<DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
 					<DropdownMenuItem
@@ -47,14 +47,14 @@ export default function UserMenu() {
 								fetchOptions: {
 									onSuccess: () => {
 										navigate({
-											to: "/",
+											to: "/login",
 										});
 									},
 								},
 							});
 						}}
 					>
-						{m.auth_sign_out()}
+						Cerrar sesión
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>

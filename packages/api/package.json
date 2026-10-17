@@ -7,20 +7,25 @@
 	},
 	"scripts": {
 		"build": "tsc -b",
-		"check-types": "tsc -b"
+		"check-types": "tsc -b",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@hack-the-andes-project/auth": "workspace:*",
+		"@hack-the-andes-project/business": "workspace:*",
 		"@hack-the-andes-project/db": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
+		"drizzle-orm": "catalog:",
 		"evlog": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@hack-the-andes-project/config": "workspace:*",
-		"typescript": "^6.0.3"
+		"@types/geojson": "catalog:",
+		"typescript": "^6.0.3",
+		"vitest": "catalog:"
 	}
 }
