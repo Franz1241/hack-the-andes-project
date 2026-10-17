@@ -39,6 +39,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@hack-the-andes-project/ui/components/table";
+import { useTokenColors } from "@hack-the-andes-project/ui/hooks/use-token-colors";
 import { type ComponentRef, useEffect, useId, useRef, useState } from "react";
 import {
 	Bar,
@@ -50,7 +51,6 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
-import { useTheme } from "@/components/theme-provider";
 import { m } from "@/paraglide/messages";
 import { getLocale } from "@/paraglide/runtime";
 import {
@@ -77,8 +77,9 @@ import {
 
 export function DataVisualizationSection() {
 	const sectionId = useId();
-	const { resolvedTheme } = useTheme();
-	const [routeColors, setRouteColors] = useState<Record<string, string>>({});
+	const routeColors = useTokenColors(
+		VIZ_RISK_LEVELS.map((risk) => `--risk-${risk.key}`),
+	);
 	const [mapInstance, setMapInstance] = useState<ComponentRef<
 		typeof MapCanvas
 	> | null>(null);
@@ -88,19 +89,6 @@ export function DataVisualizationSection() {
 	const [mapAttempt, setMapAttempt] = useState(0);
 	const [selectedHazardId, setSelectedHazardId] = useState<string | null>(null);
 	const activeMarkerRef = useRef<HTMLElement | null>(null);
-
-	useEffect(() => {
-		if (!resolvedTheme) return;
-		const rootStyles = getComputedStyle(document.documentElement);
-		setRouteColors(
-			Object.fromEntries(
-				VIZ_RISK_LEVELS.map((risk) => [
-					risk.key,
-					rootStyles.getPropertyValue(`--risk-${risk.key}`).trim(),
-				]),
-			),
-		);
-	}, [resolvedTheme]);
 
 	useEffect(() => {
 		if (!mapInstance) return;
@@ -210,11 +198,11 @@ export function DataVisualizationSection() {
 								locale={{ "Map.Title": m.ds_viz_map_label() }}
 							>
 								{VIZ_ROUTE_SEGMENTS.map((segment) =>
-									routeColors[segment.risk] ? (
+									routeColors[`--risk-${segment.risk}`] ? (
 										<MapRoute
 											key={segment.id}
 											coordinates={segment.coordinates}
-											color={routeColors[segment.risk]}
+											color={routeColors[`--risk-${segment.risk}`]}
 											width={VIZ_ROUTE_WIDTH_PX}
 											opacity={VIZ_ROUTE_OPACITY}
 											interactive={false}
