@@ -89,6 +89,17 @@ The same system serves the dashboard (`apps/web`, dash.illapa.app), the marketin
 
 Live reference: `/design-system` in the web app (`pnpm dev:web`, http://localhost:3001/design-system), in Spanish and English, dark and light.
 
+## Logo
+
+The mark is **Gota de rayo**: an aqua raindrop carrying a starlight lightning bolt, Illapa's rain and lightning in one shape and the two things the product watches.
+
+- Component: `IllapaMark` (mark) and `IllapaLockup` (mark + wordmark) in `packages/ui/src/components/illapa-logo.tsx`. The drop uses `brand-river` and the bolt `brand-starlight`, so the logo follows light and dark on its own.
+- Wordmark: "illapa" in lowercase, Fraunces 600 with `opsz 144` and `SOFT 100`, tracking -0.01em.
+- App icon and favicon: the mark on the night tile (`#0B252F` to `#06181F`), so it reads in light and dark browser tabs. Files in each app's `public/`: `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` (180 px, square; iOS rounds it).
+- Clear space: the width of the bolt on every side. Minimum size: 16 px for the mark or icon, 96 px wide for the lockup.
+- Colour: brand-river with brand-starlight, or a single solid colour (`foreground`) where only one ink is available. Never in risk colours, never a gradient on the drop.
+- Never stretch, rotate, outline or redraw the mark, and never place it on photos or maps without a surface behind it.
+
 ## Colors
 
 All colours are CSS variables in `packages/ui/src/styles/globals.css`, light values in `:root` and dark values in `.dark`, registered with Tailwind in `@theme inline` (`bg-primary`, `text-risk-high-foreground`, `stroke-brand-river`, …). Never use a raw hex or a Tailwind palette class (`bg-red-500`) in a component.
