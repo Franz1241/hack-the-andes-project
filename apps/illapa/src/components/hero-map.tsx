@@ -1,4 +1,4 @@
-import { Badge } from "@hack-the-andes-project/ui/components/badge";
+import { IncidentMarkerSymbol } from "@hack-the-andes-project/ui/components/incident-marker-symbol";
 import {
 	Map as MapCanvas,
 	MapMarker,
@@ -6,8 +6,9 @@ import {
 	MarkerContent,
 	MarkerTooltip,
 } from "@hack-the-andes-project/ui/components/map";
+import { SeverityBadge } from "@hack-the-andes-project/ui/components/severity";
 import { useTokenColors } from "@hack-the-andes-project/ui/hooks/use-token-colors";
-import { cn } from "@hack-the-andes-project/ui/lib/utils";
+import { INCIDENT_SEVERITY_LABELS } from "@hack-the-andes-project/ui/lib/incident-constants";
 
 import {
 	HERO_MAP_MAX_ZOOM,
@@ -17,11 +18,7 @@ import {
 	PERU_BOUNDS,
 	PERU_BOUNDS_PADDING_PX,
 } from "@/constants";
-import {
-	HERO_HAZARD_STATES,
-	HERO_HAZARDS,
-	PANAMERICANA_NORTE_LIMA_PIURA,
-} from "@/hero-data";
+import { HERO_HAZARDS, PANAMERICANA_NORTE_LIMA_PIURA } from "@/hero-data";
 
 export default function HeroMap() {
 	const tokenColors = useTokenColors(["--foreground"]);
@@ -55,27 +52,20 @@ export default function HeroMap() {
 					longitude={hazard.longitude}
 					latitude={hazard.latitude}
 				>
-					<MarkerContent className="relative grid size-5 place-items-center">
-						{hazard.state === "active" && (
-							<span
-								aria-hidden="true"
-								className="absolute inset-0 rounded-full bg-risk-critical/40 motion-safe:animate-ping"
-							/>
-						)}
+					<MarkerContent>
 						<span
 							role="img"
-							aria-label={`${HERO_HAZARD_STATES[hazard.state].label}: ${hazard.name}, ${hazard.place}`}
-							className={cn(
-								"relative size-3 rounded-full ring-2 ring-foreground",
-								HERO_HAZARD_STATES[hazard.state].dotClassName,
-							)}
-						/>
+							aria-label={`${hazard.name}, ${hazard.place}: ${INCIDENT_SEVERITY_LABELS[hazard.severity]}`}
+						>
+							<IncidentMarkerSymbol
+								category={hazard.category}
+								severity={hazard.severity}
+							/>
+						</span>
 					</MarkerContent>
 					<MarkerTooltip>
 						<div className="flex max-w-xs flex-col items-start gap-2">
-							<Badge variant={HERO_HAZARD_STATES[hazard.state].variant}>
-								{HERO_HAZARD_STATES[hazard.state].label}
-							</Badge>
+							<SeverityBadge severity={hazard.severity} />
 							<span className="type-body">{hazard.name}</span>
 							<span className="type-body text-muted-foreground">
 								{hazard.place}
