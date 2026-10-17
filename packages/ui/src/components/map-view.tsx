@@ -1,12 +1,13 @@
 import { setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
-import type { ComponentProps } from "react";
+import { type ComponentProps, useEffect, useState } from "react";
 import MapLibre from "react-map-gl/maplibre";
 import { cn } from "../lib/utils";
 
 import {
+	CARTO_DARK_STYLE_URL,
+	CARTO_LIGHT_STYLE_URL,
 	MAP_SPANISH_LOCALE,
-	OPENFREEMAP_STYLE_URL,
 	PERU_INITIAL_VIEW_STATE,
 } from "./map-constants";
 
@@ -33,11 +34,31 @@ export interface MapProps extends ComponentProps<typeof MapLibre> {}
 
 export function MapView({
 	initialViewState = PERU_INITIAL_VIEW_STATE,
-	mapStyle = OPENFREEMAP_STYLE_URL,
+	mapStyle,
 	locale = MAP_SPANISH_LOCALE,
 	children,
 	...props
 }: MapProps) {
+	const [isDarkTheme, setIsDarkTheme] = useState(
+		() =>
+			typeof document !== "undefined" &&
+			document.documentElement.classList.contains("dark"),
+	);
+
+	useEffect(() => {
+		const rootElement = document.documentElement;
+		const updateTheme = () => {
+			setIsDarkTheme(rootElement.classList.contains("dark"));
+		};
+		updateTheme();
+		const observer = new MutationObserver(updateTheme);
+		observer.observe(rootElement, {
+			attributes: true,
+			attributeFilter: ["class"],
+		});
+		return () => observer.disconnect();
+	}, []);
+
 	return (
 		<div
 			className={cn(
@@ -52,7 +73,10 @@ export function MapView({
 		>
 			<MapLibre
 				initialViewState={initialViewState}
-				mapStyle={mapStyle}
+				mapStyle={
+					mapStyle ??
+					(isDarkTheme ? CARTO_DARK_STYLE_URL : CARTO_LIGHT_STYLE_URL)
+				}
 				locale={locale}
 				renderWorldCopies={false}
 				{...props}
