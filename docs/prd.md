@@ -58,7 +58,8 @@ Rules decide. AI only explains.
 
 - **Planned trip:** a vehicle, an origin and destination, a departure time and the chosen path. It keeps every candidate and gets a name like "Lima → Huancayo · 18 oct 06:00". A vehicle can have several planned trips.
 - **Flota** (`/dashboard/fleet`): planned trips grouped by vehicle, with a filter for one vehicle. Each row shows the route, the departure, the chosen path with its SUTRAN or ILLAPA badge, its level and recommendation, and when it was last evaluated.
-- **Trip detail** (`/dashboard/fleet/viajes/$tripId`): every candidate with its stored score. **Volver a evaluar** rescores them, and you can switch the chosen path or cancel the trip. Starting and completing a trip stay with the GPS flow.
+- **Trip detail** (`/dashboard/fleet/viajes/$tripId`): every candidate with its stored score. **Volver a evaluar** rescores them, and you can switch the chosen path or cancel the trip. **Iniciar viaje** starts a planned trip of a GPS vehicle: the trip becomes active, so the truck's progress and hazard alerts follow the chosen path (the demo trucks move along it). A vehicle has one active trip at a time. Completing a trip stays with the GPS flow.
+- **Flota** has no map: the Mapa page already shows the fleet.
 
 ## Who builds what
 
