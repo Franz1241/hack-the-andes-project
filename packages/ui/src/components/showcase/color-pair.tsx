@@ -136,7 +136,10 @@ export function ColorPair({
 					: contrastLabels.fail;
 	return (
 		<div
-			className={cn("flex min-w-0 flex-col overflow-hidden border", className)}
+			className={cn(
+				"flex min-w-0 flex-col overflow-hidden rounded-lg border",
+				className,
+			)}
 		>
 			<div
 				ref={sampleRef}
@@ -148,7 +151,7 @@ export function ColorPair({
 			>
 				<span className="type-title">Aa</span>
 				{info && (
-					<span className="type-data border border-current px-2 py-1">
+					<span className="type-data rounded-md border border-current px-2 py-1">
 						{info.ratio.toFixed(CONTRAST_DECIMAL_PLACES)}:1
 					</span>
 				)}

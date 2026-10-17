@@ -24,6 +24,8 @@ export function RouteDiagram({ label, title }: RouteDiagramProps) {
 					points={segment.points}
 					className={segment.className}
 					fill="none"
+					strokeLinecap="round"
+					strokeLinejoin="round"
 					strokeWidth={ROUTE_STROKE_WIDTH_PX}
 				/>
 			))}

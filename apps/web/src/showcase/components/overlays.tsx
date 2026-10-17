@@ -287,7 +287,7 @@ export function OverlaysShowcase() {
 			</div>
 			<ContextMenu>
 				<ContextMenuTrigger
-					className="flex min-h-24 items-center justify-center border border-dashed p-6 text-center text-sm"
+					className="flex min-h-24 items-center justify-center rounded-lg border border-dashed p-6 text-center text-sm"
 					tabIndex={0}
 				>
 					{m.ds_context_actions()}

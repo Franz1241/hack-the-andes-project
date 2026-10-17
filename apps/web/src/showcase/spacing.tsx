@@ -7,7 +7,7 @@ import {
 } from "@hack-the-andes-project/ui/components/card";
 import { ShowcaseSection } from "@hack-the-andes-project/ui/components/showcase/section";
 import { cn } from "@hack-the-andes-project/ui/lib/utils";
-import { SPACING_SCALE } from "@/constants";
+import { SHOWCASE_RADIUS_SCALE, SPACING_SCALE } from "@/constants";
 import { m } from "@/paraglide/messages";
 
 export function SpacingSection() {
@@ -40,17 +40,23 @@ export function SpacingSection() {
 				</div>
 				<div className="flex flex-col gap-6">
 					<h3 className="type-heading">{m.ds_radius_title()}</h3>
-					<div className="flex flex-wrap items-center gap-6">
-						<div className="type-data grid size-24 place-items-center border bg-card">
-							0 px
-						</div>
-						<div className="flex items-center gap-2">
-							<span
-								className="size-3 rounded-full bg-success"
-								aria-hidden="true"
-							/>
-							<span className="text-sm">{m.ds_online_status()}</span>
-						</div>
+					<div className="grid grid-cols-2 gap-5 sm:grid-cols-4 md:grid-cols-2 xl:grid-cols-4">
+						{SHOWCASE_RADIUS_SCALE.map((radius) => (
+							<div key={radius.token} className="flex min-w-0 flex-col gap-3">
+								<div
+									className={cn(
+										"type-data grid size-20 place-items-center border bg-card",
+										radius.token,
+									)}
+								>
+									{radius.size}
+								</div>
+								<code className="type-data break-words">{radius.token}</code>
+								<p className="type-body text-muted-foreground">
+									{radius.role()}
+								</p>
+							</div>
+						))}
 					</div>
 					<p className="type-body text-muted-foreground">
 						{m.ds_radius_description()}
@@ -65,15 +71,15 @@ export function SpacingSection() {
 					</CardHeader>
 					<CardContent>{m.ds_card_surface_spec()}</CardContent>
 				</Card>
-				<div className="flex flex-col gap-4 border bg-popover p-4 text-popover-foreground">
+				<div className="flex flex-col gap-4 rounded-lg border bg-popover p-4 text-popover-foreground">
 					<h3 className="type-heading">{m.ds_color_popover()}</h3>
 					<p className="text-muted-foreground text-sm">
 						{m.ds_popover_surface_description()}
 					</p>
 					<p className="text-sm">{m.ds_popover_surface_spec()}</p>
 				</div>
-				<div className="border bg-muted p-4">
-					<div className="flex h-full flex-col gap-4 border bg-background p-4">
+				<div className="rounded-lg border bg-foreground/15 p-4">
+					<div className="flex h-full flex-col gap-4 rounded-lg border bg-background p-4">
 						<h3 className="type-heading">{m.ds_dialog_title()}</h3>
 						<p className="text-muted-foreground text-sm">
 							{m.ds_dialog_surface_description()}

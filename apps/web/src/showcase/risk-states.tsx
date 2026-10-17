@@ -20,7 +20,7 @@ export function RiskStatesSection() {
 			title={m.ds_risk_title()}
 			description={m.ds_risk_description()}
 		>
-			<div className="grid grid-cols-2 lg:grid-cols-4">
+			<div className="grid grid-cols-2 overflow-hidden rounded-lg lg:grid-cols-4">
 				{RISK_LEVELS.map((risk) => (
 					<div
 						key={risk.variant}
@@ -61,7 +61,10 @@ export function RiskStatesSection() {
 							<div key={risk.variant} className="flex items-center gap-2">
 								<span
 									aria-hidden="true"
-									className={cn("size-3 shrink-0", risk.fillClassName)}
+									className={cn(
+										"size-3 shrink-0 rounded-full",
+										risk.fillClassName,
+									)}
 								/>
 								<span className="text-sm">{risk.label()}</span>
 							</div>
@@ -69,7 +72,7 @@ export function RiskStatesSection() {
 					</div>
 				</div>
 			</div>
-			<figure className="mt-10 border bg-card p-5">
+			<figure className="mt-10 rounded-lg border bg-card p-5">
 				<figcaption className="type-label">
 					{m.ds_risk_diagram_caption()}
 				</figcaption>

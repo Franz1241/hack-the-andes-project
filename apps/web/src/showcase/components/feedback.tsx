@@ -88,7 +88,7 @@ export function FeedbackShowcase() {
 			</div>
 			<div className="grid gap-6 md:grid-cols-2">
 				<div
-					className="flex flex-col gap-5 border p-6"
+					className="flex flex-col gap-5 rounded-lg border p-6"
 					role="status"
 					aria-label={m.ds_loading_route_summary()}
 				>

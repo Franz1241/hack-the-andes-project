@@ -65,6 +65,16 @@ const COLOR_PAIRS = [
 		background: "success",
 		foreground: "success-foreground",
 	},
+	{
+		name: m.ds_brand_river,
+		background: "background",
+		foreground: "brand-river",
+	},
+	{
+		name: m.ds_brand_starlight,
+		background: "background",
+		foreground: "brand-starlight",
+	},
 ];
 
 const PALETTE_GROUPS = [
@@ -81,7 +91,7 @@ const PALETTE_GROUPS = [
 	{
 		name: m.ds_palette_brand,
 		description: m.ds_palette_brand_description,
-		tokens: ["brand-ember", "brand-flame", "brand-gold"],
+		tokens: ["brand-river", "brand-starlight"],
 	},
 	{
 		name: m.ds_risk_label,
@@ -126,9 +136,8 @@ const TOKEN_LABELS: Record<string, () => string> = {
 	"risk-critical": m.ds_palette_critical_label,
 	info: m.ds_status_info,
 	success: m.ds_status_success,
-	"brand-ember": m.ds_brand_ember,
-	"brand-flame": m.ds_brand_flame,
-	"brand-gold": m.ds_brand_gold,
+	"brand-river": m.ds_brand_river,
+	"brand-starlight": m.ds_brand_starlight,
 };
 
 export function ColorSection() {
@@ -169,7 +178,7 @@ export function ColorSection() {
 					>
 						<div>
 							<h3 className="type-heading">{group.name()}</h3>
-							<p className="mt-2 text-muted-foreground text-sm">
+							<p className="type-body mt-2 text-muted-foreground">
 								{group.description()}
 							</p>
 						</div>
@@ -178,7 +187,7 @@ export function ColorSection() {
 								<div key={token} className="min-w-0">
 									<div
 										aria-hidden="true"
-										className="h-16 border"
+										className="h-16 rounded-lg border"
 										style={{ backgroundColor: `var(--${token})` }}
 									/>
 									<p className="mt-2 break-words text-xs">

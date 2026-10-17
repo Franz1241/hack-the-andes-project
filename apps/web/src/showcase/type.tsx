@@ -12,34 +12,45 @@ import { useEffect, useRef, useState } from "react";
 import { m } from "@/paraglide/messages";
 
 const TYPE_SPECIMENS = [
-	{ token: "type-display", use: m.ds_type_display_use, copy: m.ds_hero_title },
+	{
+		token: "type-display",
+		use: m.ds_type_display_use,
+		copy: m.ds_hero_title,
+		specification: m.ds_type_display_spec,
+	},
 	{
 		token: "type-title",
+		specification: m.ds_type_title_spec,
 		use: m.ds_type_title_use,
 		copy: m.ds_type_title_sample,
 	},
 	{
 		token: "type-heading",
+		specification: m.ds_type_heading_spec,
 		use: m.ds_type_heading_use,
 		copy: m.ds_carretera_central,
 	},
 	{
 		token: "type-lead",
+		specification: m.ds_type_lead_spec,
 		use: m.ds_type_lead_use,
 		copy: m.ds_type_lead_sample,
 	},
 	{
 		token: "type-body",
+		specification: m.ds_type_body_spec,
 		use: m.ds_type_body_use,
 		copy: m.ds_type_body_sample,
 	},
 	{
 		token: "type-label",
+		specification: m.ds_type_label_spec,
 		use: m.ds_type_label_use,
 		copy: m.ds_senamhi_orange_warning,
 	},
 	{
 		token: "type-data",
+		specification: m.ds_type_data_spec,
 		use: m.ds_type_data_use,
 		copy: m.ds_type_data_sample,
 	},
@@ -92,9 +103,20 @@ export function TypeSection() {
 									<code>{specimen.token}</code>
 								</TableCell>
 								<TableCell>
-									{specifications[specimen.token] ?? m.ds_measuring()}
+									<p className="type-data max-w-72 whitespace-normal">
+										{specimen.specification()}
+									</p>
+									<p className="type-data mt-2 max-w-72 whitespace-normal text-muted-foreground">
+										{specifications[specimen.token]
+											? m.ds_type_active_spec({
+													value: specifications[specimen.token],
+												})
+											: m.ds_measuring()}
+									</p>
 								</TableCell>
-								<TableCell>{specimen.use()}</TableCell>
+								<TableCell className="max-w-48 whitespace-normal">
+									{specimen.use()}
+								</TableCell>
 								<TableCell>
 									<div className="max-w-md overflow-hidden">
 										<p
@@ -119,7 +141,7 @@ export function TypeSection() {
 					{m.ds_type_paragraph_link()}
 				</a>
 				{m.ds_type_paragraph_middle()}{" "}
-				<code className="border bg-muted px-1 text-foreground">
+				<code className="rounded-sm border bg-muted px-1 text-foreground">
 					{m.ds_sample_route_code()}
 				</code>{" "}
 				{m.ds_type_paragraph_end()}

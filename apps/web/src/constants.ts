@@ -196,3 +196,14 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
 };
 export const RATE_LIMITED_AUTH_MESSAGE =
 	"Demasiados intentos. Espera un momento e inténtalo de nuevo.";
+
+export const SHOWCASE_RADIUS_SCALE = [
+	{ token: "rounded-xs", size: "4 px", role: m.ds_radius_detail },
+	{ token: "rounded-sm", size: "6 px", role: m.ds_radius_inner },
+	{ token: "rounded-md", size: "10 px", role: m.ds_radius_controls },
+	{ token: "rounded-lg", size: "14 px", role: m.ds_radius_surfaces },
+	{ token: "rounded-xl", size: "18 px", role: m.ds_radius_large },
+	{ token: "rounded-2xl", size: "22 px", role: m.ds_radius_feature },
+	{ token: "rounded-3xl", size: "26 px", role: m.ds_radius_hero },
+	{ token: "rounded-full", size: "full", role: m.ds_radius_round },
+];

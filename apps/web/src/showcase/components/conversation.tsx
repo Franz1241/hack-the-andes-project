@@ -68,7 +68,7 @@ export function ConversationShowcase() {
 				<p className="type-body text-muted-foreground">
 					{m.ds_conversation_description()}
 				</p>
-				<div className="h-96 min-w-0 border bg-card p-4">
+				<div className="h-96 min-w-0 rounded-lg border bg-card p-4">
 					<MessageScrollerProvider>
 						<MessageScroller>
 							<MessageScrollerViewport>
@@ -148,7 +148,7 @@ export function ConversationShowcase() {
 				</div>
 			</div>
 			<div className="grid min-w-0 gap-6 lg:grid-cols-2">
-				<div className="min-w-0 border p-6">
+				<div className="min-w-0 rounded-lg border p-6">
 					<h4 className="type-heading mb-5">{m.ds_questionnaire_title()}</h4>
 					<Questionnaire
 						items={SHOWCASE_QUESTIONNAIRE_ITEMS}
@@ -190,7 +190,7 @@ export function ConversationShowcase() {
 						</QuestionnaireActions>
 					</Questionnaire>
 				</div>
-				<div className="min-w-0 border p-6">
+				<div className="min-w-0 rounded-lg border p-6">
 					<h4 className="type-heading mb-5">{m.ds_trace_title()}</h4>
 					<Trace>
 						<TraceLine>

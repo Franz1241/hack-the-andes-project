@@ -43,7 +43,7 @@ export function ExampleScreenSection() {
 			title={m.ds_panel_section_title()}
 			description={m.ds_panel_section_description()}
 		>
-			<div className="relative isolate min-w-0 overflow-hidden border bg-background p-4 sm:p-6">
+			<div className="relative isolate min-w-0 overflow-hidden rounded-lg border bg-background p-4 sm:p-6">
 				<TopoBackground className="text-foreground/[0.06]" />
 				<div className="relative flex min-w-0 flex-col gap-8">
 					<div className="flex flex-wrap items-start justify-between gap-4">
@@ -59,7 +59,7 @@ export function ExampleScreenSection() {
 						<Badge variant="outline">{m.ds_demo_data()}</Badge>
 					</div>
 					<div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-						<div className="min-w-0 border bg-card p-2">
+						<div className="min-w-0 rounded-lg border bg-card p-2">
 							<Table className="lg:table-fixed">
 								<TableCaption>{m.ds_panel_caption()}</TableCaption>
 								<TableHeader>

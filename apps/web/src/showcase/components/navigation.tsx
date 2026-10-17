@@ -76,7 +76,7 @@ export function NavigationShowcase() {
 			title={m.ds_tier_navigation()}
 			description={m.ds_tier_navigation_description()}
 		>
-			<div className="flex min-w-0 flex-col gap-4 border p-5">
+			<div className="flex min-w-0 flex-col gap-4 rounded-lg border p-5">
 				<h3 className="type-heading">{m.ds_tabs_title()}</h3>
 				<Tabs defaultValue="now">
 					<TabsList aria-label={m.ds_alert_horizon()}>
@@ -201,7 +201,7 @@ export function NavigationShowcase() {
 				</PaginationContent>
 			</Pagination>
 			<DirectionProvider direction="ltr">
-				<div className="overflow-hidden border">
+				<div className="overflow-hidden rounded-lg border">
 					<SidebarProvider className="min-h-0 flex-col sm:flex-row">
 						<Sidebar
 							collapsible="none"
@@ -269,7 +269,7 @@ export function NavigationShowcase() {
 				)}
 			/>
 			<DirectionProvider direction="rtl">
-				<div dir="rtl" className="flex flex-col gap-3 border p-5">
+				<div dir="rtl" className="flex flex-col gap-3 rounded-lg border p-5">
 					<p className="type-label">{m.ds_rtl_preview()}</p>
 					<Breadcrumb>
 						<BreadcrumbList>

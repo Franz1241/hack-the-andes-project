@@ -321,7 +321,7 @@ export function InputsShowcase() {
 								onSelect={setDepartureDate}
 								defaultMonth={new Date(SHOWCASE_DATE_ISO)}
 								locale={getLocale() === "es" ? es : enUS}
-								className="w-fit max-w-full border"
+								className="w-fit max-w-full rounded-lg border"
 							/>
 						</div>
 					</Field>

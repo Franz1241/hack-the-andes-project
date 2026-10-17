@@ -123,7 +123,7 @@ export function DataDisplayShowcase() {
 						</CollapsibleContent>
 					</Collapsible>
 				</div>
-				<ScrollArea className="h-72 border">
+				<ScrollArea className="h-72 rounded-lg border">
 					<ItemGroup className="p-3">
 						{ROUTE_EXAMPLES.map((route) => (
 							<Item key={route.id} variant="outline">
@@ -160,7 +160,10 @@ export function DataDisplayShowcase() {
 					<CarouselNext aria-label={m.ds_next()} />
 				</Carousel>
 			</div>
-			<ResizablePanelGroup orientation="horizontal" className="min-h-40 border">
+			<ResizablePanelGroup
+				orientation="horizontal"
+				className="min-h-40 overflow-hidden rounded-lg border"
+			>
 				<ResizablePanel defaultSize="60%" minSize="30%">
 					<div className="flex h-full flex-col gap-3 p-4">
 						<h4 className="type-label">{m.ds_route_context()}</h4>
@@ -178,7 +181,7 @@ export function DataDisplayShowcase() {
 			<div className="grid min-w-0 gap-6 md:grid-cols-2">
 				<AspectRatio
 					ratio={SHOWCASE_PREVIEW_ASPECT_RATIO}
-					className="overflow-hidden border bg-muted"
+					className="overflow-hidden rounded-lg border bg-muted"
 				>
 					<TopoBackground className="text-foreground/10" />
 					<div className="relative flex h-full flex-col justify-center gap-4 p-6">

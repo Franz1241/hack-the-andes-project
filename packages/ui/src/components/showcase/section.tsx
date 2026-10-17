@@ -33,7 +33,7 @@ export function ShowcaseSection({
 				<h2 id={`${id}-title`} className="type-title">
 					{title}
 				</h2>
-				<p className="type-body text-muted-foreground">{description}</p>
+				<p className="type-lead text-muted-foreground">{description}</p>
 			</header>
 			{children}
 		</section>

@@ -181,7 +181,7 @@ export function DataVisualizationSection() {
 					</CardHeader>
 					<CardContent className="flex flex-col gap-3">
 						<div
-							className="relative overflow-hidden border border-border"
+							className="relative overflow-hidden rounded-lg border border-border"
 							style={{ height: VIZ_MAP_HEIGHT_PX }}
 						>
 							<MapCanvas
