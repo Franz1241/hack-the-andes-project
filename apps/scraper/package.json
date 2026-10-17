@@ -1,0 +1,31 @@
+{
+	"name": "scraper",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"build": "tsc -b ../../packages/db && tsdown",
+		"check-types": "tsc -b ../../packages/db && tsc --noEmit",
+		"test": "vitest run",
+		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
+		"env:generate": "varlock codegen"
+	},
+	"dependencies": {
+		"@hack-the-andes-project/db": "workspace:*",
+		"@turf/centroid": "catalog:",
+		"@turf/helpers": "catalog:",
+		"drizzle-orm": "catalog:",
+		"evlog": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "catalog:",
+		"@hack-the-andes-project/config": "workspace:*",
+		"@hack-the-andes-project/infra": "workspace:*",
+		"@types/geojson": "catalog:",
+		"@types/node": "^26.4.1",
+		"tsdown": "^0.23.0",
+		"typescript": "^6.0.3",
+		"varlock": "catalog:",
+		"vitest": "catalog:"
+	}
+}
