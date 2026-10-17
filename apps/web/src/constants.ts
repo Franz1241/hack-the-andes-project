@@ -125,3 +125,28 @@ export const SPACING_SCALE = [
 
 export const MINIMUM_NAME_LENGTH = 2;
 export const MINIMUM_PASSWORD_LENGTH = 8;
+
+export function getShowcaseStateLabels() {
+	return {
+		default: m.ds_state_default(),
+		hover: m.ds_state_hover(),
+		focus: m.ds_state_focus(),
+		active: m.ds_state_active(),
+		disabled: m.ds_state_disabled(),
+		invalid: m.ds_state_invalid(),
+	};
+}
+
+export const SHOWCASE_DATE_ISO = "2026-10-17T12:00:00";
+export const SHOWCASE_HORIZON_HOURS = 6;
+export const SHOWCASE_MAX_HORIZON_HOURS = 48;
+export const SHOWCASE_OTP_LENGTH = 6;
+export const SHOWCASE_OTP_INDICES = [0, 1, 2, 3, 4, 5];
+export const SHOWCASE_PREVIEW_ASPECT_RATIO = 16 / 9;
+export const SHOWCASE_JSON_INDENT = 2;
+export const SHOWCASE_PROGRESS_PERCENT = 75;
+export const SHOWCASE_TOASTER_ID = "design-system";
+export const SHOWCASE_QUESTIONNAIRE_ITEMS = [
+	{ name: "route", choices: [{ value: "PE-22" }, { value: "PE-1N" }] },
+	{ name: "cargo", choices: [{ value: "general" }, { value: "perishable" }] },
+];

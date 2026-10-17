@@ -21,7 +21,9 @@ export function StateMatrix<Row extends string>({
 	className,
 }: StateMatrixProps<Row>) {
 	return (
-		<div className={cn("w-full min-w-0 overflow-x-auto", className)}>
+		<div
+			className={cn("w-full min-w-0 overflow-x-auto contain-paint", className)}
+		>
 			<table className="w-full border-separate border-spacing-x-2 border-spacing-y-3">
 				<thead>
 					<tr>
