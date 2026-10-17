@@ -13,3 +13,21 @@ export {
 	Sun,
 	TruckIcon,
 } from "lucide-react";
+export {
+	EarthquakeIcon,
+	FireIcon,
+	FloodIcon,
+	FloodWarningIcon,
+	HazmatIcon,
+	INCIDENT_CATEGORY_ICONS,
+	LandslideIcon,
+	MedicalIcon,
+	OtherIncidentIcon,
+	RainWarningIcon,
+	RescueIcon,
+	RoadAccidentIcon,
+	RoadBlockIcon,
+	RoadWorksIcon,
+	WeatherIcon,
+	WildfireIcon,
+} from "./incident-icons";
