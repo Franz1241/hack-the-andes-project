@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@hack-the-andes-project/auth": "workspace:*",
+		"@hack-the-andes-project/business": "workspace:*",
 		"@hack-the-andes-project/db": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/openapi": "catalog:",

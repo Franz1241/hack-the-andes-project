@@ -448,6 +448,9 @@ importers:
       '@hack-the-andes-project/auth':
         specifier: workspace:*
         version: link:../auth
+      '@hack-the-andes-project/business':
+        specifier: workspace:*
+        version: link:../business
       '@hack-the-andes-project/db':
         specifier: workspace:*
         version: link:../db

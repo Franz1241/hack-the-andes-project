@@ -13,3 +13,7 @@ export interface Context {
 	// Workers ExecutionContext. Outside Workers the promise is left floating.
 	waitUntil: (promise: Promise<unknown>) => void;
 }
+
+export interface OrganizationContext extends Context {
+	organizationId: string;
+}
