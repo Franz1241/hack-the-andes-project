@@ -234,6 +234,13 @@
 	line-height: 1.6;
 }
 
+@utility type-lead {
+	font-family: var(--font-mono);
+	font-weight: 400;
+	font-size: clamp(16px, 0.6vw + 13px, 20px);
+	line-height: 1.6;
+}
+
 @utility type-label {
 	font-family: var(--font-mono);
 	font-weight: 600;

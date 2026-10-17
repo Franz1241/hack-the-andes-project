@@ -24,6 +24,11 @@ const TYPE_SPECIMENS = [
 		copy: m.ds_carretera_central,
 	},
 	{
+		token: "type-lead",
+		use: m.ds_type_lead_use,
+		copy: m.ds_type_lead_sample,
+	},
+	{
 		token: "type-body",
 		use: m.ds_type_body_use,
 		copy: m.ds_type_body_sample,

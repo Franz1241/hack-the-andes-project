@@ -392,5 +392,7 @@
 	"ds_trace_forecast": "Aviso SENAMHI consultado",
 	"ds_trace_pending": "Esperando el próximo reporte de campo",
 	"ds_code_required": "Ingresa los seis dígitos del código.",
-	"ds_rtl_preview": "Dirección de lectura · RTL"
+	"ds_rtl_preview": "Dirección de lectura · RTL",
+	"ds_type_lead_use": "Introducciones de marketing y apertura de secciones",
+	"ds_type_lead_sample": "Anticipa el riesgo. Protege tu ruta."
 }
