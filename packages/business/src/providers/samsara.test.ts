@@ -87,8 +87,66 @@ describe("samsaraProvider", () => {
 		);
 
 		await expect(validation).rejects.toThrow(
-			"Samsara GET /me failed with HTTP 401",
+			"Samsara GET /fleet/vehicles failed with HTTP 401",
 		);
 		await expect(validation).rejects.not.toThrow(/samsara-secret-token/);
 	});
+});
+
+it("validates the fleet permissions without requiring organization information access", async () => {
+	const fetchImpl = vi.fn<typeof fetch>(async () =>
+		Response.json({ data: [] }),
+	);
+	await samsaraProvider.validateCredentials(credentials, fetchImpl);
+	expect(fetchImpl.mock.calls.map(([url]) => String(url))).toEqual([
+		"https://api.samsara.com/fleet/vehicles?limit=1",
+		"https://api.samsara.com/fleet/vehicles/stats?types=gps",
+	]);
+});
+
+it.each(["", "repeated-cursor"])(
+	"rejects non-progressing pagination (%s)",
+	async (endCursor) => {
+		const fetchImpl = vi.fn<typeof fetch>(async () =>
+			Response.json({ data: [], pagination: { endCursor, hasNextPage: true } }),
+		);
+		await expect(
+			samsaraProvider.fetchLatestPositions(credentials, fetchImpl),
+		).rejects.toThrow("pagination did not complete");
+		expect(fetchImpl.mock.calls.length).toBeLessThanOrEqual(2);
+	},
+);
+
+it("pages GPS snapshots while preserving the types filter", async () => {
+	const fetchImpl = vi.fn<typeof fetch>(async (input) => {
+		const url = new URL(String(input));
+		expect(url.searchParams.get("types")).toBe("gps");
+		return Response.json({
+			data: [
+				{
+					id: url.searchParams.get("after") ?? "first",
+					gps: {
+						latitude: -12,
+						longitude: -77,
+						time: "2026-10-17T10:00:00-05:00",
+					},
+				},
+			],
+			pagination: {
+				endCursor: "second",
+				hasNextPage: !url.searchParams.has("after"),
+			},
+		});
+	});
+	const positions = await samsaraProvider.fetchLatestPositions(
+		credentials,
+		fetchImpl,
+	);
+	expect(positions.map((position) => position.externalId)).toEqual([
+		"first",
+		"second",
+	]);
+	expect(positions[0]?.recordedAt.toISOString()).toBe(
+		"2026-10-17T15:00:00.000Z",
+	);
 });

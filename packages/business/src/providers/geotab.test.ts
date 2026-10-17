@@ -101,7 +101,7 @@ describe("geotabProvider", () => {
 			Response.json({
 				error: {
 					name: "InvalidUserException",
-					message: "Incorrect login credentials",
+					message: "Incorrect password hunter2",
 				},
 			}),
 		);
@@ -112,7 +112,7 @@ describe("geotabProvider", () => {
 		);
 
 		await expect(validation).rejects.toThrow(
-			"Geotab Authenticate failed: InvalidUserException: Incorrect login credentials",
+			"Geotab session authentication failed",
 		);
 		await expect(validation).rejects.not.toThrow(/hunter2/);
 	});
@@ -127,3 +127,55 @@ describe("geotabProvider", () => {
 		).rejects.toThrow("Geotab Authenticate failed with HTTP 503");
 	});
 });
+
+it.each([
+	"127.0.0.1",
+	"my.geotab.com@attacker.test",
+	"my.geotab.com/redirect",
+	"my.geotab.com.attacker.test",
+])("rejects untrusted credential destinations: %s", async (server) => {
+	const fetchImpl = vi.fn<typeof fetch>();
+	await expect(
+		geotabProvider.listVehicles({ ...credentials, server }, fetchImpl),
+	).rejects.toThrow();
+	expect(fetchImpl).not.toHaveBeenCalled();
+});
+
+it("does not forward session credentials to an untrusted federation path", async () => {
+	const fetchImpl = mockGeotab("attacker.test", []);
+	await expect(
+		geotabProvider.listVehicles(credentials, fetchImpl),
+	).rejects.toThrow();
+	expect(fetchImpl).toHaveBeenCalledTimes(1);
+	expect(fetchImpl.mock.calls[0]?.[1]?.redirect).toBe("error");
+});
+
+it.each([false, true])(
+	"re-authenticates once on expired sessions and bounds retries (persistent: %s)",
+	async (persistent) => {
+		let gets = 0;
+		const fetchImpl = vi.fn<typeof fetch>(async (_url, init) => {
+			const body = JSON.parse(String(init?.body));
+			if (body.method === "Authenticate")
+				return Response.json({
+					result: { credentials: sessionCredentials, path: "my42.geotab.com" },
+				});
+			gets += 1;
+			return gets === 1 || persistent
+				? Response.json({
+						error: {
+							message: "expired hunter2",
+							data: { type: "InvalidUserException" },
+						},
+					})
+				: Response.json({ result: [] });
+		});
+		const result = geotabProvider.listVehicles(credentials, fetchImpl);
+		if (persistent)
+			await expect(result).rejects.toThrow(
+				"Geotab session authentication failed",
+			);
+		else await expect(result).resolves.toEqual([]);
+		expect(fetchImpl).toHaveBeenCalledTimes(4);
+	},
+);
