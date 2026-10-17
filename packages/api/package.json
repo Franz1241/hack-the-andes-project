@@ -1,0 +1,26 @@
+{
+	"name": "@hack-the-andes-project/api",
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./*": "./src/*.ts"
+	},
+	"scripts": {
+		"build": "tsc -b",
+		"check-types": "tsc -b"
+	},
+	"dependencies": {
+		"@hack-the-andes-project/auth": "workspace:*",
+		"@hack-the-andes-project/db": "workspace:*",
+		"@orpc/client": "catalog:",
+		"@orpc/openapi": "catalog:",
+		"@orpc/server": "catalog:",
+		"@orpc/zod": "catalog:",
+		"evlog": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@hack-the-andes-project/config": "workspace:*",
+		"typescript": "^6.0.3"
+	}
+}

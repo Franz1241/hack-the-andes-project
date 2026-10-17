@@ -1,0 +1,32 @@
+{
+	"name": "server",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"build": "tsc -b ../../packages/api && tsdown",
+		"check-types": "tsc -b ../../packages/api && tsc --noEmit",
+		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
+		"env:generate": "varlock codegen"
+	},
+	"dependencies": {
+		"@hack-the-andes-project/api": "workspace:*",
+		"@hack-the-andes-project/auth": "workspace:*",
+		"@hack-the-andes-project/db": "workspace:*",
+		"@orpc/openapi": "catalog:",
+		"@orpc/server": "catalog:",
+		"@orpc/zod": "catalog:",
+		"better-auth": "catalog:",
+		"evlog": "catalog:",
+		"hono": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "catalog:",
+		"@hack-the-andes-project/config": "workspace:*",
+		"@hack-the-andes-project/infra": "workspace:*",
+		"@types/node": "^26.4.1",
+		"tsdown": "^0.23.0",
+		"typescript": "^6.0.3",
+		"varlock": "catalog:"
+	}
+}

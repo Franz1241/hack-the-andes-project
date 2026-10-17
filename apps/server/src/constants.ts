@@ -1,0 +1,11 @@
+export const SERVICE_NAME = "hack-the-andes-server";
+
+// Browsers cap Access-Control-Max-Age; ask for the 24h upper bound so
+// preflights are reused as long as each browser allows.
+export const CORS_PREFLIGHT_MAX_AGE_S = 86_400;
+
+export const RPC_PREFIX = "/rpc";
+export const OPENAPI_PREFIX = "/api-reference";
+export const AUTH_PREFIX = "/api/auth";
+
+export const PUBLIC_PATHS: ReadonlySet<string> = new Set(["/"]);
