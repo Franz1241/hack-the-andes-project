@@ -35,3 +35,8 @@ export const DEMO_CLEAR_TRIP_BEARINGS_DEG = [
 ];
 export const DEMO_TRIP_MIN_ROUTE_DISTANCE_M = 20_000;
 export const DEMO_TRIP_MAX_ATTEMPTS_COUNT = 8;
+
+export const MIN_ROUTE_RISK_SCORE = 0;
+export const MAX_ROUTE_RISK_SCORE = 100;
+export const MIN_VEHICLE_AXLE_COUNT = 2;
+export const MAX_VEHICLE_AXLE_COUNT = 9;

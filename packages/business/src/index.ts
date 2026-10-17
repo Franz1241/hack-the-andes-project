@@ -9,4 +9,7 @@ export * from "./hazards/progress";
 export * from "./hazards/route-distance";
 export * from "./hazards/types";
 export * from "./providers/index";
+export * from "./route-review/places";
+export * from "./route-review/risk";
+export * from "./route-review/vehicle-types";
 export * from "./routing/osrm";
