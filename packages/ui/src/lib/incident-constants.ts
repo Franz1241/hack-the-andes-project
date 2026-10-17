@@ -30,3 +30,7 @@ export const INCIDENT_SEVERITY_COLORS = {
 
 export const INCIDENT_SEVERITY_OPTIONS: (keyof typeof INCIDENT_SEVERITY_LABELS)[] =
 	["critical", "warning", "info"];
+
+export const INCIDENT_CATEGORY_OPTIONS = Object.entries(
+	INCIDENT_CATEGORY_LABELS,
+).map(([value, label]) => ({ value, label }));
