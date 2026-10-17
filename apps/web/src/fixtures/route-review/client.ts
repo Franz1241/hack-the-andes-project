@@ -182,6 +182,7 @@ const vehicleDefaults = {
 const gpsVehicleDefaults = {
 	...vehicleDefaults,
 	connectionId: FIXTURE_GPS_CONNECTION_ID,
+	provider: "demo" as const,
 	lastLat: -12.0553,
 	lastLng: -77.1186,
 	lastPositionAt: new Date(seededAt.getTime() - 3 * MINUTE_MS),
@@ -189,6 +190,7 @@ const gpsVehicleDefaults = {
 const manualVehicleDefaults = {
 	...vehicleDefaults,
 	connectionId: null,
+	provider: null,
 	externalId: null,
 	lastLat: null,
 	lastLng: null,
@@ -199,7 +201,7 @@ const vehicles: ProfiledVehicleSummary[] = [
 	{
 		...gpsVehicleDefaults,
 		id: "fixture-vehicle-volvo-fh",
-		externalId: "geotab-b17",
+		externalId: "demo-truck-1",
 		name: "Volvo FH 540",
 		plate: "F7K-829",
 		profile: { vehicleTypeId: "t3s3", axleCount: 6, grossWeightKg: 48_000 },
@@ -207,7 +209,7 @@ const vehicles: ProfiledVehicleSummary[] = [
 	{
 		...gpsVehicleDefaults,
 		id: "fixture-vehicle-scania-r450",
-		externalId: "geotab-b22",
+		externalId: "demo-truck-2",
 		name: "Scania R450",
 		plate: "C4P-512",
 		profile: { vehicleTypeId: "t2s3", axleCount: 5, grossWeightKg: 43_000 },
@@ -215,7 +217,7 @@ const vehicles: ProfiledVehicleSummary[] = [
 	{
 		...gpsVehicleDefaults,
 		id: "fixture-vehicle-actros",
-		externalId: "geotab-b31",
+		externalId: "demo-truck-3",
 		name: "Mercedes-Benz Actros",
 		plate: "A3R-118",
 		profile: null,
