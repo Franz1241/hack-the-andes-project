@@ -12,6 +12,7 @@ import { Skeleton } from "@hack-the-andes-project/ui/components/skeleton";
 import { Link, useNavigate } from "@tanstack/react-router";
 
 import { authClient } from "@/lib/auth-client";
+import { m } from "@/paraglide/messages";
 
 export default function UserMenu() {
 	const navigate = useNavigate();
@@ -24,7 +25,7 @@ export default function UserMenu() {
 	if (!session) {
 		return (
 			<Link to="/login">
-				<Button variant="outline">Sign In</Button>
+				<Button variant="outline">{m.auth_sign_in()}</Button>
 			</Link>
 		);
 	}
@@ -36,7 +37,7 @@ export default function UserMenu() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-card">
 				<DropdownMenuGroup>
-					<DropdownMenuLabel>My Account</DropdownMenuLabel>
+					<DropdownMenuLabel>{m.account_title()}</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
 					<DropdownMenuItem
@@ -53,7 +54,7 @@ export default function UserMenu() {
 							});
 						}}
 					>
-						Sign Out
+						{m.auth_sign_out()}
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>

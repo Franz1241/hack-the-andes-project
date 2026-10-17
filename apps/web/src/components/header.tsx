@@ -1,13 +1,16 @@
 import { Link } from "@tanstack/react-router";
 
+import { m } from "@/paraglide/messages";
+
+import { LanguageToggle } from "./language-toggle";
 import { ModeToggle } from "./mode-toggle";
 import UserMenu from "./user-menu";
 
 export default function Header() {
 	const links = [
-		{ to: "/", label: "Home" },
-		{ to: "/dashboard", label: "Dashboard" },
-		{ to: "/design-system", label: "Sistema" },
+		{ to: "/", label: m.nav_home() },
+		{ to: "/dashboard", label: m.nav_dashboard() },
+		{ to: "/design-system", label: m.nav_design_system() },
 	] as const;
 
 	return (
@@ -23,6 +26,7 @@ export default function Header() {
 					})}
 				</nav>
 				<div className="flex items-center gap-2">
+					<LanguageToggle />
 					<ModeToggle />
 					<UserMenu />
 				</div>

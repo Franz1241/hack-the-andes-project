@@ -3,6 +3,7 @@ import { createRouter, RouterProvider } from "@tanstack/react-router";
 import ReactDOM from "react-dom/client";
 
 import Loader from "./components/loader";
+import { getLocale } from "./paraglide/runtime";
 import { routeTree } from "./routeTree.gen";
 import { orpc, queryClient } from "./utils/orpc";
 
@@ -24,6 +25,8 @@ declare module "@tanstack/react-router" {
 		router: typeof router;
 	}
 }
+
+document.documentElement.lang = getLocale();
 
 const rootElement = document.getElementById("app");
 

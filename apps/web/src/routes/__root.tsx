@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { m } from "@/paraglide/messages";
 import { link, type orpc } from "@/utils/orpc";
 
 import "../index.css";
@@ -28,11 +29,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "hack-the-andes-project",
+				title: m.app_title(),
 			},
 			{
 				name: "description",
-				content: "hack-the-andes-project is a web application",
+				content: m.app_description(),
 			},
 		],
 		links: [

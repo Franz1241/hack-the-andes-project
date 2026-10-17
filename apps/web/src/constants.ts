@@ -120,3 +120,6 @@ export const SPACING_SCALE = [
 	{ token: "12", size: "48 px", className: "w-12" },
 	{ token: "16", size: "64 px", className: "w-16" },
 ];
+
+export const MINIMUM_NAME_LENGTH = 2;
+export const MINIMUM_PASSWORD_LENGTH = 8;

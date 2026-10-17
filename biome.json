@@ -17,6 +17,8 @@
 			"!**/.zed",
 			"!**/.vscode",
 			"!**/routeTree.gen.ts",
+			"!**/src/paraglide",
+			"!**/*.inlang",
 			"!**/src-tauri",
 			"!**/.nuxt",
 			"!bts.jsonc",
