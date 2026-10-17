@@ -2,6 +2,7 @@ import {
 	type EvaluateTripResult,
 	evaluateTrip,
 	isAlertableIncident,
+	pruneVehiclePositions,
 	resolveObsoleteAlerts,
 	type SyncConnectionResult,
 	syncConnection,
@@ -45,6 +46,9 @@ async function syncAll(
 	try {
 		const db = await createDb(ENV.HYPERDRIVE);
 		try {
+			if (!connectionId) {
+				log.set({ positionsPruned: await pruneVehiclePositions(db, now) });
+			}
 			const connections = await db
 				.select()
 				.from(gpsConnection)

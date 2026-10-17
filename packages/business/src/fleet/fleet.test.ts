@@ -7,6 +7,10 @@ import type {
 import { createLogger } from "evlog";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+	POSITION_RETENTION_BATCH_SIZE_ROWS,
+	POSITION_RETENTION_MS,
+} from "../constants";
 import { encryptJson, generateEncryptionKeyBase64 } from "../crypto/index";
 import {
 	CARRETERA_CENTRAL,
@@ -17,6 +21,7 @@ import {
 	pointIncident,
 } from "../hazards/test-fixtures";
 import { evaluateTrip } from "./evaluate-trip";
+import { pruneVehiclePositions } from "./prune-positions";
 import { resolveObsoleteAlerts } from "./resolve-obsolete-alerts";
 import { syncConnection } from "./sync-connection";
 
@@ -461,4 +466,21 @@ it("completes within the destination radius even when the route doubles back", a
 		log: createLogger(),
 	});
 	expect(result).toMatchObject({ ok: true, completed: true });
+});
+
+it("prunes expired position history in a bounded batch without deleting vehicle checkpoints", async () => {
+	expect(await pruneVehiclePositions(await testDatabase(), now)).toBe(1);
+	expect(query.mock.calls).toHaveLength(1);
+	const deletion = query.mock.calls[0];
+	expect(deletion?.[0].sql).toContain(
+		"delete from `hack_the_andes_vehicle_position`",
+	);
+	expect(deletion?.[0].sql).toContain("`recorded_at` < ? limit ?");
+	expect(deletion?.[1]).toEqual([
+		new Date(now.getTime() - POSITION_RETENTION_MS)
+			.toISOString()
+			.replace("T", " ")
+			.replace("Z", ""),
+		POSITION_RETENTION_BATCH_SIZE_ROWS,
+	]);
 });
