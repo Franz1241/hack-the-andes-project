@@ -1,16 +1,13 @@
 import { Toaster } from "@hack-the-andes-project/ui/components/sonner";
-import { cn } from "@hack-the-andes-project/ui/lib/utils";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Outlet,
-	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
-import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
 import type { orpc } from "@/utils/orpc";
 
@@ -30,7 +27,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 			},
 			{
 				name: "description",
-				content: "Fleet weather and route intelligence for Peru.",
+				content: "Clima, incidencias y rutas para flotas de carga en el Perú.",
 			},
 		],
 		links: [
@@ -43,12 +40,6 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
-	const isDashboard = useRouterState({
-		select: (state) =>
-			state.location.pathname === "/dashboard" ||
-			state.location.pathname.startsWith("/dashboard/"),
-	});
-
 	return (
 		<>
 			<HeadContent />
@@ -58,13 +49,7 @@ function RootComponent() {
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				<div
-					className={cn(
-						"min-h-svh",
-						!isDashboard && "grid grid-rows-[auto_1fr]",
-					)}
-				>
-					{!isDashboard && <Header />}
+				<div className="min-h-svh">
 					<Outlet />
 				</div>
 				<Toaster richColors />
