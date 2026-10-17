@@ -13,6 +13,7 @@ import {
 	DEMO_VEHICLES,
 	samsaraProvider,
 } from "@hack-the-andes-project/business/providers/index";
+import * as riskRoutes from "@hack-the-andes-project/business/risk/compare-routes";
 import * as routing from "@hack-the-andes-project/business/routing/osrm";
 import type { vehicle } from "@hack-the-andes-project/db/schema/fleet";
 import { call, createRouterClient } from "@orpc/server";
@@ -32,6 +33,7 @@ import {
 	ALERT_STATUS_OPEN,
 	CREDENTIALS_VALIDATION_FAILED_MESSAGE,
 	DEMO_VEHICLE_REQUIRED_MESSAGE,
+	RISK_DISCLAIMER_MESSAGE,
 	ROUTING_FAILED_MESSAGE,
 	VEHICLE_POSITION_REQUIRED_MESSAGE,
 } from "./constants";
@@ -839,5 +841,95 @@ describe("demo reset orchestration", () => {
 		expect(wipe.mock.invocationCallOrder[0]).toBeLessThan(
 			seed.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
 		);
+	});
+});
+
+describe("risk procedures", () => {
+	const origin = { lat: -12.05, lng: -76.88 };
+	const destination = { lat: -12.07, lng: -75.21 };
+
+	it("rejects unauthenticated risk queries", async () => {
+		const client = createRouterClient(appRouter, {
+			context: contextFor(null),
+		});
+		await expect(client.risk.segments({})).rejects.toMatchObject({
+			code: "UNAUTHORIZED",
+		});
+	});
+
+	it("lists segments for the requested horizon with the disclaimer", async () => {
+		const query = vi
+			.spyOn(database.$client, "query")
+			.mockResolvedValue([[], []]);
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+
+		const result = await client.risk.segments({
+			horizonHours: 48,
+			roadCode: "PE-22",
+		});
+
+		expect(result).toEqual({
+			segments: [],
+			disclaimer: RISK_DISCLAIMER_MESSAGE,
+		});
+		expect(query).toHaveBeenCalledWith(
+			expect.objectContaining({
+				sql: expect.stringContaining("horizon_hours"),
+			}),
+			expect.arrayContaining([48, "PE-22"]),
+		);
+	});
+
+	it("rejects horizons other than 24, 48 and 72 hours", async () => {
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+		await expect(
+			client.risk.segments({ horizonHours: 36 as 24 }),
+		).rejects.toMatchObject({ code: "BAD_REQUEST" });
+		await expect(
+			client.risk.compareRoutes({
+				origin,
+				destination,
+				horizonHours: 12 as 24,
+			}),
+		).rejects.toMatchObject({ code: "BAD_REQUEST" });
+	});
+
+	it("compares routes for a 24 h horizon by default", async () => {
+		const comparison = {
+			fastest: null,
+			safest: null,
+			closures: [],
+			officialDetours: [
+				{
+					id: "detour",
+					name: "Desvío Canta",
+					geometry: null,
+					roadCodes: ["PE-20A"],
+				},
+			],
+			assessedFrom: null,
+			assessedUntil: null,
+		};
+		const compare = vi
+			.spyOn(riskRoutes, "compareRiskAwareRoutes")
+			.mockResolvedValue(comparison);
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+
+		const result = await client.risk.compareRoutes({ origin, destination });
+
+		expect(compare).toHaveBeenCalledWith(
+			expect.objectContaining({ origin, destination, horizonHours: 24 }),
+		);
+		expect(result).toEqual({
+			...comparison,
+			horizonHours: 24,
+			disclaimer: RISK_DISCLAIMER_MESSAGE,
+		});
 	});
 });
