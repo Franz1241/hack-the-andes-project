@@ -5,6 +5,7 @@ import * as Config from "effect/Config";
 
 import {
 	WEB_DEV_PORT,
+	WEB_DOMAIN,
 	WEB_WORKER_NAME,
 	WORKER_OBSERVABILITY,
 } from "./constants.ts";
@@ -15,6 +16,9 @@ import {
 export const web = Cloudflare.Website.Vite("web", {
 	name: WEB_WORKER_NAME,
 	rootDir: "../../apps/web",
+	domain: {
+		name: WEB_DOMAIN,
+	},
 	assets: {
 		htmlHandling: "auto-trailing-slash",
 		notFoundHandling: "single-page-application",

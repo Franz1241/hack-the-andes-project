@@ -1,0 +1,18 @@
+{
+	"name": "@hack-the-andes-project/business",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./*": "./src/*.ts"
+	},
+	"scripts": {
+		"check-types": "tsc --noEmit"
+	},
+	"dependencies": {
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@hack-the-andes-project/config": "workspace:*",
+		"typescript": "^6.0.3"
+	}
+}

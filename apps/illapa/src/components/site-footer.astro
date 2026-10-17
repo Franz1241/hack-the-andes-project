@@ -1,4 +1,6 @@
 ---
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_E164 } from "@/constants";
+
 const currentYear = new Date().getFullYear();
 ---
 
@@ -9,6 +11,11 @@ const currentYear = new Date().getFullYear();
 		<p>
 			<span class="font-heading font-semibold text-foreground">Illapa</span>, inteligencia climática para la logística del Perú.
 		</p>
-		<p>Lima, Perú. {currentYear}.</p>
+		<p>
+			<a href={`tel:${CONTACT_PHONE_E164}`} class="hover:underline underline-offset-4">
+				{CONTACT_PHONE_DISPLAY}
+			</a>
+			. Lima, Perú. {currentYear}.
+		</p>
 	</div>
 </footer>
