@@ -1,11 +1,10 @@
 "use client";
 
 import { cn } from "cn";
-import { type ComponentProps, useId, useMemo } from "react";
+import { type ComponentProps, useMemo } from "react";
 import {
 	CONTOUR_DEFAULT_SEED,
 	CONTOUR_HEIGHT_PX,
-	CONTOUR_NOISE_CENTER,
 	CONTOUR_NOISE_GRID_SIZE,
 	CONTOUR_RANDOM_INCREMENT,
 	CONTOUR_RANDOM_MULTIPLIER,
@@ -14,26 +13,6 @@ import {
 	CONTOUR_SMOOTHSTEP_QUADRATIC,
 	CONTOUR_STROKE_WIDTH_PX,
 	CONTOUR_WIDTH_PX,
-	RIDGELINE_BACK_BASELINE_PX,
-	RIDGELINE_CLOSURE_MARGIN_PX,
-	RIDGELINE_COUNT,
-	RIDGELINE_DEPTH_SCALE,
-	RIDGELINE_DETAIL_DEPTH_SCALE,
-	RIDGELINE_DETAIL_SCALE,
-	RIDGELINE_DETAIL_WEIGHT,
-	RIDGELINE_EDGE_TAPER_POWER,
-	RIDGELINE_FRONT_BASELINE_PX,
-	RIDGELINE_GAUSSIAN_POWER,
-	RIDGELINE_GRADIENT_STOPS,
-	RIDGELINE_HEIGHT_FLOOR,
-	RIDGELINE_NOISE_SCALE,
-	RIDGELINE_NOISE_WEIGHT,
-	RIDGELINE_PEAK_DRIFT,
-	RIDGELINE_PEAK_DRIFT_SCALE,
-	RIDGELINE_PEAK_HEIGHT_PX,
-	RIDGELINE_PEAKS,
-	RIDGELINE_PERSPECTIVE_POWER,
-	RIDGELINE_SAMPLE_STEP_PX,
 	TOPO_CELL_EDGES,
 	TOPO_CELL_SIZE_PX,
 	TOPO_DETAIL_SCALE_PX,
@@ -51,10 +30,6 @@ import {
 
 interface ContourArtProps extends Omit<ComponentProps<"svg">, "children"> {
 	seed?: number;
-}
-
-interface RidgelineMountainProps extends ContourArtProps {
-	tone?: "mono" | "brand";
 }
 
 interface ContourVertex {
@@ -305,119 +280,6 @@ export function TopoBackground({
 				strokeLinecap="round"
 				vectorEffect="non-scaling-stroke"
 			/>
-		</svg>
-	);
-}
-
-export function RidgelineMountain({
-	className,
-	seed = CONTOUR_DEFAULT_SEED,
-	tone = "mono",
-	...props
-}: RidgelineMountainProps) {
-	const gradientId = useId();
-	const ridgePaths = useMemo(() => {
-		const noise = createNoise(seed);
-		return Array.from(
-			{ length: RIDGELINE_COUNT },
-			(_unusedValue, ridgeIndex) => {
-				const depth = ridgeIndex / (RIDGELINE_COUNT - 1);
-				const baseline =
-					RIDGELINE_BACK_BASELINE_PX +
-					(RIDGELINE_FRONT_BASELINE_PX - RIDGELINE_BACK_BASELINE_PX) *
-						depth ** RIDGELINE_PERSPECTIVE_POWER;
-				const peakDrift =
-					(noise(depth * RIDGELINE_PEAK_DRIFT_SCALE, 0) -
-						CONTOUR_NOISE_CENTER) *
-					RIDGELINE_PEAK_DRIFT;
-				let path = `M${-RIDGELINE_CLOSURE_MARGIN_PX},${Math.round(baseline)}`;
-				for (
-					let horizontal = 0;
-					horizontal <= CONTOUR_WIDTH_PX;
-					horizontal += RIDGELINE_SAMPLE_STEP_PX
-				) {
-					const progress = horizontal / CONTOUR_WIDTH_PX;
-					let envelope = 0;
-					for (const peak of RIDGELINE_PEAKS) {
-						envelope +=
-							peak.height *
-							Math.exp(
-								-(
-									((progress - peak.center - peakDrift) / peak.width) **
-										RIDGELINE_GAUSSIAN_POWER +
-									((depth - peak.depthCenter) / peak.depthWidth) **
-										RIDGELINE_GAUSSIAN_POWER
-								),
-							);
-					}
-					const detail =
-						RIDGELINE_HEIGHT_FLOOR +
-						RIDGELINE_NOISE_WEIGHT *
-							noise(
-								progress * RIDGELINE_NOISE_SCALE,
-								depth * RIDGELINE_DEPTH_SCALE,
-							) +
-						RIDGELINE_DETAIL_WEIGHT *
-							noise(
-								progress * RIDGELINE_DETAIL_SCALE,
-								depth * RIDGELINE_DETAIL_DEPTH_SCALE,
-							);
-					const height =
-						RIDGELINE_PEAK_HEIGHT_PX *
-						envelope *
-						detail *
-						Math.sin(Math.PI * progress) ** RIDGELINE_EDGE_TAPER_POWER;
-					path += `L${horizontal},${Math.round(baseline - height)}`;
-				}
-				const closure = CONTOUR_HEIGHT_PX + RIDGELINE_CLOSURE_MARGIN_PX;
-				return {
-					id: ridgeIndex,
-					path: `${path}L${CONTOUR_WIDTH_PX + RIDGELINE_CLOSURE_MARGIN_PX},${Math.round(baseline)}V${closure}H${-RIDGELINE_CLOSURE_MARGIN_PX}Z`,
-				};
-			},
-		);
-	}, [seed]);
-
-	return (
-		<svg
-			viewBox={`0 0 ${CONTOUR_WIDTH_PX} ${CONTOUR_HEIGHT_PX}`}
-			preserveAspectRatio="xMidYMax slice"
-			{...props}
-			className={cn("pointer-events-none size-full", className)}
-			aria-hidden="true"
-			focusable="false"
-		>
-			{tone === "brand" && (
-				<defs>
-					<linearGradient
-						id={gradientId}
-						gradientUnits="userSpaceOnUse"
-						x1={0}
-						y1={CONTOUR_HEIGHT_PX}
-						x2={CONTOUR_WIDTH_PX}
-						y2={0}
-					>
-						{RIDGELINE_GRADIENT_STOPS.map((stop) => (
-							<stop
-								key={stop.offset}
-								offset={stop.offset}
-								stopColor={stop.color}
-							/>
-						))}
-					</linearGradient>
-				</defs>
-			)}
-			{ridgePaths.map((ridge) => (
-				<path
-					key={ridge.id}
-					d={ridge.path}
-					className="fill-background"
-					stroke={tone === "brand" ? `url(#${gradientId})` : "currentColor"}
-					strokeWidth={CONTOUR_STROKE_WIDTH_PX}
-					strokeLinejoin="round"
-					vectorEffect="non-scaling-stroke"
-				/>
-			))}
 		</svg>
 	);
 }
