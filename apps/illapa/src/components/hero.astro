@@ -57,10 +57,10 @@ import HeroMap from "./hero-map";
 
 		<aside
 			aria-label="Alertas recientes de ejemplo"
-			class="pointer-events-auto w-full max-w-sm justify-self-start border border-border bg-card text-card-foreground lg:col-span-5 lg:col-start-8 lg:justify-self-end"
+			class="pointer-events-auto w-full max-w-sm justify-self-start overflow-hidden rounded-lg border border-border bg-card text-card-foreground lg:col-span-5 lg:col-start-8 lg:justify-self-end"
 		>
 			<div class="flex items-baseline justify-between gap-3 border-b border-border px-5 py-3">
-				<h2 class="type-label">Tu red, hoy</h2>
+				<h2 class="type-heading">Tu red, hoy</h2>
 				<span class="type-data text-muted-foreground">{HERO_CORRIDOR_COUNT} corredores</span>
 			</div>
 			<ol class="divide-y divide-border">
@@ -72,7 +72,7 @@ import HeroMap from "./hero-map";
 							</span>
 							<div>
 								<div class="flex items-baseline justify-between gap-3">
-									<span class="type-label">{entry.corridor}</span>
+									<span class="font-sans text-sm font-medium">{entry.corridor}</span>
 									<span class="type-data shrink-0 text-muted-foreground">{entry.time}</span>
 								</div>
 								<p class="type-body mt-2 text-muted-foreground">{entry.message}</p>

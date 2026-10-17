@@ -23,9 +23,9 @@ const sources: Source[] = [
 			<h2 id="fuentes-title" class="type-title">Las mismas fuentes que ya consultas, en un solo lugar</h2>
 			<p class="type-lead text-muted-foreground">No inventamos pronósticos. Leemos lo que publican las entidades oficiales, lo georreferenciamos y lo cruzamos con tu red.</p>
 		</header>
-		<dl class="min-w-0 border-b border-border lg:col-span-8">
+		<dl class="min-w-0 overflow-hidden rounded-lg border border-border bg-card lg:col-span-8">
 			{sources.map((source) => (
-				<div class="grid gap-3 border-t border-border py-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-8">
+				<div class="grid gap-3 border-t border-border p-5 first:border-t-0 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-8">
 					<dt class="type-label">{source.name}</dt>
 					<dd class="type-body text-muted-foreground">{source.role}</dd>
 				</div>
