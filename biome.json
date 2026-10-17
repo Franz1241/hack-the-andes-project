@@ -31,6 +31,9 @@
 			"!**/.source",
 			"!**/convex/_generated",
 			"!.agents",
+			"!tools/risk-pipeline/output",
+			"!tools/risk-pipeline/.venv",
+			"!**/risk/model.generated.ts",
 			"!.claude",
 			"!**/.astro"
 		]
