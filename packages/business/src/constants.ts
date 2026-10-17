@@ -23,3 +23,14 @@ export const POSITION_RETENTION_BATCH_SIZE_ROWS = 10_000;
 
 export const ROUTING_REQUEST_TIMEOUT_MS = 15_000;
 export const MIN_ROUTE_COORDINATES_COUNT = 2;
+
+export const DEMO_TRIP_SCENARIOS = ["hazard", "clear"] as const;
+export const DEMO_HAZARD_MIN_DISTANCE_M = 20_000;
+export const DEMO_HAZARD_MAX_DISTANCE_M = 200_000;
+export const DEMO_HAZARD_OVERSHOOT_M = 10_000;
+export const DEMO_CLEAR_TRIP_DISTANCE_M = 60_000;
+export const DEMO_CLEAR_TRIP_BEARINGS_DEG = [
+	0, 45, 90, 135, 180, 225, 270, 315,
+];
+export const DEMO_TRIP_MIN_ROUTE_DISTANCE_M = 20_000;
+export const DEMO_TRIP_MAX_ATTEMPTS_COUNT = 4;

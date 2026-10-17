@@ -15,6 +15,7 @@
 		"@hack-the-andes-project/db": "workspace:*",
 		"@turf/along": "catalog:",
 		"@turf/bearing": "catalog:",
+		"@turf/destination": "catalog:",
 		"@turf/boolean-point-in-polygon": "catalog:",
 		"@turf/buffer": "catalog:",
 		"@turf/helpers": "catalog:",

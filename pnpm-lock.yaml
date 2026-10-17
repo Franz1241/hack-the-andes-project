@@ -51,6 +51,9 @@ catalogs:
     '@turf/centroid':
       specifier: ^7.4.0
       version: 7.4.0
+    '@turf/destination':
+      specifier: ^7.4.0
+      version: 7.4.0
     '@turf/distance':
       specifier: ^7.4.0
       version: 7.4.0
@@ -672,6 +675,9 @@ importers:
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/buffer':
+        specifier: 'catalog:'
+        version: 7.4.0
+      '@turf/destination':
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/distance':
