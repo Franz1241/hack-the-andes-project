@@ -200,7 +200,7 @@ export function IncidentMap({
 					</AlertDescription>
 				</Alert>
 			)}
-			<MapLegend className="pointer-events-none absolute bottom-9 left-3 max-w-[calc(100%-1.5rem)]" />
+			<MapLegend className="pointer-events-none absolute bottom-20 left-3 max-w-[calc(100%-1.5rem)] sm:bottom-9" />
 		</section>
 	);
 }
