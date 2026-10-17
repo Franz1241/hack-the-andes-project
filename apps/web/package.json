@@ -8,7 +8,7 @@
 		"serve": "vite preview",
 		"start": "vite",
 		"check-types": "tsc -b ../../packages/api && vite build && tsc --noEmit",
-		"dev:bare": "vite dev",
+		"dev:bare": "varlock run -- vite dev",
 		"env:generate": "varlock codegen"
 	},
 	"dependencies": {
