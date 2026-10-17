@@ -3,14 +3,15 @@
 	"type": "module",
 	"main": "src/index.ts",
 	"scripts": {
-		"build": "tsc -b ../../packages/db && tsdown",
-		"check-types": "tsc -b ../../packages/db && tsc --noEmit",
+		"build": "tsc -b ../../packages/business && tsdown",
+		"check-types": "tsc -b ../../packages/business && tsc --noEmit",
 		"test": "vitest run",
 		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
 		"env:generate": "varlock codegen"
 	},
 	"dependencies": {
 		"@ai-sdk/typesafe-ai": "catalog:",
+		"@hack-the-andes-project/business": "workspace:*",
 		"@hack-the-andes-project/db": "workspace:*",
 		"@turf/centroid": "catalog:",
 		"@turf/helpers": "catalog:",

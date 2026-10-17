@@ -45,3 +45,28 @@ export const RISK_LEVEL_MIN_SCORES = {
 	high: 50,
 	very_high: 75,
 } as const;
+
+export const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+export const OPEN_METEO_REQUEST_TIMEOUT_MS = 20_000;
+// One extra forecast day so a 72 h horizon starting mid-day is fully covered.
+export const OPEN_METEO_FORECAST_DAYS = 4;
+// Weather models resolve ~9–13 km, so segments sharing a 0.1° cell share one
+// forecast; this keeps hourly runs inside Open-Meteo's free daily budget.
+export const WEATHER_GRID_DEG = 0.1;
+export const WEATHER_REQUEST_BATCH_POINTS = 100;
+export const HOURS_PER_DAY = 24;
+export const MS_PER_HOUR = 3_600_000;
+export const SECONDS_PER_HOUR = 3600;
+export const METERS_PER_DEGREE_LATITUDE = 111_320;
+export const OFFICIAL_ALERT_RADIUS_M = 2_000;
+
+export const HISTORY_EVENT_CATEGORIES = ["landslide", "flood"] as const;
+export const OFFICIAL_ALERT_CATEGORIES = [
+	"rain_warning",
+	"flood_warning",
+	"weather",
+	"landslide",
+	"flood",
+	"road_block",
+] as const;
+export const ASSESSMENT_BOUNDS_MARGIN_DEG = 0.05;

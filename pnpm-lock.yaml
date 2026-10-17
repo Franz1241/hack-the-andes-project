@@ -372,6 +372,9 @@ importers:
       '@ai-sdk/typesafe-ai':
         specifier: 'catalog:'
         version: 3.0.21(zod@4.6.7)
+      '@hack-the-andes-project/business':
+        specifier: workspace:*
+        version: link:../../packages/business
       '@hack-the-andes-project/db':
         specifier: workspace:*
         version: link:../../packages/db
