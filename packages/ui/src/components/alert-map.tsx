@@ -1,12 +1,15 @@
 import type { Geometry } from "geojson";
 import { useTokenColors } from "../hooks/use-token-colors";
 
-import type { FleetAlert, FleetTrip } from "../lib/fleet";
+import type { FleetAlert, FleetTrip, FleetVehicle } from "../lib/fleet";
+import { EMPTY_FLEET_VEHICLES } from "../lib/fleet-constants";
 import { formatFleetDistance, formatFleetDuration } from "../lib/fleet-format";
+import type { Incident } from "../lib/incident";
 import { INCIDENT_SEVERITY_TOKENS } from "../lib/incident-constants";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { FleetMap } from "./fleet-map";
 import { FleetRouteLayer } from "./fleet-route-layer";
+import { IncidentLayers } from "./incident-layers";
 import {
 	FLEET_HAZARD_FILL_LAYER_ID,
 	FLEET_HAZARD_LINE_LAYER_ID,
@@ -23,9 +26,11 @@ import { SeverityBadge } from "./severity";
 export interface AlertMapProps {
 	alert: FleetAlert;
 	trip?: FleetTrip;
+	vehicle?: FleetVehicle;
+	incidents: Incident[];
 }
 
-export function AlertMap({ alert, trip }: AlertMapProps) {
+export function AlertMap({ alert, trip, vehicle, incidents }: AlertMapProps) {
 	const tokenColors = useTokenColors([
 		INCIDENT_SEVERITY_TOKENS[alert.severity],
 		"--background",
@@ -55,9 +60,11 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 			<h2 className="type-heading">{alert.title}</h2>
 			<FleetMap
 				label="Ruta y riesgo seleccionado"
+				vehicles={vehicle ? [vehicle] : EMPTY_FLEET_VEHICLES}
 				focusKey={`${alert.id}-${trip?.id ?? "no-trip"}`}
 				focusGeometry={{ type: "GeometryCollection", geometries }}
 			>
+				<IncidentLayers incidents={incidents} />
 				{trip && (
 					<FleetRouteLayer
 						id={`alert-${trip.id}`}

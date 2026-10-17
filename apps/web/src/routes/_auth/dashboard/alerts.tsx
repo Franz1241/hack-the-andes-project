@@ -15,11 +15,17 @@ import { Field, FieldLabel } from "@hack-the-andes-project/ui/components/field";
 import { FleetQueryFeedback } from "@hack-the-andes-project/ui/components/fleet-query-feedback";
 import { Switch } from "@hack-the-andes-project/ui/components/switch";
 import { EMPTY_FLEET_ALERTS } from "@hack-the-andes-project/ui/lib/fleet-constants";
+import { INCIDENT_SEVERITY_OPTIONS } from "@hack-the-andes-project/ui/lib/incident-constants";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import {
+	DEFAULT_INCIDENT_LIMIT_ROWS,
+	EMPTY_INCIDENTS,
+	INCIDENT_REFETCH_INTERVAL_MS,
+} from "@/constants";
 import { invalidateFleetQueries, useFleetQueries } from "@/lib/fleet-queries";
 import { orpc } from "@/utils/orpc";
 
@@ -38,6 +44,16 @@ function AlertsPage() {
 		enabled: showAcknowledged,
 	});
 	const tripsQuery = useQuery(fleetQueries.trips);
+	const vehiclesQuery = useQuery(fleetQueries.vehicles);
+	const incidentsQuery = useQuery({
+		...orpc.incidents.list.queryOptions({
+			input: {
+				severities: INCIDENT_SEVERITY_OPTIONS,
+				limit: DEFAULT_INCIDENT_LIMIT_ROWS,
+			},
+		}),
+		refetchInterval: INCIDENT_REFETCH_INTERVAL_MS,
+	});
 	const alerts = [
 		...(openAlertsQuery.data ?? EMPTY_FLEET_ALERTS),
 		...(showAcknowledged
@@ -49,6 +65,9 @@ function AlertsPage() {
 		alerts.find((alert) => alert.id === selectedAlertId) ?? firstAlert;
 	const selectedTrip = tripsQuery.data?.find(
 		(trip) => trip.id === selectedAlert?.tripId,
+	);
+	const selectedVehicle = vehiclesQuery.data?.find(
+		(vehicle) => vehicle.id === selectedTrip?.vehicleId,
 	);
 	const acknowledge = useMutation(
 		orpc.alerts.acknowledge.mutationOptions({
@@ -130,7 +149,12 @@ function AlertsPage() {
 							onRetry={() => tripsQuery.refetch()}
 						/>
 						{selectedAlert && (
-							<AlertMap alert={selectedAlert} trip={selectedTrip} />
+							<AlertMap
+								alert={selectedAlert}
+								trip={selectedTrip}
+								vehicle={selectedVehicle}
+								incidents={incidentsQuery.data ?? EMPTY_INCIDENTS}
+							/>
 						)}
 					</div>
 				</div>

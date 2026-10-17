@@ -21,7 +21,7 @@ import { SeverityBadge } from "./severity";
 
 export interface IncidentMarkerProps {
 	incident: Incident;
-	onSelect: (incidentId: string) => void;
+	onSelect?: (incidentId: string) => void;
 }
 
 export function IncidentMarker({ incident, onSelect }: IncidentMarkerProps) {
@@ -41,7 +41,7 @@ export function IncidentMarker({ incident, onSelect }: IncidentMarkerProps) {
 					aria-label={`${incident.title} · ${INCIDENT_CATEGORY_LABELS[incident.category]} · ${INCIDENT_SEVERITY_LABELS[incident.severity]}`}
 					onClick={(event) => {
 						event.stopPropagation();
-						onSelect(incident.id);
+						onSelect?.(incident.id);
 					}}
 					className="flex size-7 items-center justify-center rounded-full transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100"
 				>
