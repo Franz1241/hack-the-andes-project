@@ -135,6 +135,47 @@ export const poi = mysqlTable(
 	],
 );
 
+// Every article seen on a news listing, classified once by Jev (TypeSafe)
+// when first stored. `relevant` rows are mirrored into `incident` under the
+// same source so route-conflict consumers only read one table.
+export const newsArticle = mysqlTable(
+	"news_article",
+	{
+		id: varchar("id", { length: 36 }).primaryKey(),
+		source: varchar("source", { length: 64 }).notNull(),
+		sourceId: varchar("source_id", { length: 128 }).notNull(),
+		url: varchar("url", { length: 1024 }).notNull(),
+		title: varchar("title", { length: 512 }).notNull(),
+		excerpt: text("excerpt"),
+		section: varchar("section", { length: 128 }),
+		author: varchar("author", { length: 255 }),
+		publishedAt: timestamp("published_at", { fsp: 3 }),
+		relevant: boolean("relevant").notNull(),
+		relevance: double("relevance").notNull(),
+		category: varchar("category", { length: 32 }).$type<IncidentCategory>(),
+		severity: varchar("severity", { length: 16 }).$type<IncidentSeverity>(),
+		region: varchar("region", { length: 128 }),
+		classification: json("classification")
+			.$type<Record<string, unknown>>()
+			.notNull(),
+		contentHash: varchar("content_hash", { length: 64 }).notNull(),
+		active: boolean("active").default(true).notNull(),
+		firstSeenAt: timestamp("first_seen_at", { fsp: 3 }).notNull(),
+		lastSeenAt: timestamp("last_seen_at", { fsp: 3 }).notNull(),
+		lastChangedAt: timestamp("last_changed_at", { fsp: 3 }).notNull(),
+	},
+	(table) => [
+		uniqueIndex("newsArticle_source_sourceId_idx").on(
+			table.source,
+			table.sourceId,
+		),
+		index("newsArticle_relevant_publishedAt_idx").on(
+			table.relevant,
+			table.publishedAt,
+		),
+	],
+);
+
 export const scrapeRun = mysqlTable(
 	"scrape_run",
 	{
