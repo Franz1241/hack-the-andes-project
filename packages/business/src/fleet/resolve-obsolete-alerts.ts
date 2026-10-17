@@ -1,7 +1,12 @@
 import type { Database } from "@hack-the-andes-project/db";
 import { alert, trip } from "@hack-the-andes-project/db/schema/fleet";
-import { incident } from "@hack-the-andes-project/db/schema/scraper";
+import {
+	INCIDENT_CATEGORIES,
+	incident,
+} from "@hack-the-andes-project/db/schema/scraper";
 import { and, eq, inArray, notExists, or } from "drizzle-orm";
+
+import { ALERTABLE_INCIDENTS } from "../hazards/alertable";
 
 export interface ResolveObsoleteAlertsInput {
 	db: Database;
@@ -42,6 +47,19 @@ export async function resolveObsoleteAlerts({
 								and(
 									eq(incident.id, alert.incidentId),
 									eq(incident.active, true),
+									or(
+										...INCIDENT_CATEGORIES.flatMap((category) => {
+											const severities = ALERTABLE_INCIDENTS[category];
+											return severities
+												? [
+														and(
+															eq(incident.category, category),
+															inArray(incident.severity, severities),
+														),
+													]
+												: [];
+										}),
+									),
 								),
 							),
 					),

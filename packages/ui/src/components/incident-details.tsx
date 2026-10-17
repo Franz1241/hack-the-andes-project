@@ -36,6 +36,22 @@ export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
 				</SheetHeader>
 				{incident && (
 					<div className="flex flex-col gap-5 px-4 pb-6">
+						{incident.imageUrl && (
+							<a
+								href={incident.imageUrl}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="outline-offset-4 focus-visible:outline-2 focus-visible:outline-ring"
+							>
+								<img
+									src={incident.imageUrl}
+									alt={`Foto reportada: ${incident.title}`}
+									loading="lazy"
+									className="aspect-video w-full rounded-md bg-muted object-cover"
+								/>
+								<span className="sr-only">(abre la foto en otra pestaña)</span>
+							</a>
+						)}
 						<p className="whitespace-pre-line text-sm leading-relaxed">
 							{incident.description ??
 								"La fuente no proporcionó una descripción adicional."}

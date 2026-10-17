@@ -14,6 +14,7 @@ export const MAX_RUN_ERROR_MESSAGE_CHARS = 1000;
 
 export const LIMA_UTC_OFFSET_HOURS = -5;
 export const HOURS_IN_HALF_DAY = 12;
+export const MS_PER_HOUR = 3_600_000;
 export const MS_PER_DAY = 86_400_000;
 
 export const SUTRAN_API_BASE = "https://api.sigea.sutran.gob.pe/public";
@@ -50,3 +51,20 @@ export const NEWS_SEVERITY_CRITICAL_SCORE = 3;
 export const NEWS_SEVERITY_WARNING_SCORE = 1.5;
 
 export const JEV_MODEL = "jev-latest";
+
+export const SRATMA_API_BASE = "https://sratma.mtc.gob.pe/wssratma/api/Mapa";
+export const SRATMA_FETCH_CONCURRENCY = 5;
+// SRATMA reports arrive days late, so only accidents this recent are worth
+// asking Jev whether the road is still affected; older ones stay as context.
+export const SRATMA_ROUTE_IMPACT_WINDOW_MS = 12 * MS_PER_HOUR;
+export const SRATMA_PHOTO_PREFIX = "sratma/accidents/";
+
+// Public Backblaze B2 bucket (S3-compatible API) for scraped media. Objects
+// under `sratma/` are hidden after 45 days by a bucket lifecycle rule.
+export const MEDIA_BUCKET_NAME = "illapa-media";
+export const MEDIA_BUCKET_REGION = "us-west-004";
+export const MEDIA_BUCKET_S3_ENDPOINT =
+	"https://s3.us-west-004.backblazeb2.com";
+export const MEDIA_BUCKET_PUBLIC_URL =
+	"https://f004.backblazeb2.com/file/illapa-media";
+export const MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";

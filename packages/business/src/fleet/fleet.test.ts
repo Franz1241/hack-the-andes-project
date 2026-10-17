@@ -390,7 +390,7 @@ describe("evaluateTrip with real Drizzle queries", () => {
 	});
 });
 
-it("resolves obsolete alerts for ended trips and inactive incidents within the tenant", async () => {
+it("resolves obsolete alerts for ended trips and inactive or no longer alertable incidents within the tenant", async () => {
 	await resolveObsoleteAlerts({
 		db: await testDatabase(),
 		now,
@@ -408,8 +408,14 @@ it("resolves obsolete alerts for ended trips and inactive incidents within the t
 			"open",
 			"acknowledged",
 			"active",
+			"road_accident",
+			"warning",
+			"critical",
 			connection.organizationId,
 		]),
+	);
+	expect(resolution?.[0].sql).toContain(
+		"`hack_the_andes_incident`.`severity` in",
 	);
 });
 
