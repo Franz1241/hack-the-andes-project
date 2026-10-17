@@ -14,6 +14,14 @@ pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (
 
 Public URLs live in tracked files: `.env.schema` defaults are the localhost values and `.env.production` overrides them on deploy (`APP_ENV=production`).
 
+## Production domains and deployment
+
+Illapa's dashboard is served at `https://dash.illapa.app` and its API at `https://api.illapa.app`. Alchemy attaches both as Worker custom domains using the hostnames in `packages/infra/constants.ts`. The existing `workers.dev` URLs remain enabled, and the old web origin stays trusted during cutover. Better Auth uses the API domain in production and `http://localhost:3000` locally.
+
+Before deploying, authenticate the `cloudflare-franz` profile and provide the gitignored secrets listed in Setup, preserving the existing `BETTER_AUTH_SECRET`. The `illapa.app` zone must be active in that account. Resolve any conflicting CNAME records or attachments to another Worker for `dash` and `api`; no manual DNS records are otherwise needed, because [Cloudflare custom domains provision DNS and TLS](https://developers.cloudflare.com/workers/configuration/routing/custom-domains/).
+
+For the first cutover, run `pnpm deploy:server`, wait until `https://api.illapa.app/api/auth/ok` responds successfully over HTTPS, then run `pnpm deploy:web`. These commands deploy each Worker independently. `pnpm deploy` deploys the full stack (server, web, and scraper) concurrently; use it for subsequent full releases.
+
 ## Scripts
 
 | Script | What it does |
@@ -21,7 +29,7 @@ Public URLs live in tracked files: `.env.schema` defaults are the localhost valu
 | `pnpm dev` | `alchemy dev`: server on :3000, web on :3001, scraper on :3002, Hyperdrive pointed at `DATABASE_URL` |
 | `pnpm dev:native` | Expo dev server |
 | `pnpm build` / `pnpm check-types` / `pnpm test` | Build, type-check and test every package |
-| `pnpm deploy` | Deploy server + web to the `prod` stage |
+| `pnpm deploy` | Deploy server + web + scraper to the `prod` stage |
 | `pnpm deploy:server` / `pnpm deploy:web` / `pnpm deploy:scraper` | Deploy a single Worker |
 | `pnpm deploy:plan` | Preview the deploy without applying it |
 | `pnpm logs:server` / `pnpm logs:web` / `pnpm logs:scraper` | Tail Workers Logs (evlog events + CPU time) |

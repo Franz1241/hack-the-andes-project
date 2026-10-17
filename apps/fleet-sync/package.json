@@ -1,0 +1,26 @@
+{
+	"name": "fleet-sync",
+	"type": "module",
+	"main": "src/index.ts",
+	"scripts": {
+		"build": "tsc -b ../../packages/business && tsdown",
+		"check-types": "tsc -b ../../packages/business && tsc --noEmit",
+		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
+		"env:generate": "varlock codegen"
+	},
+	"dependencies": {
+		"@hack-the-andes-project/business": "workspace:*",
+		"@hack-the-andes-project/db": "workspace:*",
+		"drizzle-orm": "catalog:",
+		"evlog": "catalog:"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "catalog:",
+		"@hack-the-andes-project/config": "workspace:*",
+		"@hack-the-andes-project/infra": "workspace:*",
+		"@types/node": "^26.4.1",
+		"tsdown": "^0.23.0",
+		"typescript": "^6.0.3",
+		"varlock": "catalog:"
+	}
+}
