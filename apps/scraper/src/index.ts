@@ -9,6 +9,7 @@ import { initWorkersLogger } from "evlog/workers";
 
 import { RUN_SECRET_HEADER, SELF_RUN_ORIGIN, SERVICE_NAME } from "./constants";
 import { ENV } from "./env.server";
+import { createMediaBucket } from "./lib/media-bucket";
 import { findSource, sourcesForSchedule } from "./sources";
 import { SCHEDULES, type Schedule, type ScrapeSource } from "./sources/types";
 import { runSource, type SourceRunResult } from "./sync";
@@ -32,7 +33,13 @@ async function runSingleSource(
 ): Promise<RunSummary> {
 	const log = createLogger({ job: "scrape", trigger, source: source.id });
 	const db = await createDb(ENV.HYPERDRIVE);
-	const result = await runSource(db, source, log, ENV.JEV_API_KEY);
+	const result = await runSource(db, source, log, {
+		jevApiKey: ENV.JEV_API_KEY,
+		mediaBucket: createMediaBucket({
+			keyId: ENV.B2_MEDIA_KEY_ID,
+			applicationKey: ENV.B2_MEDIA_APPLICATION_KEY,
+		}),
+	});
 	log.set({ run: result });
 	if (!result.ok) {
 		log.setLevel("error");

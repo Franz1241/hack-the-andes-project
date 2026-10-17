@@ -3,6 +3,7 @@ import type { Geometry } from "geojson";
 import type {
 	INCIDENT_CATEGORY_LABELS,
 	INCIDENT_SEVERITY_LABELS,
+	ROAD_STATUS_LABELS,
 } from "./incident-constants";
 
 export interface Incident {
@@ -14,14 +15,17 @@ export interface Incident {
 	lng: number | null;
 	geometry: Geometry | null;
 	description: string | null;
+	imageUrl: string | null;
 	roadCode: string | null;
 	roadName: string | null;
 	roadKm: string | null;
-	roadStatus: string | null;
+	roadStatus: keyof typeof ROAD_STATUS_LABELS | null;
 	region: string | null;
 	provincia: string | null;
 	distrito: string | null;
 	source: string;
+	occurredAt: Date | null;
+	validUntil: Date | null;
 	lastChangedAt: Date;
 }
 

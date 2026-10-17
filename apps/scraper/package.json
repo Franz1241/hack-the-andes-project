@@ -15,6 +15,7 @@
 		"@turf/centroid": "catalog:",
 		"@turf/helpers": "catalog:",
 		"ai": "catalog:",
+		"aws4fetch": "catalog:",
 		"drizzle-orm": "catalog:",
 		"evlog": "catalog:",
 		"zod": "catalog:"

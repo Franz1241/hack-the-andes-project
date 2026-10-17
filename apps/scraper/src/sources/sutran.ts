@@ -57,7 +57,7 @@ const CATEGORY_BY_MOTIVO: Record<string, IncidentCategory> = {
 	humano: "road_block",
 };
 
-const SEVERITY_BY_ROAD_STATUS: Record<RoadStatus, IncidentSeverity> = {
+export const SEVERITY_BY_ROAD_STATUS: Record<RoadStatus, IncidentSeverity> = {
 	interrumpido: "critical",
 	restringido: "warning",
 	normal: "info",

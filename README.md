@@ -2,13 +2,17 @@
 
 pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (`apps/web`), Expo app (`apps/native`), cron scraper Worker for road/emergency feeds (`apps/scraper`, see its README), better-auth, Drizzle + MySQL through Hyperdrive, evlog wide-event logging, deployed with Alchemy v2 (local state in `packages/infra/.alchemy/`).
 
+## Product docs
+
+[Project brief](docs/project_brief.md)
+
 ## Setup
 
 1. `pnpm install` (generates the typed env files from every `.env.schema`).
 2. Secrets (gitignored):
    - `apps/server/.env` → `BETTER_AUTH_SECRET` (`openssl rand -base64 32`)
    - `packages/db/.env` → `DATABASE_URL=mysql://…@vero:3306/fierros` (vero over Tailscale)
-   - `apps/scraper/.env` → `SCRAPER_RUN_SECRET` (`openssl rand -base64 32`)
+   - `apps/scraper/.env` → `SCRAPER_RUN_SECRET` (`openssl rand -base64 32`), `JEV_API_KEY`, and `B2_MEDIA_KEY_ID` / `B2_MEDIA_APPLICATION_KEY` (B2 key scoped to the `illapa-media` bucket)
 3. `pnpm infra:login` once to connect the `cloudflare-franz` Alchemy profile (`pnpm infra:refresh` when the token expires).
 4. `pnpm db:push` to create the `hack_the_andes_*` tables.
 

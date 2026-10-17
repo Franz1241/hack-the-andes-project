@@ -70,6 +70,7 @@ export const incident = mysqlTable(
 			.notNull(),
 		title: varchar("title", { length: 512 }).notNull(),
 		description: text("description"),
+		imageUrl: varchar("image_url", { length: 1024 }),
 		status: varchar("status", { length: 64 }),
 		roadStatus: varchar("road_status", { length: 32 }).$type<RoadStatus>(),
 		roadCode: varchar("road_code", { length: 32 }),

@@ -6,7 +6,7 @@
 
 - `fleet/sync-connection.ts`: `syncConnection` decrypts a connection's credentials, imports vehicles and stores newer positions in batches. History IDs are deterministic across retries; older readings cannot overwrite a newer checkpoint. Provider errors become fixed, credential-free messages.
 - `fleet/evaluate-trip.ts`: `evaluateTrip` updates ETAs, recalculates an off-route trip, completes arrivals within 300 m of the requested destination, and upserts hazard alerts. Existing acknowledgements and resolutions survive repeated evaluation.
-- `fleet/resolve-obsolete-alerts.ts`: `resolveObsoleteAlerts` closes open and acknowledged alerts for ended trips or inactive/deleted incidents. API callers pass an organization ID; the trusted cron can reconcile all organizations.
+- `fleet/resolve-obsolete-alerts.ts`: `resolveObsoleteAlerts` closes open and acknowledged alerts for ended trips, inactive/deleted incidents, or incidents whose category and severity no longer pass `ALERTABLE_INCIDENTS` (an accident that aged out of its alert window). API callers pass an organization ID; the trusted cron can reconcile all organizations.
 - `fleet/prune-positions.ts`: `pruneVehiclePositions` removes up to 10,000 history rows older than 30 days. Vehicle checkpoints remain available.
 - `hazards/`: `projectOntoRoute`, `findHazardsAhead`, `chooseAlternativeRoute`, `estimateEta`, and `isAlertableIncident`. A buffered route bounding box rejects distant geometry before buffering individual hazards. Polygon alerts remain active while the vehicle is inside the hazard.
 - `routing/osrm.ts`: `fetchRouteCandidates` requests driving alternatives with full GeoJSON geometry. Requests time out after 15 seconds; HTTP failures and unusable routes are rejected.

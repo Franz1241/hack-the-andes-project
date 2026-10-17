@@ -7,6 +7,7 @@ import {
 import { rppNewsSource } from "./rpp";
 import { senamhiWarningsSource } from "./senamhi";
 import { serforWildfireAlertsSource } from "./serfor";
+import { sratmaAccidentsSource } from "./sratma";
 import {
 	sutranAlertsSource,
 	sutranAltRoutesSource,
@@ -24,6 +25,7 @@ export const SOURCES: ScrapeSource[] = [
 	igpLastEarthquakeSource,
 	serforWildfireAlertsSource,
 	rppNewsSource,
+	sratmaAccidentsSource,
 	sutranAltRoutesSource,
 	...sutranDirectorySources,
 	indeciReliefWarehousesSource,

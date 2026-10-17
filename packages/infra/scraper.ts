@@ -28,6 +28,8 @@ export const scraper = Cloudflare.Worker("scraper", {
 		APP_ENV: Config.String("APP_ENV"),
 		SCRAPER_RUN_SECRET: Config.Redacted("SCRAPER_RUN_SECRET"),
 		JEV_API_KEY: Config.Redacted("JEV_API_KEY"),
+		B2_MEDIA_KEY_ID: Config.Redacted("B2_MEDIA_KEY_ID"),
+		B2_MEDIA_APPLICATION_KEY: Config.Redacted("B2_MEDIA_APPLICATION_KEY"),
 		SERVICE_VERSION: serviceVersion,
 	},
 	dev: {

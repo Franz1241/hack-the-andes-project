@@ -6,6 +6,8 @@ import type {
 import type { InferInsertModel } from "drizzle-orm";
 import type { RequestLogger } from "evlog";
 
+import type { MediaBucket } from "../lib/media-bucket";
+
 export const SCHEDULES = ["frequent", "hourly", "daily"] as const;
 export type Schedule = (typeof SCHEDULES)[number];
 
@@ -28,13 +30,18 @@ export type NewsRecord = Omit<
 	ManagedColumns
 >;
 
-export interface ScrapeContext {
+// Credentialed clients built once per invocation from the Worker env.
+export interface ScrapeServices {
+	jevApiKey: string;
+	mediaBucket: MediaBucket;
+}
+
+export interface ScrapeContext extends ScrapeServices {
 	now: Date;
 	// sourceIds already stored for this source, so expensive per-item work
 	// (article page fetches, model calls) only happens for new items.
 	knownSourceIds: ReadonlySet<string>;
 	log: RequestLogger;
-	jevApiKey: string;
 }
 
 // A "full" snapshot lists everything the source currently knows, so rows it
