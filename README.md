@@ -10,7 +10,7 @@ pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (
 
 1. `pnpm install` (generates the typed env files from every `.env.schema`).
 2. Secrets (gitignored):
-   - `apps/server/.env` → `BETTER_AUTH_SECRET` (`openssl rand -base64 32`)
+   - `apps/server/.env` → `BETTER_AUTH_SECRET` and `DEMO_RESET_SECRET` (each `openssl rand -base64 32`)
    - `packages/db/.env` → `DATABASE_URL=mysql://…@vero:3306/fierros` (vero over Tailscale)
    - `apps/scraper/.env` → `SCRAPER_RUN_SECRET` (`openssl rand -base64 32`), `JEV_API_KEY`, and `B2_MEDIA_KEY_ID` / `B2_MEDIA_APPLICATION_KEY` (B2 key scoped to the `illapa-media` bucket)
 3. `pnpm infra:login` once to connect the `cloudflare-franz` Alchemy profile (`pnpm infra:refresh` when the token expires).
@@ -41,10 +41,17 @@ For the first cutover, run `pnpm deploy:server`, wait until `https://api.illapa.
 | `pnpm build:native:cloud:android` / `:ios` | Remote EAS build (preview profile) |
 | `pnpm build:native:prod:android` / `:ios` | Remote EAS production build |
 | `pnpm db:push` / `db:generate` / `db:migrate` / `db:studio` | drizzle-kit against `DATABASE_URL` |
+| `pnpm demo:reset` | Wipe and reseed the shared demo account (see Demo access) |
 
 ## Auth
 
-Every server route requires a session except `/`, `/api/auth/*` and the procedures listed in `PUBLIC_PROCEDURE_PATHS`. Browser origins allowed for CORS and better-auth come from the comma-separated `ALLOWED_ORIGINS`.
+Every server route requires a session except `/`, `/api/auth/*`, the secret-guarded `/api/demo/reset` and the procedures listed in `PUBLIC_PROCEDURE_PATHS`. Browser origins allowed for CORS and better-auth come from the comma-separated `ALLOWED_ORIGINS`.
+
+## Demo access
+
+"Probar demo" on illapa.app opens `dash.illapa.app/demo`, which signs the visitor into the shared `demo@illapa.app` account through `/api/auth/demo/sign-in` (no password, 30 sign-ins per minute per IP) and seeds its demo fleet and two demo trips on first use. The demo account cannot change its email, password, sessions or organization, and can only add demo GPS connections.
+
+Reset it before the pitch with `DEMO_RESET_SECRET=… DEMO_RESET_URL=https://api.illapa.app/api/demo/reset pnpm demo:reset`. Without `DEMO_RESET_URL` it targets the local server. It deletes the demo organization's alerts, trips, vehicles and connections and seeds them again.
 
 ## Dashboard and fleet tracking
 
