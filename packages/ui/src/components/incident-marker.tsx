@@ -1,7 +1,6 @@
 import type { Incident } from "@hack-the-andes-project/ui/lib/incident";
 import {
 	INCIDENT_CATEGORY_LABELS,
-	INCIDENT_SEVERITY_FILL_CLASSES,
 	INCIDENT_SEVERITY_LABELS,
 	INCIDENT_SEVERITY_TEXT_CLASSES,
 } from "@hack-the-andes-project/ui/lib/incident-constants";
@@ -11,6 +10,7 @@ import { es } from "date-fns/locale/es";
 
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "./hover-card";
 import { INCIDENT_CATEGORY_ICONS } from "./incident-icons";
+import { IncidentMarkerSymbol } from "./incident-marker-symbol";
 import {
 	INCIDENT_PREVIEW_CLOSE_DELAY_MS,
 	INCIDENT_PREVIEW_OFFSET_PX,
@@ -43,12 +43,12 @@ export function IncidentMarker({ incident, onSelect }: IncidentMarkerProps) {
 						event.stopPropagation();
 						onSelect(incident.id);
 					}}
-					className={cn(
-						"flex size-7 items-center justify-center rounded-full border-2 border-background transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100",
-						INCIDENT_SEVERITY_FILL_CLASSES[incident.severity],
-					)}
+					className="flex size-7 items-center justify-center rounded-full transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100"
 				>
-					<CategoryIcon className="size-4" />
+					<IncidentMarkerSymbol
+						category={incident.category}
+						severity={incident.severity}
+					/>
 				</HoverCardTrigger>
 				<HoverCardContent
 					side="top"
