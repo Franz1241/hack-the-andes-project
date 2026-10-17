@@ -7,7 +7,7 @@ import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
 import { LanguageToggle } from "@/components/language-toggle";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeSwitchControl } from "@/components/theme-switch-control";
 import {
 	AUTH_ERROR_MESSAGES,
 	DEFAULT_AUTH_ERROR_MESSAGE,
@@ -36,7 +36,7 @@ function LoginRoute() {
 			headerActions={
 				<>
 					<LanguageToggle />
-					<ModeToggle />
+					<ThemeSwitchControl />
 				</>
 			}
 		>

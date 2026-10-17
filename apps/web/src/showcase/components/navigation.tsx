@@ -9,6 +9,10 @@ import {
 } from "@hack-the-andes-project/ui/components/breadcrumb";
 import { DirectionProvider } from "@hack-the-andes-project/ui/components/direction";
 import {
+	CloudLightningIcon,
+	MapPinIcon,
+} from "@hack-the-andes-project/ui/components/icons";
+import {
 	Menubar,
 	MenubarContent,
 	MenubarGroup,
@@ -49,6 +53,8 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarProvider,
+	SidebarRail,
+	SidebarTrigger,
 } from "@hack-the-andes-project/ui/components/sidebar";
 import {
 	Table,
@@ -201,14 +207,23 @@ export function NavigationShowcase() {
 				</PaginationContent>
 			</Pagination>
 			<DirectionProvider direction="ltr">
-				<div className="overflow-hidden rounded-lg border">
-					<SidebarProvider className="min-h-0 flex-col sm:flex-row">
-						<Sidebar
-							collapsible="none"
-							className="w-full border-b sm:w-56 sm:border-r sm:border-b-0"
-						>
+				<div className="relative isolate overflow-hidden rounded-lg border">
+					<SidebarProvider defaultOpen className="relative h-128 min-h-0">
+						<Sidebar collapsible="icon" className="absolute h-full">
 							<SidebarHeader>
-								<p className="type-heading">{m.app_title()}</p>
+								<SidebarMenu>
+									<SidebarMenuItem>
+										<SidebarMenuButton
+											tooltip={m.app_title()}
+											render={<a href="#componentes" />}
+											aria-label={m.app_title()}
+										>
+											<CloudLightningIcon />
+											<span className="type-heading">{m.app_title()}</span>
+										</SidebarMenuButton>
+									</SidebarMenuItem>
+								</SidebarMenu>
+								<SidebarTrigger aria-label={m.sidebar_toggle()} />
 							</SidebarHeader>
 							<SidebarContent>
 								<SidebarGroup>
@@ -220,8 +235,11 @@ export function NavigationShowcase() {
 													<SidebarMenuButton
 														render={<a href={`#${section.id}`} />}
 														isActive={section.id === "panel"}
+														tooltip={section.label()}
+														aria-label={section.label()}
 													>
-														{section.label()}
+														<MapPinIcon />
+														<span>{section.label()}</span>
 													</SidebarMenuButton>
 												</SidebarMenuItem>
 											))}
@@ -230,11 +248,24 @@ export function NavigationShowcase() {
 								</SidebarGroup>
 							</SidebarContent>
 							<SidebarFooter>
-								<p className="type-label">{m.ds_operations()}</p>
+								<p className="type-label group-data-[collapsible=icon]:hidden">
+									{m.ds_operations()}
+								</p>
 							</SidebarFooter>
+							<SidebarRail
+								aria-label={m.sidebar_toggle()}
+								title={m.sidebar_toggle()}
+							/>
 						</Sidebar>
 						<div className="flex min-w-0 flex-1 flex-col gap-4 p-6">
+							<SidebarTrigger
+								className="md:hidden"
+								aria-label={m.sidebar_toggle()}
+							/>
 							<h4 className="type-heading">{m.ds_panel_title()}</h4>
+							<p className="type-body text-muted-foreground">
+								{m.ds_sidebar_description()}
+							</p>
 							<p className="type-body">{m.ds_route_card_alert()}</p>
 							<Badge variant="critical">{m.risk_critical()}</Badge>
 						</div>

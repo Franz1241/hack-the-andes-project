@@ -207,3 +207,5 @@ export const SHOWCASE_RADIUS_SCALE = [
 	{ token: "rounded-3xl", size: "26 px", role: m.ds_radius_hero },
 	{ token: "rounded-full", size: "full", role: m.ds_radius_round },
 ];
+
+export const USER_INITIALS_CHARACTER_COUNT = 2;

@@ -1,4 +1,3 @@
-import { Badge } from "@hack-the-andes-project/ui/components/badge";
 import { DashboardSidebar } from "@hack-the-andes-project/ui/components/dashboard-sidebar";
 import { Separator } from "@hack-the-andes-project/ui/components/separator";
 import {
@@ -6,6 +5,7 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "@hack-the-andes-project/ui/components/sidebar";
+import { useSidebarPreference } from "@hack-the-andes-project/ui/hooks/use-sidebar-preference";
 import { useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
@@ -16,9 +16,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
-
-import { LanguageToggle } from "@/components/language-toggle";
-import { ModeToggle } from "@/components/mode-toggle";
+import { SidebarPreferences } from "@/components/sidebar-preferences";
 import UserMenu from "@/components/user-menu";
 import {
 	ALERT_REFETCH_INTERVAL_MS,
@@ -26,12 +24,14 @@ import {
 } from "@/constants";
 import { DASHBOARD_NAVIGATION } from "@/lib/dashboard-navigation";
 import { useFleetQueries } from "@/lib/fleet-queries";
+import { m } from "@/paraglide/messages";
 
 export const Route = createFileRoute("/_auth/dashboard")({
 	component: DashboardLayout,
 });
 
 function DashboardLayout() {
+	const { open, setOpen } = useSidebarPreference("illapa-sidebar");
 	const fleetQueries = useFleetQueries();
 	const navigate = useNavigate();
 	const { session } = Route.useRouteContext();
@@ -107,25 +107,33 @@ function DashboardLayout() {
 	}));
 
 	return (
-		<SidebarProvider className="h-svh overflow-hidden">
+		<SidebarProvider
+			open={open}
+			onOpenChange={setOpen}
+			className="h-svh overflow-hidden"
+		>
 			<DashboardSidebar
 				items={navigationItems}
 				homeLink={<Link to="/dashboard" />}
-				footer={<UserMenu />}
+				preferences={(collapsed) => (
+					<SidebarPreferences collapsed={collapsed} />
+				)}
+				account={(collapsed) => <UserMenu collapsed={collapsed} />}
+				expandLabel={m.sidebar_expand()}
+				collapseLabel={m.sidebar_collapse()}
+				preferencesLabel={m.sidebar_preferences()}
 			/>
 			<SidebarInset className="min-w-0 overflow-hidden">
 				<header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
-					<SidebarTrigger aria-label="Abrir o cerrar navegación" />
-					<Separator orientation="vertical" className="h-4" />
+					<SidebarTrigger
+						className="md:hidden"
+						aria-label={m.sidebar_toggle()}
+					/>
+					<Separator orientation="vertical" className="h-4 md:hidden" />
 					<h1 className="type-heading min-w-0 truncate">
 						{navigationItems.find((item) => item.active)?.label ??
 							"Centro de operaciones"}
 					</h1>
-					<div className="ml-auto flex shrink-0 items-center gap-2">
-						<Badge variant="outline">Perú</Badge>
-						<LanguageToggle />
-						<ModeToggle />
-					</div>
 				</header>
 				<div className="flex min-h-0 flex-1 flex-col overflow-auto">
 					<Outlet />

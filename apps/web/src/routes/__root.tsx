@@ -46,9 +46,10 @@ function RootComponent() {
 			<HeadContent />
 			<ThemeProvider
 				attribute="class"
-				defaultTheme="dark"
+				defaultTheme="light"
+				enableSystem={false}
 				disableTransitionOnChange
-				storageKey="vite-ui-theme"
+				storageKey="illapa-theme"
 			>
 				<div className="min-h-svh">
 					<Outlet />

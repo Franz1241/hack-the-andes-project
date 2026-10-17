@@ -60,6 +60,7 @@ import { Slider } from "@hack-the-andes-project/ui/components/slider";
 import { Switch } from "@hack-the-andes-project/ui/components/switch";
 import { Textarea } from "@hack-the-andes-project/ui/components/textarea";
 import { useState } from "react";
+import { ThemeSwitchControl } from "@/components/theme-switch-control";
 import {
 	getShowcaseStateLabels,
 	ROUTE_EXAMPLES,
@@ -89,6 +90,13 @@ export function InputsShowcase() {
 			description={m.ds_tier_inputs_description()}
 		>
 			<div className="flex min-w-0 flex-col gap-6">
+				<section className="flex flex-col gap-3 rounded-lg border p-5">
+					<h3 className="type-heading">{m.ds_theme_switch_title()}</h3>
+					<p className="type-body text-muted-foreground">
+						{m.ds_theme_switch_description()}
+					</p>
+					<ThemeSwitchControl showLabel className="w-fit" />
+				</section>
 				<div>
 					<h3 className="type-heading">{m.ds_fields_title()}</h3>
 					<p className="mt-2 text-muted-foreground text-sm">

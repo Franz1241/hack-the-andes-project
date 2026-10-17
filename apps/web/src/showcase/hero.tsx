@@ -3,7 +3,7 @@ import {
 	StarRiver,
 } from "@hack-the-andes-project/ui/components/mayu-art";
 import { LanguageToggle } from "@/components/language-toggle";
-import { ModeToggle } from "@/components/mode-toggle";
+import { ThemeSwitchControl } from "@/components/theme-switch-control";
 import { SHOWCASE_SECTIONS } from "@/constants";
 import { m } from "@/paraglide/messages";
 
@@ -19,7 +19,7 @@ export function HeroSection() {
 						<span className="type-label hidden sm:inline">
 							{m.ds_appearance()}
 						</span>
-						<ModeToggle />
+						<ThemeSwitchControl />
 						<LanguageToggle />
 					</div>
 				</div>
