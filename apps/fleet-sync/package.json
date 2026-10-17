@@ -6,7 +6,8 @@
 		"build": "tsc -b ../../packages/business && tsdown",
 		"check-types": "tsc -b ../../packages/business && tsc --noEmit",
 		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
-		"env:generate": "varlock codegen"
+		"env:generate": "varlock codegen",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@hack-the-andes-project/business": "workspace:*",
@@ -21,6 +22,7 @@
 		"@types/node": "^26.4.1",
 		"tsdown": "^0.23.0",
 		"typescript": "^6.0.3",
-		"varlock": "catalog:"
+		"varlock": "catalog:",
+		"vitest": "catalog:"
 	}
 }

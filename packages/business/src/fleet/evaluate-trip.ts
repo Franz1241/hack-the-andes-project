@@ -4,10 +4,11 @@ import {
 	trip as tripTable,
 	type vehicle as vehicleTable,
 } from "@hack-the-andes-project/db/schema/fleet";
-import { and, eq, notInArray } from "drizzle-orm";
+import { distance } from "@turf/distance";
+import { and, eq, inArray, notInArray } from "drizzle-orm";
 import type { RequestLogger } from "evlog";
 
-import { MS_PER_SECOND } from "../constants";
+import { FLEET_WRITE_BATCH_SIZE_ROWS, MS_PER_SECOND } from "../constants";
 import { chooseAlternativeRoute } from "../hazards/alternative";
 import { estimateEta } from "../hazards/eta";
 import { findHazardsAhead } from "../hazards/hazards-ahead";
@@ -19,6 +20,7 @@ import type {
 } from "../hazards/types";
 import { fetchRouteCandidates } from "../routing/osrm";
 import { decideTripProgress, formatHazardAlert } from "./decisions";
+import { incomingValue } from "./sql";
 
 export interface EvaluateTripInput {
 	db: Database;
@@ -94,14 +96,20 @@ export async function evaluateTrip({
 			durationS: trip.routeDurationS,
 		};
 		let progress = projectOntoRoute(route.geometry, vehicleState.position);
-		const decision = decideTripProgress(progress);
-		const openAlerts = and(
+		const destinationDistanceM = distance(
+			[vehicle.lastLng, vehicle.lastLat],
+			[trip.destinationLng, trip.destinationLat],
+			{ units: "meters" },
+		);
+		const decision = decideTripProgress(progress, destinationDistanceM);
+		const unresolvedAlerts = and(
 			eq(alert.tripId, trip.id),
 			eq(alert.organizationId, trip.organizationId),
-			eq(alert.status, "open"),
+			inArray(alert.status, ["open", "acknowledged"]),
 		);
 		const activeTrip = and(
 			eq(tripTable.id, trip.id),
+			eq(tripTable.organizationId, trip.organizationId),
 			eq(tripTable.status, "active"),
 		);
 		if (decision.arrived) {
@@ -111,7 +119,7 @@ export async function evaluateTrip({
 					status: "resolved",
 					resolvedAt: now,
 				})
-				.where(openAlerts);
+				.where(unresolvedAlerts);
 			result.alertsResolved = resolved.affectedRows;
 			const [completed] = await db
 				.update(tripTable)
@@ -194,35 +202,50 @@ export async function evaluateTrip({
 				result.error = "No se pudo consultar una ruta alternativa.";
 			}
 		}
-		for (const hazard of hazards) {
-			const alertFields = {
-				...formatHazardAlert(hazard),
-				severity: hazard.severity,
-				distanceAheadM: hazard.distanceAheadM,
-				etaToHazardAt:
-					hazard.etaSeconds === null
-						? null
-						: new Date(now.getTime() + hazard.etaSeconds * MS_PER_SECOND),
-			};
+		const alertRows = hazards.map((hazard): typeof alert.$inferInsert => ({
+			id: crypto.randomUUID(),
+			organizationId: trip.organizationId,
+			tripId: trip.id,
+			vehicleId: vehicle.id,
+			incidentId: hazard.incident.id,
+			kind: "hazard_ahead",
+			status: "open",
+			...formatHazardAlert(hazard),
+			severity: hazard.severity,
+			distanceAheadM: hazard.distanceAheadM,
+			etaToHazardAt:
+				hazard.etaSeconds === null
+					? null
+					: new Date(now.getTime() + hazard.etaSeconds * MS_PER_SECOND),
+			alternativeRoute,
+		}));
+		for (
+			let offset = 0;
+			offset < alertRows.length;
+			offset += FLEET_WRITE_BATCH_SIZE_ROWS
+		) {
+			const batch = alertRows.slice(
+				offset,
+				offset + FLEET_WRITE_BATCH_SIZE_ROWS,
+			);
 			await db
 				.insert(alert)
-				.values({
-					id: crypto.randomUUID(),
-					organizationId: trip.organizationId,
-					tripId: trip.id,
-					vehicleId: vehicle.id,
-					incidentId: hazard.incident.id,
-					kind: "hazard_ahead",
-					...alertFields,
-					alternativeRoute,
-					status: "open",
-				})
-				.onDuplicateKeyUpdate({ set: alertFields });
-			if (existingIncidentIds.has(hazard.incident.id)) {
-				result.alertsUpdated += 1;
-			} else {
-				result.alertsCreated += 1;
-				existingIncidentIds.add(hazard.incident.id);
+				.values(batch)
+				.onDuplicateKeyUpdate({
+					set: {
+						title: incomingValue(alert.title),
+						message: incomingValue(alert.message),
+						severity: incomingValue(alert.severity),
+						distanceAheadM: incomingValue(alert.distanceAheadM),
+						etaToHazardAt: incomingValue(alert.etaToHazardAt),
+					},
+				});
+			for (const row of batch) {
+				if (existingIncidentIds.has(row.incidentId)) result.alertsUpdated += 1;
+				else {
+					result.alertsCreated += 1;
+					existingIncidentIds.add(row.incidentId);
+				}
 			}
 		}
 		const [resolved] = await db
@@ -233,7 +256,7 @@ export async function evaluateTrip({
 			})
 			.where(
 				and(
-					openAlerts,
+					unresolvedAlerts,
 					hazards.length > 0
 						? notInArray(
 								alert.incidentId,

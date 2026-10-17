@@ -7,6 +7,7 @@ import { createRequestLogger } from "evlog";
 import {
 	afterAll,
 	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	expectTypeOf,
@@ -21,7 +22,7 @@ import {
 	VEHICLE_POSITION_REQUIRED_MESSAGE,
 } from "./constants";
 import type { Context } from "./context";
-import { organizationProcedure } from "./index";
+import { organizationProcedure, protectedProcedure } from "./index";
 import { appRouter } from "./routers/index";
 
 const databaseRequire = createRequire(
@@ -95,6 +96,16 @@ const procedure = organizationProcedure.handler(({ context }) => {
 	return context.organizationId;
 });
 
+beforeEach(() => {
+	vi.spyOn(database.query.member, "findFirst").mockResolvedValue({
+		id: "membership",
+		organizationId: session.session.activeOrganizationId,
+		userId: session.user.id,
+		role: "owner",
+		createdAt,
+	});
+});
+
 afterAll(async () => {
 	await database.$client.end();
 });
@@ -123,6 +134,22 @@ describe("organizationProcedure", () => {
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 		},
 	);
+
+	it("rejects a removed member even when the cached session still selects the organization", async () => {
+		const findMembership = vi
+			.spyOn(database.query.member, "findFirst")
+			.mockResolvedValue(undefined);
+		await expect(
+			call(procedure, undefined, { context: contextFor(session) }),
+		).rejects.toMatchObject({ code: "FORBIDDEN" });
+		expect(findMembership).toHaveBeenCalledWith({
+			columns: { id: true },
+			where: {
+				organizationId: session.session.activeOrganizationId,
+				userId: session.user.id,
+			},
+		});
+	});
 
 	it("passes the selected organization to downstream handlers", async () => {
 		await expect(
@@ -294,6 +321,109 @@ describe("fleet procedure boundaries", () => {
 				destination: tripInput.destination,
 			});
 			expect(query).not.toHaveBeenCalled();
+		},
+	);
+});
+
+describe("credential error isolation", () => {
+	it("does not return provider causes or put secrets in the wide event", async () => {
+		vi.spyOn(samsaraProvider, "validateCredentials").mockRejectedValue(
+			new Error("Bearer private-token"),
+		);
+		const context = contextFor(session);
+		const client = createRouterClient(appRouter, { context });
+		const error = await client.connections
+			.create({
+				label: "GPS",
+				credentials: { provider: "samsara", apiToken: "private-token" },
+			})
+			.catch((error) => error);
+		expect(error.code).toBe("BAD_REQUEST");
+		expect(error.cause).toBeUndefined();
+		expect(JSON.stringify(context.log.getContext())).not.toContain(
+			"private-token",
+		);
+	});
+
+	it("redacts database SQL and nested causes before logging or rethrowing", async () => {
+		const context = contextFor(session);
+		const failingProcedure = protectedProcedure.handler(() => {
+			throw new Error("insert encrypted_credentials private-ciphertext", {
+				cause: new Error("private-password"),
+			});
+		});
+		const error = await call(failingProcedure, undefined, { context }).catch(
+			(error) => error,
+		);
+		expect(error.code).toBe("INTERNAL_SERVER_ERROR");
+		expect(error.cause).toBeUndefined();
+		expect(JSON.stringify(context.log.getContext())).not.toMatch(
+			/private-ciphertext|private-password/,
+		);
+	});
+});
+
+describe("trip completion alert cleanup", () => {
+	it.each(["cancel", "complete"] as const)(
+		"resolves outstanding tenant alerts on %s",
+		async (action) => {
+			const status = action === "cancel" ? "cancelled" : "completed";
+			vi.spyOn(database.query.trip, "findFirst").mockResolvedValue({
+				id: "trip",
+				status,
+				name: "Trip",
+				organizationId: session.session.activeOrganizationId,
+				vehicleId: "vehicle",
+				originLat: 0,
+				originLng: 0,
+				destinationLat: 1,
+				destinationLng: 1,
+				destinationName: "Destination",
+				routeGeometry: {
+					type: "LineString",
+					coordinates: [
+						[0, 0],
+						[1, 1],
+					],
+				},
+				routeDistanceM: 1000,
+				routeDurationS: 100,
+				etaAt: null,
+				lastEvaluatedAt: null,
+				createdAt,
+				updatedAt: createdAt,
+			});
+			const query = vi.spyOn(database.$client, "query").mockResolvedValue([
+				{
+					affectedRows: 1,
+					constructor: { name: "ResultSetHeader" },
+					fieldCount: 0,
+					info: "",
+					insertId: 0,
+					serverStatus: 0,
+					warningStatus: 0,
+					changedRows: 1,
+				},
+				[],
+			]);
+			const client = createRouterClient(appRouter, {
+				context: contextFor(session),
+			});
+			await expect(client.trips[action]({ id: "trip" })).resolves.toEqual({
+				id: "trip",
+				status,
+			});
+			expect(query).toHaveBeenCalledWith(
+				expect.objectContaining({
+					sql: expect.stringContaining("update `hack_the_andes_alert`"),
+				}),
+				expect.arrayContaining([
+					session.session.activeOrganizationId,
+					"resolved",
+					"open",
+					"acknowledged",
+				]),
+			);
 		},
 	);
 });

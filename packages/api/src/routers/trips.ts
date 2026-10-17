@@ -1,4 +1,5 @@
 import { MS_PER_SECOND } from "@hack-the-andes-project/business/constants";
+import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
 import { fetchRouteCandidates } from "@hack-the-andes-project/business/routing/osrm";
 import {
 	alert,
@@ -56,6 +57,11 @@ async function finishTrip(
 		throw new ORPCError("NOT_FOUND", { message: TRIP_NOT_FOUND_MESSAGE });
 	if (finishedTrip.status !== status)
 		throw new ORPCError("BAD_REQUEST", { message: TRIP_NOT_ACTIVE_MESSAGE });
+	await resolveObsoleteAlerts({
+		db: context.db,
+		organizationId: context.organizationId,
+		now: new Date(),
+	});
 	context.log.set({
 		fleet: { organizationId: context.organizationId, tripId, status },
 	});
@@ -181,6 +187,11 @@ export const tripsRouter = {
 					),
 				);
 			await context.db.insert(trip).values(createdTrip);
+			await resolveObsoleteAlerts({
+				db: context.db,
+				organizationId: context.organizationId,
+				now: createdAt,
+			});
 			context.log.set({
 				fleet: {
 					tripId: createdTrip.id,

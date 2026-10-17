@@ -41,3 +41,9 @@ For the first cutover, run `pnpm deploy:server`, wait until `https://api.illapa.
 ## Auth
 
 Every server route requires a session except `/`, `/api/auth/*` and the procedures listed in `PUBLIC_PROCEDURE_PATHS`. Browser origins allowed for CORS and better-auth come from the comma-separated `ALLOWED_ORIGINS`.
+
+## Dashboard and fleet tracking
+
+The dashboard at `dash.illapa.app` combines incident feeds with organization-scoped Geotab and Samsara vehicles, trips, ETAs, and hazard alerts. The fleet-sync Worker polls GPS providers every two minutes; shared rules live in `packages/business`.
+
+See the [dashboard plan and operations notes](docs/dashboard-plan.md), [fleet-sync runbook](apps/fleet-sync/README.md), and [business module map](packages/business/README.md).

@@ -1,6 +1,10 @@
 import type { LineString } from "geojson";
 import { z } from "zod";
 
+import {
+	MIN_ROUTE_COORDINATES_COUNT,
+	ROUTING_REQUEST_TIMEOUT_MS,
+} from "../constants";
 import type { LatLng, RouteCandidate } from "../hazards/types";
 
 const osrmResponseSchema = z.object({
@@ -9,11 +13,13 @@ const osrmResponseSchema = z.object({
 	routes: z
 		.array(
 			z.object({
-				distance: z.number(),
-				duration: z.number(),
+				distance: z.number().nonnegative(),
+				duration: z.number().nonnegative(),
 				geometry: z.object({
 					type: z.literal("LineString"),
-					coordinates: z.array(z.array(z.number()).min(2)),
+					coordinates: z
+						.array(z.tuple([z.number(), z.number()]))
+						.min(MIN_ROUTE_COORDINATES_COUNT),
 				}),
 			}),
 		)
@@ -35,7 +41,13 @@ export async function fetchRouteCandidates({
 }: FetchRouteCandidatesInput): Promise<RouteCandidate[]> {
 	const coordinates = `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`;
 	const url = `${baseUrl.replace(/\/$/, "")}/route/v1/driving/${coordinates}?alternatives=true&overview=full&geometries=geojson&steps=false`;
-	const response = await fetchImpl(url);
+	const response = await fetchImpl(url, {
+		signal: AbortSignal.timeout(ROUTING_REQUEST_TIMEOUT_MS),
+	});
+	if (!response.ok) {
+		await response.body?.cancel();
+		throw new Error(`OSRM route request failed with HTTP ${response.status}`);
+	}
 	const body = osrmResponseSchema.parse(await response.json());
 	if (body.code !== "Ok") {
 		throw new Error(

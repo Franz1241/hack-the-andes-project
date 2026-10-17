@@ -6,7 +6,6 @@ import {
 	vehiclePosition,
 } from "@hack-the-andes-project/db/schema/fleet";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { MySqlColumn } from "drizzle-orm/mysql-core";
 import type { RequestLogger } from "evlog";
 
 import {
@@ -17,6 +16,7 @@ import {
 import { decryptJson } from "../crypto/index";
 import { gpsCredentialsSchema, providerFor } from "../providers/index";
 import { planPositionUpdates } from "./decisions";
+import { incomingValue } from "./sql";
 
 export interface SyncConnectionInput {
 	db: Database;
@@ -32,10 +32,6 @@ export interface SyncConnectionResult {
 	vehiclesSynced: number;
 	positionsInserted: number;
 	error?: string;
-}
-
-function incomingValue(column: MySqlColumn) {
-	return sql`values(${sql.identifier(column.name)})`;
 }
 
 export async function syncConnection({
@@ -107,6 +103,7 @@ export async function syncConnection({
 				.where(
 					and(
 						eq(vehicle.connectionId, connection.id),
+						eq(vehicle.organizationId, connection.organizationId),
 						inArray(
 							vehicle.externalId,
 							batch.map((entry) => entry.externalId),
@@ -194,7 +191,12 @@ export async function syncConnection({
 				status: "active",
 				lastError: null,
 			})
-			.where(eq(gpsConnection.id, connection.id));
+			.where(
+				and(
+					eq(gpsConnection.id, connection.id),
+					eq(gpsConnection.organizationId, connection.organizationId),
+				),
+			);
 		result.ok = true;
 	} catch {
 		// Provider errors may echo secrets; persist only the operation that failed.
@@ -206,7 +208,12 @@ export async function syncConnection({
 				status: "error",
 				lastError: failureMessage,
 			})
-			.where(eq(gpsConnection.id, connection.id));
+			.where(
+				and(
+					eq(gpsConnection.id, connection.id),
+					eq(gpsConnection.organizationId, connection.organizationId),
+				),
+			);
 	} finally {
 		log.set({ fleet: { connections: { [connection.id]: result } } });
 		if (!result.ok) log.setLevel("error");
