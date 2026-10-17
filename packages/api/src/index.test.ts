@@ -1,5 +1,7 @@
 import { createRequire } from "node:module";
 import { generateEncryptionKeyBase64 } from "@hack-the-andes-project/business/crypto/index";
+import { DEMO_ACCOUNT_EMAIL } from "@hack-the-andes-project/business/demo-account";
+import * as demoSeeding from "@hack-the-andes-project/business/demo-seed";
 import * as incidentLoading from "@hack-the-andes-project/business/fleet/load-alertable-incidents";
 import * as demoTripPlanning from "@hack-the-andes-project/business/fleet/plan-demo-trip";
 import * as fleetSync from "@hack-the-andes-project/business/fleet/sync-connection";
@@ -34,6 +36,7 @@ import {
 	VEHICLE_POSITION_REQUIRED_MESSAGE,
 } from "./constants";
 import type { Context } from "./context";
+import { resetDemo } from "./demo-reset";
 import { organizationProcedure, protectedProcedure } from "./index";
 import { appRouter } from "./routers/index";
 
@@ -285,12 +288,11 @@ describe("fleet procedure boundaries", () => {
 			],
 			[],
 		]);
-		const client = createRouterClient(appRouter, {
-			context: {
-				...contextFor(session),
-				encryptionKey: generateEncryptionKeyBase64(),
-			},
-		});
+		const context = {
+			...contextFor(session),
+			encryptionKey: generateEncryptionKeyBase64(),
+		};
+		const client = createRouterClient(appRouter, { context });
 		await expect(
 			client.connections.create({
 				label: "Flota demo",
@@ -314,6 +316,13 @@ describe("fleet procedure boundaries", () => {
 			}),
 			expect.arrayContaining(DEMO_VEHICLES.map(({ plate }) => plate)),
 		);
+		expect(context.log.getContext()).toMatchObject({
+			fleet: {
+				organizationId: session.session.activeOrganizationId,
+				provider: "demo",
+				vehiclesImported: DEMO_VEHICLES.length,
+			},
+		});
 	});
 
 	it("rejects another organization's vehicle without routing or cancelling trips", async () => {
@@ -738,4 +747,97 @@ describe("trip completion alert cleanup", () => {
 			);
 		},
 	);
+});
+
+describe("shared demo account boundaries", () => {
+	const demoSession = {
+		...session,
+		user: { ...session.user, email: DEMO_ACCOUNT_EMAIL },
+	};
+
+	it.each([
+		{ provider: "samsara", apiToken: "token" },
+		{
+			provider: "geotab",
+			server: "my.geotab.com",
+			database: "fleet",
+			userName: "owner",
+			password: "password",
+		},
+	] satisfies Array<
+		import("@hack-the-andes-project/business/providers/index").GpsCredentialsInput
+	>)("forbids a demo user from connecting $provider", async (credentials) => {
+		const query = vi.spyOn(database.$client, "query");
+		const client = createRouterClient(appRouter, {
+			context: contextFor(demoSession),
+		});
+		await expect(
+			client.connections.create({ label: "GPS", credentials }),
+		).rejects.toMatchObject({ code: "FORBIDDEN" });
+		expect(query).not.toHaveBeenCalled();
+	});
+
+	it("forbids removing the shared demo connection before looking it up", async () => {
+		const findConnection = vi.spyOn(database.query.gpsConnection, "findFirst");
+		const client = createRouterClient(appRouter, {
+			context: contextFor(demoSession),
+		});
+		await expect(
+			client.connections.remove({ id: "demo-connection" }),
+		).rejects.toMatchObject({ code: "FORBIDDEN" });
+		expect(findConnection).not.toHaveBeenCalled();
+	});
+
+	it("rejects prepare for ordinary accounts", async () => {
+		const query = vi.spyOn(database.$client, "query");
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+		await expect(client.demo.prepare()).rejects.toMatchObject({
+			code: "FORBIDDEN",
+		});
+		expect(query).not.toHaveBeenCalled();
+	});
+});
+
+describe("demo reset orchestration", () => {
+	it("returns not found before wiping when the demo user has never signed in", async () => {
+		vi.spyOn(database.query.user, "findFirst").mockResolvedValue(undefined);
+		const wipe = vi.spyOn(demoSeeding, "wipeDemoFleet");
+		await expect(resetDemo(contextFor(null))).resolves.toBeNull();
+		expect(wipe).not.toHaveBeenCalled();
+	});
+
+	it("wipes the personal demo organization and reseeds through the prepare service", async () => {
+		const demoUser = {
+			...session.user,
+			email: DEMO_ACCOUNT_EMAIL,
+			image: null,
+		};
+		vi.spyOn(database.query.user, "findFirst").mockResolvedValue(demoUser);
+		vi.spyOn(database.query.member, "findFirst").mockResolvedValue({
+			id: "demo-member",
+			organizationId: demoUser.id,
+			userId: demoUser.id,
+			role: "owner",
+			createdAt,
+		});
+		const wipe = vi.spyOn(demoSeeding, "wipeDemoFleet").mockResolvedValue();
+		const seed = vi
+			.spyOn(demoSeeding, "prepareDemo")
+			.mockResolvedValue({ vehicleCount: 6, tripCount: 2 });
+		const context = contextFor(null);
+		await expect(resetDemo(context)).resolves.toEqual({
+			vehicleCount: 6,
+			tripCount: 2,
+		});
+		expect(wipe).toHaveBeenCalledWith(database, demoUser.id);
+		expect(seed).toHaveBeenCalledWith({
+			...context,
+			organizationId: demoUser.id,
+		});
+		expect(wipe.mock.invocationCallOrder[0]).toBeLessThan(
+			seed.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY,
+		);
+	});
 });

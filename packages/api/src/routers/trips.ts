@@ -1,7 +1,5 @@
-import {
-	DEMO_TRIP_SCENARIOS,
-	MS_PER_SECOND,
-} from "@hack-the-andes-project/business/constants";
+import { DEMO_TRIP_SCENARIOS } from "@hack-the-andes-project/business/constants";
+import { createFleetTrip } from "@hack-the-andes-project/business/fleet/create-trip";
 import { evaluateTrip } from "@hack-the-andes-project/business/fleet/evaluate-trip";
 import { loadAlertableIncidents } from "@hack-the-andes-project/business/fleet/load-alertable-incidents";
 import { planDemoTrip } from "@hack-the-andes-project/business/fleet/plan-demo-trip";
@@ -161,50 +159,20 @@ export const tripsRouter = {
 			const [primaryRoute] = routeCandidates;
 			if (!primaryRoute)
 				throw new ORPCError("BAD_REQUEST", { message: ROUTING_FAILED_MESSAGE });
-			const createdAt = new Date();
-			const createdTrip: typeof trip.$inferSelect = {
-				id: crypto.randomUUID(),
+			const { createdTrip, tripsCancelled } = await createFleetTrip({
+				db: context.db,
 				organizationId: context.organizationId,
 				vehicleId: input.vehicleId,
 				name: input.name,
-				originLat: selectedVehicle.lastLat,
-				originLng: selectedVehicle.lastLng,
-				destinationLat: input.destination.lat,
-				destinationLng: input.destination.lng,
-				destinationName:
-					input.destinationName ??
-					`${input.destination.lat}, ${input.destination.lng}`,
-				routeGeometry: primaryRoute.geometry,
-				routeDistanceM: primaryRoute.distanceM,
-				routeDurationS: primaryRoute.durationS,
-				status: TRIP_STATUS_ACTIVE,
-				etaAt: new Date(
-					createdAt.getTime() + primaryRoute.durationS * MS_PER_SECOND,
-				),
-				lastEvaluatedAt: null,
-				createdAt,
-				updatedAt: createdAt,
-			};
-			const [cancelledTrips] = await context.db
-				.update(trip)
-				.set({ status: TRIP_STATUS_CANCELLED })
-				.where(
-					and(
-						eq(trip.vehicleId, input.vehicleId),
-						eq(trip.organizationId, context.organizationId),
-						eq(trip.status, TRIP_STATUS_ACTIVE),
-					),
-				);
-			await context.db.insert(trip).values(createdTrip);
-			await resolveObsoleteAlerts({
-				db: context.db,
-				organizationId: context.organizationId,
-				now: createdAt,
+				origin: { lat: selectedVehicle.lastLat, lng: selectedVehicle.lastLng },
+				destination: input.destination,
+				destinationName: input.destinationName,
+				route: primaryRoute,
 			});
 			context.log.set({
 				fleet: {
 					tripId: createdTrip.id,
-					tripsCancelled: cancelledTrips.affectedRows,
+					tripsCancelled,
 					routeDistanceM: primaryRoute.distanceM,
 					routeDurationS: primaryRoute.durationS,
 				},
@@ -218,7 +186,7 @@ export const tripsRouter = {
 						vehicle: selectedVehicle,
 						incidents,
 						routeCandidates,
-						now: createdAt,
+						now: createdTrip.createdAt,
 						log: context.log,
 					}),
 				)
@@ -239,7 +207,7 @@ export const tripsRouter = {
 					alertsUpdated: evaluation.alertsUpdated,
 				},
 			});
-			return { ...createdTrip, lastEvaluatedAt: createdAt };
+			return { ...createdTrip, lastEvaluatedAt: createdTrip.createdAt };
 		}),
 	planDemo: organizationProcedure
 		.input(
