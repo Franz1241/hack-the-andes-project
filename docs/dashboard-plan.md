@@ -58,3 +58,13 @@ Routes under `/_auth/dashboard`: map (incidents + fleet overlay), fleet (vehicle
 | T8 | fleet-sync Worker (poll + evaluate + alerts) + infra | Astra xhigh | 2 |
 | T9 | Web: connections, fleet, trips, alerts UI | Astra xhigh | 3 |
 | T10 | Integration review, fixes, READMEs | Astra xhigh | 3 |
+
+## Operations
+
+Deploy from the main checkout. Alchemy's `localState` is stored in `packages/infra/.alchemy/` there; a review worktree does not carry that deployment state. Apply reviewed changes there, run `pnpm db:push` for schema changes, then deploy the affected Workers with `pnpm deploy:server` and `pnpm deploy:fleet-sync` (and `pnpm deploy:web` for dashboard changes). Drizzle's `tablesFilter` limits schema management to `hack_the_andes_*` in the shared database. The fleet review adds `vehiclePosition_recordedAt_idx`; no migration files are needed.
+
+`CREDENTIALS_ENCRYPTION_KEY` in `apps/server/.env` is shared with fleet-sync through the infra environment imports. Keep the same key across redeploys. `FLEET_SYNC_RUN_SECRET` belongs in `apps/fleet-sync/.env`; local fleet-sync validation also needs a copy of the shared encryption key. Public URLs belong in `.env.production`, with matching declarations in `.env.schema` and infra bindings. MySQL sessions must use UTC because Drizzle encodes and decodes `timestamp` values as UTC.
+
+The Cloudflare account must use Workers Paid. Cron trigger allowance, CPU time, and subrequests are account/runtime limits, and this fleet job does not fit the Free plan's CPU budget. As of this review, a two-minute Paid cron has a 30-second CPU budget, a 15-minute wall-time limit, and a default 10,000-subrequest budget. Keep the total account cron count within its plan allowance. Check the current [Workers limits](https://developers.cloudflare.com/workers/platform/limits/) before scaling.
+
+After release, verify sign-in and organization access, connect a provider with fleet read permissions, and inspect one authenticated manual run and a subsequent cron run using `pnpm logs:fleet-sync`. Check fresh UTC positions, a trip ETA, acknowledgement persistence, hazard resolution, and arrival completion. The [fleet-sync README](../apps/fleet-sync/README.md) covers manual runs, retention, query costs, and scaling limits. Roll back application code through the same main checkout if verification fails; the added retention index can remain in place. Keep the encryption key unchanged during rollback.
