@@ -1,6 +1,6 @@
 # hack-the-andes-project
 
-pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (`apps/web`), Expo app (`apps/native`), better-auth, Drizzle + MySQL through Hyperdrive, evlog wide-event logging, deployed with Alchemy v2 (local state in `packages/infra/.alchemy/`).
+pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (`apps/web`), Expo app (`apps/native`), cron scraper Worker for road/emergency feeds (`apps/scraper`, see its README), better-auth, Drizzle + MySQL through Hyperdrive, evlog wide-event logging, deployed with Alchemy v2 (local state in `packages/infra/.alchemy/`).
 
 ## Setup
 
@@ -8,6 +8,7 @@ pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (
 2. Secrets (gitignored):
    - `apps/server/.env` → `BETTER_AUTH_SECRET` (`openssl rand -base64 32`)
    - `packages/db/.env` → `DATABASE_URL=mysql://…@vero:3306/fierros` (vero over Tailscale)
+   - `apps/scraper/.env` → `SCRAPER_RUN_SECRET` (`openssl rand -base64 32`)
 3. `pnpm infra:login` once to connect the `cloudflare-franz` Alchemy profile (`pnpm infra:refresh` when the token expires).
 4. `pnpm db:push` to create the `hack_the_andes_*` tables.
 
@@ -17,13 +18,13 @@ Public URLs live in tracked files: `.env.schema` defaults are the localhost valu
 
 | Script | What it does |
 | --- | --- |
-| `pnpm dev` | `alchemy dev`: server on :3000, web on :3001, Hyperdrive pointed at `DATABASE_URL` |
+| `pnpm dev` | `alchemy dev`: server on :3000, web on :3001, scraper on :3002, Hyperdrive pointed at `DATABASE_URL` |
 | `pnpm dev:native` | Expo dev server |
 | `pnpm build` / `pnpm check-types` / `pnpm test` | Build, type-check and test every package |
 | `pnpm deploy` | Deploy server + web to the `prod` stage |
-| `pnpm deploy:server` / `pnpm deploy:web` | Deploy a single Worker |
+| `pnpm deploy:server` / `pnpm deploy:web` / `pnpm deploy:scraper` | Deploy a single Worker |
 | `pnpm deploy:plan` | Preview the deploy without applying it |
-| `pnpm logs:server` / `pnpm logs:web` | Tail Workers Logs (evlog events + CPU time) |
+| `pnpm logs:server` / `pnpm logs:web` / `pnpm logs:scraper` | Tail Workers Logs (evlog events + CPU time) |
 | `pnpm build:native:android` / `:ios` | Local EAS build (preview profile) |
 | `pnpm build:native:cloud:android` / `:ios` | Remote EAS build (preview profile) |
 | `pnpm build:native:prod:android` / `:ios` | Remote EAS production build |

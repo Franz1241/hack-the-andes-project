@@ -1,4 +1,4 @@
-export const ILLAPA_DEV_PORT = 3002;
+export const ILLAPA_DEV_PORT = 3003;
 
 export const PERU_BOUNDS: [[number, number], [number, number]] = [
 	[-82.2, -18.6],
