@@ -2,14 +2,25 @@ import { type ZodType, z } from "zod";
 
 import {
 	GEOTAB_API_PATH,
+	GEOTAB_AUTH_ATTEMPTS_COUNT,
 	GEOTAB_DEFAULT_SERVER,
 	GEOTAB_SAME_SERVER_PATH,
 	GEOTAB_VALIDATION_RESULTS_LIMIT,
+	PROVIDER_REQUEST_TIMEOUT_MS,
 } from "./constants";
 import type { GpsProvider } from "./types";
 
+const geotabServerSchema = z
+	.string()
+	.regex(
+		/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+geotab\.com$/i,
+		"Usa un servidor de Geotab, por ejemplo my.geotab.com",
+	);
+
+class GeotabSessionError extends Error {}
+
 export const geotabCredentialsSchema = z.object({
-	server: z.string().min(1).default(GEOTAB_DEFAULT_SERVER),
+	server: geotabServerSchema.default(GEOTAB_DEFAULT_SERVER),
 	database: z.string().min(1),
 	userName: z.string().min(1),
 	password: z.string().min(1),
@@ -20,7 +31,10 @@ export type GeotabCredentials = z.infer<typeof geotabCredentialsSchema>;
 const rpcEnvelopeSchema = z.object({
 	result: z.unknown().optional(),
 	error: z
-		.object({ name: z.string().optional(), message: z.string() })
+		.object({
+			name: z.string().optional(),
+			data: z.object({ type: z.string().optional() }).nullish(),
+		})
 		.optional(),
 });
 
@@ -55,20 +69,28 @@ async function callGeotab<Result>(
 	resultSchema: ZodType<Result>,
 	fetchImpl: typeof fetch,
 ): Promise<Result> {
-	const response = await fetchImpl(`https://${server}${GEOTAB_API_PATH}`, {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ method, params }),
-	});
+	const response = await fetchImpl(
+		`https://${geotabServerSchema.parse(server)}${GEOTAB_API_PATH}`,
+		{
+			method: "POST",
+			redirect: "error",
+			signal: AbortSignal.timeout(PROVIDER_REQUEST_TIMEOUT_MS),
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({ method, params }),
+		},
+	);
 	if (!response.ok) {
 		throw new Error(`Geotab ${method} failed with HTTP ${response.status}`);
 	}
 	const envelope = rpcEnvelopeSchema.parse(await response.json());
 	if (envelope.error) {
-		const errorName = envelope.error.name ? `${envelope.error.name}: ` : "";
-		throw new Error(
-			`Geotab ${method} failed: ${errorName}${envelope.error.message}`,
-		);
+		if (
+			envelope.error.name === "InvalidUserException" ||
+			envelope.error.data?.type === "InvalidUserException"
+		) {
+			throw new GeotabSessionError("Geotab session authentication failed");
+		}
+		throw new Error(`Geotab ${method} failed`);
 	}
 	return resultSchema.parse(envelope.result);
 }
@@ -80,28 +102,39 @@ async function authenticateAndGet<Entity>(
 	fetchImpl: typeof fetch,
 	extraParams: Record<string, unknown> = {},
 ): Promise<Entity[]> {
-	const session = await callGeotab(
-		credentials.server,
-		"Authenticate",
-		{
-			database: credentials.database,
-			userName: credentials.userName,
-			password: credentials.password,
-		},
-		authenticateResultSchema,
-		fetchImpl,
-	);
-	const sessionServer =
-		session.path === GEOTAB_SAME_SERVER_PATH
-			? credentials.server
-			: session.path;
-	return callGeotab(
-		sessionServer,
-		"Get",
-		{ typeName, credentials: session.credentials, ...extraParams },
-		z.array(entitySchema),
-		fetchImpl,
-	);
+	for (let attempt = 0; attempt < GEOTAB_AUTH_ATTEMPTS_COUNT; attempt += 1) {
+		const session = await callGeotab(
+			credentials.server,
+			"Authenticate",
+			{
+				database: credentials.database,
+				userName: credentials.userName,
+				password: credentials.password,
+			},
+			authenticateResultSchema,
+			fetchImpl,
+		);
+		const sessionServer =
+			session.path === GEOTAB_SAME_SERVER_PATH
+				? credentials.server
+				: session.path;
+		try {
+			return await callGeotab(
+				sessionServer,
+				"Get",
+				{ typeName, credentials: session.credentials, ...extraParams },
+				z.array(entitySchema),
+				fetchImpl,
+			);
+		} catch (error) {
+			if (
+				!(error instanceof GeotabSessionError) ||
+				attempt + 1 === GEOTAB_AUTH_ATTEMPTS_COUNT
+			)
+				throw error;
+		}
+	}
+	throw new GeotabSessionError("Geotab session authentication failed");
 }
 
 export const geotabProvider: GpsProvider<GeotabCredentials> = {

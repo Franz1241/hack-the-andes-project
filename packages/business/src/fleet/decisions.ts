@@ -12,11 +12,12 @@ export interface TripDecision {
 	reroute: boolean;
 }
 
-export function decideTripProgress(progress: RouteProgress): TripDecision {
+export function decideTripProgress(
+	progress: RouteProgress,
+	destinationDistanceM: number,
+): TripDecision {
 	return {
-		arrived:
-			progress.remainingDistanceM < TRIP_ARRIVAL_RADIUS_M &&
-			progress.offRouteM < TRIP_ARRIVAL_RADIUS_M,
+		arrived: destinationDistanceM <= TRIP_ARRIVAL_RADIUS_M,
 		reroute: progress.offRouteM > OFF_ROUTE_THRESHOLD_M,
 	};
 }

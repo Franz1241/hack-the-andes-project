@@ -2,6 +2,8 @@ import {
 	type EvaluateTripResult,
 	evaluateTrip,
 	isAlertableIncident,
+	pruneVehiclePositions,
+	resolveObsoleteAlerts,
 	type SyncConnectionResult,
 	syncConnection,
 } from "@hack-the-andes-project/business";
@@ -44,6 +46,9 @@ async function syncAll(
 	try {
 		const db = await createDb(ENV.HYPERDRIVE);
 		try {
+			if (!connectionId) {
+				log.set({ positionsPruned: await pruneVehiclePositions(db, now) });
+			}
 			const connections = await db
 				.select()
 				.from(gpsConnection)
@@ -52,29 +57,34 @@ async function syncAll(
 				summary.error = "unknown_connection";
 				return summary;
 			}
-			const connectionOutcomes = await Promise.allSettled(
-				connections.map((connection) =>
-					syncConnection({
-						db,
-						encryptionKey: ENV.CREDENTIALS_ENCRYPTION_KEY,
-						connection,
-						now,
-						log,
-					}),
-				),
-			);
-			summary.connections = connectionOutcomes.map((outcome, index) =>
-				outcome.status === "fulfilled"
-					? outcome.value
-					: {
-							connectionId: connections[index]?.id ?? "unknown",
-							ok: false,
-							vehiclesSynced: 0,
-							positionsInserted: 0,
-							error:
-								"No se pudo guardar el resultado de la sincronización GPS.",
-						},
-			);
+			await resolveObsoleteAlerts({
+				db,
+				now,
+				organizationId: connectionId
+					? connections[0]?.organizationId
+					: undefined,
+			});
+			for (const connection of connections) {
+				try {
+					summary.connections.push(
+						await syncConnection({
+							db,
+							encryptionKey: ENV.CREDENTIALS_ENCRYPTION_KEY,
+							connection,
+							now,
+							log,
+						}),
+					);
+				} catch {
+					summary.connections.push({
+						connectionId: connection.id,
+						ok: false,
+						vehiclesSynced: 0,
+						positionsInserted: 0,
+						error: "No se pudo guardar el resultado de la sincronización GPS.",
+					});
+				}
+			}
 			const [activeTrips, activeIncidents] = await Promise.all([
 				db
 					.select({ trip, vehicle })
@@ -106,33 +116,39 @@ async function syncAll(
 					.where(eq(incident.active, true)),
 			]);
 			const incidents = activeIncidents.filter(isAlertableIncident);
-			const tripOutcomes = await Promise.allSettled(
-				activeTrips.map((entry) =>
-					evaluateTrip({
-						db,
-						osrmBaseUrl: ENV.OSRM_BASE_URL,
-						trip: entry.trip,
-						vehicle: entry.vehicle,
-						incidents,
-						now,
-						log,
-					}),
-				),
-			);
-			summary.trips = tripOutcomes.map((outcome, index) =>
-				outcome.status === "fulfilled"
-					? outcome.value
-					: {
-							tripId: activeTrips[index]?.trip.id ?? "unknown",
-							ok: false,
-							completed: false,
-							rerouted: false,
-							alertsCreated: 0,
-							alertsUpdated: 0,
-							alertsResolved: 0,
-							error: "No se pudo evaluar el viaje.",
-						},
-			);
+			for (const entry of activeTrips) {
+				try {
+					summary.trips.push(
+						await evaluateTrip({
+							db,
+							osrmBaseUrl: ENV.OSRM_BASE_URL,
+							trip: entry.trip,
+							vehicle: entry.vehicle,
+							incidents,
+							now,
+							log,
+						}),
+					);
+				} catch {
+					summary.trips.push({
+						tripId: entry.trip.id,
+						ok: false,
+						completed: false,
+						rerouted: false,
+						alertsCreated: 0,
+						alertsUpdated: 0,
+						alertsResolved: 0,
+						error: "No se pudo evaluar el viaje.",
+					});
+				}
+			}
+			await resolveObsoleteAlerts({
+				db,
+				now,
+				organizationId: connectionId
+					? connections[0]?.organizationId
+					: undefined,
+			});
 			summary.ok =
 				summary.connections.every((result) => result.ok) &&
 				summary.trips.every((result) => result.ok);

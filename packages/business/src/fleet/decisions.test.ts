@@ -12,38 +12,50 @@ import {
 describe("trip progress decisions", () => {
 	it("completes an on-route vehicle within the arrival radius", () => {
 		expect(
-			decideTripProgress({
-				distanceAlongM: 10_000,
-				remainingDistanceM: 100,
-				offRouteM: 0,
-			}),
+			decideTripProgress(
+				{
+					distanceAlongM: 10_000,
+					remainingDistanceM: 100,
+					offRouteM: 0,
+				},
+				100,
+			),
 		).toEqual({ arrived: true, reroute: false });
 	});
-	it("keeps the arrival boundary active", () => {
+	it("completes at the arrival boundary", () => {
 		expect(
-			decideTripProgress({
-				distanceAlongM: 10_000,
-				remainingDistanceM: TRIP_ARRIVAL_RADIUS_M,
-				offRouteM: 0,
-			}).arrived,
-		).toBe(false);
+			decideTripProgress(
+				{
+					distanceAlongM: 10_000,
+					remainingDistanceM: TRIP_ARRIVAL_RADIUS_M,
+					offRouteM: 0,
+				},
+				TRIP_ARRIVAL_RADIUS_M,
+			).arrived,
+		).toBe(true);
 	});
 	it("reroutes a vehicle far from the destination even when it projects onto the endpoint", () => {
 		expect(
-			decideTripProgress({
-				distanceAlongM: 10_000,
-				remainingDistanceM: 0,
-				offRouteM: OFF_ROUTE_THRESHOLD_M + 1,
-			}),
+			decideTripProgress(
+				{
+					distanceAlongM: 10_000,
+					remainingDistanceM: 0,
+					offRouteM: OFF_ROUTE_THRESHOLD_M + 1,
+				},
+				OFF_ROUTE_THRESHOLD_M + 1,
+			),
 		).toEqual({ arrived: false, reroute: true });
 	});
 	it("does not reroute at the off-route threshold", () => {
 		expect(
-			decideTripProgress({
-				distanceAlongM: 0,
-				remainingDistanceM: 10_000,
-				offRouteM: OFF_ROUTE_THRESHOLD_M,
-			}).reroute,
+			decideTripProgress(
+				{
+					distanceAlongM: 0,
+					remainingDistanceM: 10_000,
+					offRouteM: OFF_ROUTE_THRESHOLD_M,
+				},
+				10_000,
+			).reroute,
 		).toBe(false);
 	});
 });

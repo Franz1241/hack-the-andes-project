@@ -129,6 +129,7 @@ export const vehiclePosition = mysqlTable(
 		}).notNull(),
 	},
 	(table) => [
+		index("vehiclePosition_recordedAt_idx").on(table.recordedAt),
 		index("vehiclePosition_vehicleId_recordedAt_idx").on(
 			table.vehicleId,
 			table.recordedAt,

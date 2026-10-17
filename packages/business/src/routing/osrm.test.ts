@@ -47,6 +47,7 @@ describe("fetchRouteCandidates", () => {
 		});
 		expect(fetchImpl).toHaveBeenCalledWith(
 			"https://router.example/route/v1/driving/-76.88,-12.05;-75.21,-12.07?alternatives=true&overview=full&geometries=geojson&steps=false",
+			expect.objectContaining({ signal: expect.any(AbortSignal) }),
 		);
 		expect(candidates).toEqual([
 			{
@@ -107,3 +108,38 @@ describe("fetchRouteCandidates", () => {
 		).rejects.toThrow();
 	});
 });
+
+it("rejects failed HTTP responses even if their body claims success", async () => {
+	await expect(
+		fetchRouteCandidates({
+			baseUrl: "https://router.example",
+			origin,
+			destination,
+			fetchImpl: async () =>
+				Response.json({ code: "Ok", routes: [] }, { status: 503 }),
+		}),
+	).rejects.toThrow("HTTP 503");
+});
+
+it.each([{ coordinates: [] }, { coordinates: [[-77, -12]] }])(
+	"rejects unusable route geometry (%j)",
+	async ({ coordinates }) => {
+		await expect(
+			fetchRouteCandidates({
+				baseUrl: "https://router.example",
+				origin,
+				destination,
+				fetchImpl: fetchReturning({
+					code: "Ok",
+					routes: [
+						{
+							distance: 100,
+							duration: 20,
+							geometry: { type: "LineString", coordinates },
+						},
+					],
+				}),
+			}),
+		).rejects.toThrow();
+	},
+);

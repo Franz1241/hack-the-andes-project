@@ -1,6 +1,12 @@
 import { type ZodType, z } from "zod";
 
-import { KMH_PER_MPH, SAMSARA_API_BASE_URL } from "./constants";
+import {
+	KMH_PER_MPH,
+	PROVIDER_MAX_PAGES_COUNT,
+	PROVIDER_REQUEST_TIMEOUT_MS,
+	SAMSARA_API_BASE_URL,
+	SAMSARA_VALIDATION_LIMIT_ROWS,
+} from "./constants";
 import type { GpsProvider } from "./types";
 
 export const samsaraCredentialsSchema = z.object({
@@ -34,6 +40,8 @@ async function requestSamsara(
 	fetchImpl: typeof fetch,
 ): Promise<unknown> {
 	const response = await fetchImpl(`${SAMSARA_API_BASE_URL}${path}`, {
+		redirect: "error",
+		signal: AbortSignal.timeout(PROVIDER_REQUEST_TIMEOUT_MS),
 		headers: {
 			Authorization: `Bearer ${credentials.apiToken}`,
 			Accept: "application/json",
@@ -61,6 +69,7 @@ async function fetchAllSamsaraPages<Item>(
 			.optional(),
 	});
 	const items: Item[] = [];
+	const cursors = new Set<string>();
 	let cursor: string | null = null;
 	do {
 		const searchParams = new URLSearchParams(query);
@@ -74,6 +83,16 @@ async function fetchAllSamsaraPages<Item>(
 		);
 		items.push(...page.data);
 		cursor = page.pagination?.hasNextPage ? page.pagination.endCursor : null;
+		if (page.pagination?.hasNextPage) {
+			if (
+				!cursor ||
+				cursors.has(cursor) ||
+				cursors.size >= PROVIDER_MAX_PAGES_COUNT - 1
+			) {
+				throw new Error("Samsara pagination did not complete");
+			}
+			cursors.add(cursor);
+		}
 	} while (cursor);
 	return items;
 }
@@ -82,7 +101,16 @@ export const samsaraProvider: GpsProvider<SamsaraCredentials> = {
 	kind: "samsara",
 	credentialsSchema: samsaraCredentialsSchema,
 	async validateCredentials(credentials, fetchImpl = fetch) {
-		await requestSamsara(credentials, "/me", fetchImpl);
+		await requestSamsara(
+			credentials,
+			`/fleet/vehicles?limit=${SAMSARA_VALIDATION_LIMIT_ROWS}`,
+			fetchImpl,
+		);
+		await requestSamsara(
+			credentials,
+			"/fleet/vehicles/stats?types=gps",
+			fetchImpl,
+		);
 	},
 	async listVehicles(credentials, fetchImpl = fetch) {
 		const vehicles = await fetchAllSamsaraPages(

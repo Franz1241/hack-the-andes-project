@@ -7,6 +7,10 @@ import type {
 import { createLogger } from "evlog";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+	POSITION_RETENTION_BATCH_SIZE_ROWS,
+	POSITION_RETENTION_MS,
+} from "../constants";
 import { encryptJson, generateEncryptionKeyBase64 } from "../crypto/index";
 import {
 	CARRETERA_CENTRAL,
@@ -17,6 +21,8 @@ import {
 	pointIncident,
 } from "../hazards/test-fixtures";
 import { evaluateTrip } from "./evaluate-trip";
+import { pruneVehiclePositions } from "./prune-positions";
+import { resolveObsoleteAlerts } from "./resolve-obsolete-alerts";
 import { syncConnection } from "./sync-connection";
 
 interface QueryOptions {
@@ -230,7 +236,7 @@ describe("syncConnection with real Drizzle queries", () => {
 });
 
 describe("evaluateTrip with real Drizzle queries", () => {
-	it("completes an arrival and resolves only open alerts", async () => {
+	it("completes an arrival and resolves open and acknowledged alerts", async () => {
 		const fetchMock = vi.fn<typeof fetch>();
 		vi.stubGlobal("fetch", fetchMock);
 		const result = await evaluateTrip({
@@ -247,7 +253,13 @@ describe("evaluateTrip with real Drizzle queries", () => {
 			completed: true,
 			alertsResolved: 1,
 		});
-		expect(query.mock.calls[0]?.[1]).toContain("open");
+		expect(query.mock.calls[0]?.[1]).toEqual(
+			expect.arrayContaining([
+				"open",
+				"acknowledged",
+				activeTrip.organizationId,
+			]),
+		);
 		expect(query.mock.calls[1]?.[1]).toContain("completed");
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
@@ -376,4 +388,132 @@ describe("evaluateTrip with real Drizzle queries", () => {
 		expect(result).toMatchObject({ ok: true, skipped: "no_position" });
 		expect(query).not.toHaveBeenCalled();
 	});
+});
+
+it("resolves obsolete alerts for ended trips and inactive incidents within the tenant", async () => {
+	await resolveObsoleteAlerts({
+		db: await testDatabase(),
+		now,
+		organizationId: connection.organizationId,
+	});
+	const resolution = query.mock.calls[0];
+	expect(resolution?.[0].sql).toContain("not exists");
+	expect(resolution?.[0].sql).toContain(
+		"`hack_the_andes_trip`.`organization_id` = `hack_the_andes_alert`.`organization_id`",
+	);
+	expect(resolution?.[0].sql).toContain("`hack_the_andes_incident`.`active`");
+	expect(resolution?.[1]).toEqual(
+		expect.arrayContaining([
+			"resolved",
+			"open",
+			"acknowledged",
+			"active",
+			connection.organizationId,
+		]),
+	);
+});
+
+it("resolves acknowledged alerts after passing the hazard", async () => {
+	await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: activeTrip,
+		vehicle: storedVehicle,
+		incidents: [],
+		now,
+		log: createLogger(),
+	});
+	const resolution = query.mock.calls.at(-1);
+	expect(resolution?.[1]).toEqual(
+		expect.arrayContaining([
+			"resolved",
+			"open",
+			"acknowledged",
+			activeTrip.id,
+			activeTrip.organizationId,
+		]),
+	);
+});
+
+it("does not complete at a snapped route endpoint far from the requested destination", async () => {
+	const result = await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: { ...activeTrip, destinationLat: HUANCAYO[1] + 0.02 },
+		vehicle: { ...storedVehicle, lastLat: HUANCAYO[1], lastLng: HUANCAYO[0] },
+		incidents: [],
+		now,
+		log: createLogger(),
+	});
+	expect(result).toMatchObject({ ok: true, completed: false });
+	expect(
+		query.mock.calls.some(([, parameters]) => parameters.includes("completed")),
+	).toBe(false);
+});
+
+it("completes within the destination radius even when the route doubles back", async () => {
+	const result = await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: {
+			...activeTrip,
+			destinationLat: LIMA[1] + 0.001,
+			destinationLng: LIMA[0],
+		},
+		vehicle: storedVehicle,
+		incidents: [],
+		now,
+		log: createLogger(),
+	});
+	expect(result).toMatchObject({ ok: true, completed: true });
+});
+
+it("prunes expired position history in a bounded batch without deleting vehicle checkpoints", async () => {
+	expect(await pruneVehiclePositions(await testDatabase(), now)).toBe(1);
+	expect(query.mock.calls).toHaveLength(1);
+	const deletion = query.mock.calls[0];
+	expect(deletion?.[0].sql).toContain(
+		"delete from `hack_the_andes_vehicle_position`",
+	);
+	expect(deletion?.[0].sql).toContain("`recorded_at` < ? limit ?");
+	expect(deletion?.[1]).toEqual([
+		new Date(now.getTime() - POSITION_RETENTION_MS)
+			.toISOString()
+			.replace("T", " ")
+			.replace("Z", ""),
+		POSITION_RETENTION_BATCH_SIZE_ROWS,
+	]);
+});
+
+it("batches hazard upserts without changing acknowledged or resolved states", async () => {
+	const hazards = Array.from({ length: 251 }, (_, index) =>
+		pointIncident(`hazard-${index}`, MATUCANA),
+	);
+	query.mockImplementation(async (options) => [
+		options.rowsAsArray
+			? hazards.map((hazard) => [hazard.id])
+			: { affectedRows: 1 },
+		[],
+	]);
+	const result = await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: activeTrip,
+		vehicle: storedVehicle,
+		incidents: hazards,
+		now,
+		log: createLogger(),
+	});
+	const writes = query.mock.calls.filter(([options]) =>
+		options.sql.startsWith("insert into `hack_the_andes_alert`"),
+	);
+	expect(writes).toHaveLength(2);
+	expect(result).toMatchObject({
+		ok: true,
+		alertsUpdated: 251,
+		alertsCreated: 0,
+	});
+	expect(writes[0]?.[0].sql.split("on duplicate key update")[1]).not.toMatch(
+		/status|acknowledged_at|resolved_at/,
+	);
 });

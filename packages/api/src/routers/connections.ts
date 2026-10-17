@@ -1,4 +1,5 @@
 import { encryptJson } from "@hack-the-andes-project/business/crypto/index";
+import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
 import {
 	gpsCredentialsSchema,
 	providerFor,
@@ -96,10 +97,9 @@ export const connectionsRouter = {
 			});
 			try {
 				await provider.validateCredentials(input.credentials);
-			} catch (cause) {
+			} catch {
 				throw new ORPCError("BAD_REQUEST", {
 					message: CREDENTIALS_VALIDATION_FAILED_MESSAGE,
-					cause,
 				});
 			}
 			const encryptedCredentials = await encryptJson(
@@ -118,7 +118,7 @@ export const connectionsRouter = {
 			context.log.set({ fleet: { connectionId } });
 			const providerVehicles = await provider
 				.listVehicles(input.credentials)
-				.catch(async (cause: unknown) => {
+				.catch(async () => {
 					await context.db
 						.update(gpsConnection)
 						.set({
@@ -133,7 +133,6 @@ export const connectionsRouter = {
 						);
 					throw new ORPCError("BAD_REQUEST", {
 						message: VEHICLE_IMPORT_FAILED_MESSAGE,
-						cause,
 					});
 				});
 			for (
@@ -207,6 +206,11 @@ export const connectionsRouter = {
 						inArray(trip.vehicleId, connectionVehicles),
 					),
 				);
+			await resolveObsoleteAlerts({
+				db: context.db,
+				organizationId: context.organizationId,
+				now: new Date(),
+			});
 			await context.db
 				.delete(vehiclePosition)
 				.where(inArray(vehiclePosition.vehicleId, connectionVehicles));

@@ -1,9 +1,6 @@
 import { ORPCError, os } from "@orpc/server";
 
-import {
-	MAX_LOGGED_ERROR_MESSAGE_CHARS,
-	MAX_LOGGED_ID_CHARS,
-} from "./constants";
+import { MAX_LOGGED_ID_CHARS } from "./constants";
 import type { Context } from "./context";
 
 export const o = os.$context<Context>();
@@ -56,13 +53,22 @@ const withLogger = o.middleware(async ({ context, path, next }) => {
 			entry.status = error.status;
 			entry.message = error.message;
 		} else {
-			entry.code = error instanceof Error ? error.name : "Error";
-			entry.message = (
-				error instanceof Error ? error.message : String(error)
-			).slice(0, MAX_LOGGED_ERROR_MESSAGE_CHARS);
-			context.log.error(
-				error instanceof Error ? error : new Error(String(error)),
-			);
+			// Driver errors contain SQL parameters, including encrypted GPS credentials,
+			// so only the error class and the driver's error code are logged.
+			const safeError = new ORPCError("INTERNAL_SERVER_ERROR");
+			const errorName = error instanceof Error ? error.name : "Error";
+			const driverCode =
+				error instanceof Error &&
+				error.cause instanceof Error &&
+				"code" in error.cause
+					? String(error.cause.code)
+					: undefined;
+			entry.code = driverCode ? `${errorName}:${driverCode}` : errorName;
+			entry.status = safeError.status;
+			entry.message = safeError.message;
+			context.log.error(new Error(entry.code));
+			context.log.set({ procedures: [entry] });
+			throw safeError;
 		}
 		context.log.set({ procedures: [entry] });
 		throw error;
@@ -89,7 +95,14 @@ export const protectedProcedure = publicProcedure.use(requireAuth);
 
 const requireOrganization = o.middleware(async ({ context, next }) => {
 	const organizationId = context.session?.session.activeOrganizationId;
-	if (!organizationId) {
+	if (!organizationId || !context.session) {
+		throw new ORPCError("FORBIDDEN");
+	}
+	const membership = await context.db.query.member.findFirst({
+		columns: { id: true },
+		where: { organizationId, userId: context.session.user.id },
+	});
+	if (!membership) {
 		throw new ORPCError("FORBIDDEN");
 	}
 	return next({ context: { organizationId } });
