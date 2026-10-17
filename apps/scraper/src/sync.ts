@@ -1,15 +1,17 @@
 import type { Database } from "@hack-the-andes-project/db";
 import {
 	incident,
+	newsArticle,
 	poi,
 	scrapeRun,
 } from "@hack-the-andes-project/db/schema/scraper";
 import { and, eq, getTableColumns, inArray, lt, sql } from "drizzle-orm";
 import type { MySqlColumn, MySqlTable } from "drizzle-orm/mysql-core";
+import type { RequestLogger } from "evlog";
 
 import { DB_WRITE_CHUNK_SIZE, MAX_RUN_ERROR_MESSAGE_CHARS } from "./constants";
 import { contentHash } from "./lib/hash";
-import type { ScrapeSource } from "./sources/types";
+import type { ScrapeSource, SnapshotMode } from "./sources/types";
 
 const UPSERT_PRESERVED_KEYS = new Set([
 	"id",
@@ -92,14 +94,12 @@ interface SyncCounts {
 	deactivated: number;
 }
 
-async function syncTable<TRecord extends { sourceId: string }>(
+async function loadExisting(
 	db: Database,
 	table: SyncedTable,
 	source: string,
-	records: TRecord[],
-	runStartedAt: Date,
-): Promise<SyncCounts> {
-	const existingRows = await db
+): Promise<ExistingRow[]> {
+	const rows = await db
 		.select({
 			id: sql<string>`${table.id}`,
 			sourceId: sql<string>`${table.sourceId}`,
@@ -108,18 +108,24 @@ async function syncTable<TRecord extends { sourceId: string }>(
 		})
 		.from(table)
 		.where(eq(table.source, source));
-	const plan = await planSync(
-		existingRows.map((row) => ({ ...row, active: Boolean(row.active) })),
-		records,
-	);
+	return rows.map((row) => ({ ...row, active: Boolean(row.active) }));
+}
 
-	// `lastSeenAt` only ever moves forward (GREATEST): two runs of the same
-	// source can overlap (a manual run next to a cron fire), and a slower, older
-	// run writing its stamp last would otherwise make the newer run's sweep
-	// deactivate rows that were just confirmed present.
-	// New and changed rows go through one chunked upsert on the (source,
-	// sourceId) unique index: per-row UPDATEs cost ~45 ms each over Hyperdrive,
-	// which blew past the request budget on the ~1k-row SERFOR feed.
+// `lastSeenAt` only ever moves forward (GREATEST): two runs of the same
+// source can overlap (a manual run next to a cron fire), and a slower, older
+// run writing its stamp last would otherwise make the newer run's sweep
+// deactivate rows that were just confirmed present.
+// New and changed rows go through one chunked upsert on the (source,
+// sourceId) unique index: per-row UPDATEs cost ~45 ms each over Hyperdrive,
+// which blew past the request budget on the ~1k-row SERFOR feed.
+async function writePlan<TRecord extends { sourceId: string }>(
+	db: Database,
+	table: SyncedTable,
+	source: string,
+	plan: SyncPlan<TRecord>,
+	runStartedAt: Date,
+	snapshot: SnapshotMode,
+): Promise<SyncCounts> {
 	const upserts = [
 		...plan.inserts.map((entry) => ({ ...entry, id: crypto.randomUUID() })),
 		...plan.updates,
@@ -158,20 +164,24 @@ async function syncTable<TRecord extends { sourceId: string }>(
 			})
 			.where(inArray(table.id, chunk));
 	}
-	const [deactivation] = await db
-		.update(table)
-		.set({ active: false, lastChangedAt: runStartedAt })
-		.where(
-			and(
-				eq(table.source, source),
-				eq(table.active, true),
-				lt(table.lastSeenAt, runStartedAt),
-			),
-		);
+	let deactivated = 0;
+	if (snapshot === "full") {
+		const [deactivation] = await db
+			.update(table)
+			.set({ active: false, lastChangedAt: runStartedAt })
+			.where(
+				and(
+					eq(table.source, source),
+					eq(table.active, true),
+					lt(table.lastSeenAt, runStartedAt),
+				),
+			);
+		deactivated = deactivation.affectedRows;
+	}
 	return {
 		inserted: plan.inserts.length,
 		updated: plan.updates.length,
-		deactivated: deactivation.affectedRows,
+		deactivated,
 	};
 }
 
@@ -183,11 +193,27 @@ export interface SourceRunResult extends SyncCounts {
 	error?: string;
 }
 
+const PRIMARY_TABLE_BY_KIND: Record<ScrapeSource["kind"], SyncedTable> = {
+	incident,
+	poi,
+	news: newsArticle,
+};
+
+function addCounts(left: SyncCounts, right: SyncCounts): SyncCounts {
+	return {
+		inserted: left.inserted + right.inserted,
+		updated: left.updated + right.updated,
+		deactivated: left.deactivated + right.deactivated,
+	};
+}
+
 // Every timestamp written by a run is `runStartedAt`, so the deactivation
 // sweep (`lastSeenAt < runStartedAt`) can never catch rows this run touched.
 export async function runSource(
 	db: Database,
 	source: ScrapeSource,
+	log: RequestLogger,
+	jevApiKey: string,
 ): Promise<SourceRunResult> {
 	const runStartedAt = new Date();
 	let result: SourceRunResult = {
@@ -200,21 +226,55 @@ export async function runSource(
 		durationMs: 0,
 	};
 	try {
-		if (source.kind === "incident") {
-			const records = await source.fetch({ now: runStartedAt });
-			const counts = await syncTable(
+		const table = PRIMARY_TABLE_BY_KIND[source.kind];
+		const existing = await loadExisting(db, table, source.id);
+		const context = {
+			now: runStartedAt,
+			knownSourceIds: new Set(existing.map((row) => row.sourceId)),
+			log,
+			jevApiKey,
+		};
+		const persist = async <TRecord extends { sourceId: string }>(
+			records: TRecord[],
+		) =>
+			writePlan(
 				db,
-				incident,
+				table,
 				source.id,
-				records,
+				await planSync(existing, records),
 				runStartedAt,
+				source.snapshot,
 			);
-			result = { ...result, ...counts, ok: true, fetched: records.length };
+		let fetched = 0;
+		let counts: SyncCounts;
+		if (source.kind === "news") {
+			const records = await source.fetch(context);
+			fetched = records.length;
+			const derivedIncidents = records.flatMap(
+				(record) => source.toIncident(record) ?? [],
+			);
+			const existingIncidents = await loadExisting(db, incident, source.id);
+			counts = addCounts(
+				await persist(records),
+				await writePlan(
+					db,
+					incident,
+					source.id,
+					await planSync(existingIncidents, derivedIncidents),
+					runStartedAt,
+					"partial",
+				),
+			);
+		} else if (source.kind === "poi") {
+			const records = await source.fetch(context);
+			fetched = records.length;
+			counts = await persist(records);
 		} else {
-			const records = await source.fetch({ now: runStartedAt });
-			const counts = await syncTable(db, poi, source.id, records, runStartedAt);
-			result = { ...result, ...counts, ok: true, fetched: records.length };
+			const records = await source.fetch(context);
+			fetched = records.length;
+			counts = await persist(records);
 		}
+		result = { ...result, ...counts, ok: true, fetched };
 	} catch (error) {
 		result.error = (
 			error instanceof Error ? error.message : String(error)

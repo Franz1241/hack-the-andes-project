@@ -10,9 +10,11 @@
 		"env:generate": "varlock codegen"
 	},
 	"dependencies": {
+		"@ai-sdk/typesafe-ai": "catalog:",
 		"@hack-the-andes-project/db": "workspace:*",
 		"@turf/centroid": "catalog:",
 		"@turf/helpers": "catalog:",
+		"ai": "catalog:",
 		"drizzle-orm": "catalog:",
 		"evlog": "catalog:",
 		"zod": "catalog:"

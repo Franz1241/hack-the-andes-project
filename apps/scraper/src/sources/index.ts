@@ -4,6 +4,7 @@ import {
 	indeciCoenEmergenciesSource,
 	indeciReliefWarehousesSource,
 } from "./indeci";
+import { rppNewsSource } from "./rpp";
 import { senamhiWarningsSource } from "./senamhi";
 import { serforWildfireAlertsSource } from "./serfor";
 import {
@@ -22,6 +23,7 @@ export const SOURCES: ScrapeSource[] = [
 	senamhiWarningsSource,
 	igpLastEarthquakeSource,
 	serforWildfireAlertsSource,
+	rppNewsSource,
 	sutranAltRoutesSource,
 	...sutranDirectorySources,
 	indeciReliefWarehousesSource,

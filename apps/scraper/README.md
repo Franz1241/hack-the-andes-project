@@ -6,7 +6,7 @@ Cloudflare Worker on Cron Triggers that polls public Peruvian road and emergency
 
 | Cron | Sources |
 | --- | --- |
-| `*/5 * * * *` (`frequent`) | SUTRAN road alerts, INDECI COEN emergencies (24h + 2 days), Bomberos Perú last-24h emergencies, SENAMHI rain / quebrada / hydrological warnings, IGP last earthquake, SERFOR wildfire alerts |
+| `*/5 * * * *` (`frequent`) | SUTRAN road alerts, INDECI COEN emergencies (24h + 2 days), Bomberos Perú last-24h emergencies, SENAMHI rain / quebrada / hydrological warnings, IGP last earthquake, SERFOR wildfire alerts, RPP latest news (classified by Jev) |
 | `0 9 * * *` (`daily`) | SUTRAN alternative routes (with CDN geometry), fire stations, police stations, health facilities, bus terminals, weighing stations; INDECI national relief warehouses |
 
 Both expressions live in `packages/infra/constants.ts` and are attached in `packages/infra/scraper.ts`.
@@ -18,6 +18,12 @@ Both expressions live in `packages/infra/constants.ts` and are attached in `pack
 3. One `scrape_run` row per source per run records counts and the error message, and the invocation emits a single evlog wide event with a `sources[]` entry per feed.
 
 Consumers that want near real-time alerts can poll `incident` for `active = true AND lastChangedAt > :lastCheck`.
+
+Sources declare a `snapshot` mode. `full` sources report everything they know, so rows they stop reporting get deactivated. `partial` sources (news) only return new items, found by diffing the listing against `knownSourceIds` from the context, and never deactivate anything.
+
+## News classification (Jev)
+
+`rpp_latest_news` scrapes the 30 cards on https://rpp.pe/ultimas-noticias, fetches each new article once for its meta description, and asks TypeSafe's Jev model (through `@ai-sdk/typesafe-ai` + `experimental_decide` from the AI SDK) twelve typed questions in one request: relevance to intercity road transport, in Peru, current, mentions a road, road blocked, is a protest, people affected, category, severity rubric, time horizon, scope and region. Every article lands in `news_article` with the full answers and confidences in `classification`; an article is `relevant` when P(relevante) ≥ 0.6, P(enPeru) ≥ 0.5 and the category is not `no_aplica`, and relevant ones are mirrored into `incident` under the same source. Thresholds live in `src/constants.ts`, questions in `src/lib/jev.ts`. The key is `JEV_API_KEY` in `apps/scraper/.env`.
 
 ## Adding a source
 

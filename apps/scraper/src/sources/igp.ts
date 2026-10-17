@@ -29,6 +29,7 @@ export const igpLastEarthquakeSource: IncidentSource = {
 	kind: "incident",
 	id: "igp_last_earthquake",
 	schedule: "frequent",
+	snapshot: "full",
 	async fetch() {
 		const features = await queryArcgisLayer({
 			layerUrl: IGP_LAST_QUAKE_LAYER_URL,

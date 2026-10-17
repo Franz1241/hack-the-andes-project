@@ -41,3 +41,12 @@ export const ARCGIS_MAX_ALLOWABLE_OFFSET_DEG = 0.01;
 
 export const EARTHQUAKE_WARNING_MAGNITUDE = 4.5;
 export const EARTHQUAKE_CRITICAL_MAGNITUDE = 5.5;
+
+export const RPP_LATEST_NEWS_URL = "https://rpp.pe/ultimas-noticias";
+export const RPP_FETCH_CONCURRENCY = 5;
+export const NEWS_RELEVANCE_THRESHOLD = 0.6;
+export const NEWS_IN_PERU_THRESHOLD = 0.5;
+export const NEWS_SEVERITY_CRITICAL_SCORE = 3;
+export const NEWS_SEVERITY_WARNING_SCORE = 1.5;
+
+export const JEV_MODEL = "jev-latest";

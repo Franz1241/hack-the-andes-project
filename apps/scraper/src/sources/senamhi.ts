@@ -50,6 +50,7 @@ export const senamhiWarningsSource: IncidentSource = {
 	kind: "incident",
 	id: "senamhi_warnings",
 	schedule: "frequent",
+	snapshot: "full",
 	async fetch() {
 		const layers = await Promise.all(
 			SENAMHI_LAYERS.map(async (definition) => ({

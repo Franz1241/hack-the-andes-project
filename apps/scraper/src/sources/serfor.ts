@@ -26,6 +26,7 @@ export const serforWildfireAlertsSource: IncidentSource = {
 	kind: "incident",
 	id: "serfor_wildfire_alerts",
 	schedule: "frequent",
+	snapshot: "full",
 	async fetch({ now }) {
 		const since = toIsoDay(
 			new Date(now.getTime() - SERFOR_LOOKBACK_DAYS * MS_PER_DAY),

@@ -134,6 +134,7 @@ export const bomberosEmergenciesSource: IncidentSource = {
 	kind: "incident",
 	id: "bomberos_emergencies_24h",
 	schedule: "frequent",
+	snapshot: "full",
 	async fetch() {
 		const html = await fetchText(BOMBEROS_24H_URL);
 		return parseBomberosListing(html).map(toBomberosIncident);

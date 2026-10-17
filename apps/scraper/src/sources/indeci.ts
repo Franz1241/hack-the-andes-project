@@ -99,6 +99,7 @@ export const indeciCoenEmergenciesSource: IncidentSource = {
 	kind: "incident",
 	id: "indeci_coen_emergencies",
 	schedule: "frequent",
+	snapshot: "full",
 	async fetch() {
 		const [lastDay, recent] = await Promise.all([
 			fetchJson(`${COEN_API_BASE}/geojson-last-twenty-four`),
@@ -126,6 +127,7 @@ export const indeciReliefWarehousesSource: PoiSource = {
 	kind: "poi",
 	id: "indeci_relief_warehouses",
 	schedule: "daily",
+	snapshot: "full",
 	async fetch() {
 		const features = await queryArcgisLayer({
 			layerUrl: `${INDECI_MAPSERVER_BASE}/1`,

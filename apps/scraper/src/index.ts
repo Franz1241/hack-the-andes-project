@@ -28,7 +28,7 @@ async function runSingleSource(
 ): Promise<RunSummary> {
 	const log = createLogger({ job: "scrape", trigger, source: source.id });
 	const db = await createDb(ENV.HYPERDRIVE);
-	const result = await runSource(db, source);
+	const result = await runSource(db, source, log, ENV.JEV_API_KEY);
 	log.set({ run: result });
 	if (!result.ok) {
 		log.setLevel("error");

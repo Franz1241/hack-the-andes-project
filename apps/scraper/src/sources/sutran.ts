@@ -71,6 +71,7 @@ export const sutranAlertsSource: IncidentSource = {
 	kind: "incident",
 	id: "sutran_alerts",
 	schedule: "frequent",
+	snapshot: "full",
 	async fetch() {
 		const alerts = await fetchSutranList("alerts");
 		return alerts.map((raw) => {
@@ -131,6 +132,7 @@ export const sutranAltRoutesSource: PoiSource = {
 	kind: "poi",
 	id: "sutran_alt_routes",
 	schedule: "daily",
+	snapshot: "full",
 	async fetch() {
 		const [routes, geometries] = await Promise.all([
 			fetchSutranList("alt-routes"),
@@ -203,6 +205,7 @@ export const sutranDirectorySources: PoiSource[] = SUTRAN_DIRECTORIES.map(
 		kind: "poi",
 		id: definition.id,
 		schedule: "daily",
+		snapshot: "full",
 		async fetch() {
 			const entries = await fetchSutranList(definition.path);
 			return entries.map((raw): PoiRecord => {
