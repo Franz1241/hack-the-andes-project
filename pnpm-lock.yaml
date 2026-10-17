@@ -473,6 +473,9 @@ importers:
       '@hack-the-andes-project/api':
         specifier: workspace:*
         version: link:../../packages/api
+      '@hack-the-andes-project/business':
+        specifier: workspace:*
+        version: link:../../packages/business
       '@hack-the-andes-project/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -488,9 +491,6 @@ importers:
       '@tailwindcss/vite':
         specifier: ^4.3.3
         version: 4.3.3(vite@8.3.4(@types/node@26.6.5)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
-      '@tanstack/react-form':
-        specifier: 'catalog:'
-        version: 1.33.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@tanstack/react-query':
         specifier: ^5.104.2
         version: 5.104.3(react@19.3.1)
@@ -616,6 +616,9 @@ importers:
       '@better-auth/expo':
         specifier: 'catalog:'
         version: 1.7.7(9cdb527a9570a9dcb48a2ee5f480be09)
+      '@hack-the-andes-project/business':
+        specifier: workspace:*
+        version: link:../business
       '@hack-the-andes-project/db':
         specifier: workspace:*
         version: link:../db
@@ -822,6 +825,9 @@ importers:
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
     devDependencies:
       '@hack-the-andes-project/config':
         specifier: workspace:*
@@ -13493,14 +13499,6 @@ snapshots:
       '@tanstack/form-core': 1.33.5
       '@tanstack/react-store': 0.11.2(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
-    transitivePeerDependencies:
-      - react-dom
-
-  '@tanstack/react-form@1.33.5(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
-    dependencies:
-      '@tanstack/form-core': 1.33.5
-      '@tanstack/react-store': 0.11.2(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
-      react: 19.3.1
     transitivePeerDependencies:
       - react-dom
 

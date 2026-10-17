@@ -24,7 +24,7 @@ export default function UserMenu() {
 	if (!session) {
 		return (
 			<Link to="/login">
-				<Button variant="outline">Sign In</Button>
+				<Button variant="outline">Entrar</Button>
 			</Link>
 		);
 	}
@@ -46,7 +46,7 @@ export default function UserMenu() {
 								fetchOptions: {
 									onSuccess: () => {
 										navigate({
-											to: "/",
+											to: "/login",
 										});
 									},
 								},

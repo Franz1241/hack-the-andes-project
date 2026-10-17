@@ -1,19 +1,58 @@
-import { createFileRoute } from "@tanstack/react-router";
+import {
+	AuthForm,
+	type AuthMode,
+} from "@hack-the-andes-project/ui/components/auth-form";
+import { AuthShell } from "@hack-the-andes-project/ui/components/auth-shell";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
+import {
+	AUTH_ERROR_MESSAGES,
+	DEFAULT_AUTH_ERROR_MESSAGE,
+	RATE_LIMITED_AUTH_MESSAGE,
+	TOO_MANY_REQUESTS_STATUS,
+} from "@/constants";
+import { authClient } from "@/lib/auth-client";
 
 export const Route = createFileRoute("/login")({
-	component: RouteComponent,
+	head: () => ({ meta: [{ title: "Entrar · Illapa" }] }),
+	beforeLoad: async () => {
+		const session = await authClient.getSession().catch(() => null);
+		if (session?.data) {
+			throw redirect({ to: "/dashboard" });
+		}
+	},
+	component: LoginRoute,
 });
 
-function RouteComponent() {
-	const [showSignIn, setShowSignIn] = useState(false);
+function LoginRoute() {
+	const navigate = useNavigate();
+	const [mode, setMode] = useState<AuthMode>("sign-in");
 
-	return showSignIn ? (
-		<SignInForm onSwitchToSignUp={() => setShowSignIn(false)} />
-	) : (
-		<SignUpForm onSwitchToSignIn={() => setShowSignIn(true)} />
+	return (
+		<AuthShell>
+			<AuthForm
+				key={mode}
+				mode={mode}
+				onModeChange={setMode}
+				onSubmit={async ({ name, email, password }) => {
+					const { error } = await (mode === "sign-up"
+						? authClient.signUp.email({ name, email, password })
+						: authClient.signIn.email({ email, password })
+					).catch(() => ({ error: { status: 0, code: undefined } }));
+					if (error) {
+						if (error.status === TOO_MANY_REQUESTS_STATUS) {
+							return RATE_LIMITED_AUTH_MESSAGE;
+						}
+						return (
+							(error.code && AUTH_ERROR_MESSAGES[error.code]) ||
+							DEFAULT_AUTH_ERROR_MESSAGE
+						);
+					}
+					await navigate({ to: "/dashboard" });
+					return undefined;
+				}}
+			/>
+		</AuthShell>
 	);
 }

@@ -13,12 +13,12 @@
 	},
 	"dependencies": {
 		"@hack-the-andes-project/api": "workspace:*",
+		"@hack-the-andes-project/business": "workspace:*",
 		"@hack-the-andes-project/ui": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/tanstack-query": "catalog:",
 		"@tailwindcss/vite": "^4.3.3",
-		"@tanstack/react-form": "catalog:",
 		"@tanstack/react-query": "^5.104.2",
 		"@tanstack/react-router": "^1.170.44",
 		"better-auth": "catalog:",
