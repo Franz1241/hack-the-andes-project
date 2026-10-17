@@ -75,7 +75,8 @@ const AUTH_MODE_COPY: Record<AuthMode, AuthModeCopy> = {
 	},
 };
 
-const AUTH_CONTROL_CLASS_NAME = "h-10 text-sm md:text-sm";
+const AUTH_CONTROL_CLASS_NAME =
+	"type-body h-10 text-foreground focus-visible:ring-ring! md:type-body";
 
 export interface AuthFormProps {
 	mode: AuthMode;
@@ -93,8 +94,8 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 	return (
 		<div className="flex flex-col gap-8">
 			<div className="flex flex-col gap-2">
-				<h2 className="font-heading text-3xl tracking-tight">{copy.title}</h2>
-				<p className="text-muted-foreground text-sm">{copy.description}</p>
+				<h2 className="type-title text-foreground">{copy.title}</h2>
+				<p className="type-body text-muted-foreground">{copy.description}</p>
 			</div>
 			<form
 				noValidate
@@ -127,7 +128,9 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 					<FieldGroup>
 						{isSignUp && (
 							<Field data-invalid={Boolean(fieldErrors.name)}>
-								<FieldLabel htmlFor="auth-name">Nombre</FieldLabel>
+								<FieldLabel className="type-label" htmlFor="auth-name">
+									Nombre
+								</FieldLabel>
 								<Input
 									id="auth-name"
 									name="name"
@@ -136,11 +139,15 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 									aria-invalid={Boolean(fieldErrors.name)}
 									className={AUTH_CONTROL_CLASS_NAME}
 								/>
-								<FieldError>{fieldErrors.name?.[0]}</FieldError>
+								<FieldError className="type-body text-destructive">
+									{fieldErrors.name?.[0]}
+								</FieldError>
 							</Field>
 						)}
 						<Field data-invalid={Boolean(fieldErrors.email)}>
-							<FieldLabel htmlFor="auth-email">Correo electrónico</FieldLabel>
+							<FieldLabel className="type-label" htmlFor="auth-email">
+								Correo electrónico
+							</FieldLabel>
 							<Input
 								id="auth-email"
 								name="email"
@@ -150,23 +157,28 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 								aria-invalid={Boolean(fieldErrors.email)}
 								className={AUTH_CONTROL_CLASS_NAME}
 							/>
-							<FieldError>{fieldErrors.email?.[0]}</FieldError>
+							<FieldError className="type-body text-destructive">
+								{fieldErrors.email?.[0]}
+							</FieldError>
 						</Field>
 						<Field data-invalid={Boolean(fieldErrors.password)}>
-							<FieldLabel htmlFor="auth-password">Contraseña</FieldLabel>
+							<FieldLabel className="type-label" htmlFor="auth-password">
+								Contraseña
+							</FieldLabel>
 							<PasswordInput
 								id="auth-password"
 								name="password"
 								autoComplete={isSignUp ? "new-password" : "current-password"}
 								aria-invalid={Boolean(fieldErrors.password)}
-								className="text-sm md:text-sm"
 								groupClassName="h-10"
 							/>
 							{fieldErrors.password ? (
-								<FieldError>{fieldErrors.password[0]}</FieldError>
+								<FieldError className="type-body text-destructive">
+									{fieldErrors.password[0]}
+								</FieldError>
 							) : (
 								isSignUp && (
-									<FieldDescription>
+									<FieldDescription className="type-body">
 										Al menos {MIN_PASSWORD_LENGTH_CHARS} caracteres.
 									</FieldDescription>
 								)
@@ -176,23 +188,25 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 				</fieldset>
 				{submitError && (
 					<Alert variant="destructive">
-						<AlertDescription>{submitError}</AlertDescription>
+						<AlertDescription className="text-destructive">
+							{submitError}
+						</AlertDescription>
 					</Alert>
 				)}
 				<Button
 					type="submit"
 					size="lg"
-					className="h-10 w-full text-sm"
+					className="w-full"
 					disabled={isSubmitting}
 				>
 					{isSubmitting ? copy.pending : copy.submit}
 				</Button>
 			</form>
-			<p className="text-center text-muted-foreground text-sm">
+			<p className="type-body text-center text-muted-foreground">
 				{copy.switchPrompt}{" "}
 				<Button
 					variant="link"
-					className="h-auto p-0 text-sm"
+					className="h-auto p-0"
 					onClick={() => onModeChange(isSignUp ? "sign-in" : "sign-up")}
 				>
 					{copy.switchAction}
