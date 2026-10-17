@@ -2,10 +2,14 @@ import {
 	ROUTE_CANDIDATE_NOT_FOUND_MESSAGE,
 	ROUTE_REVIEW_NOT_FOUND_MESSAGE,
 	TRIP_NOT_FOUND_MESSAGE,
+	TRIP_NOT_PLANNED_MESSAGE,
+	TRIP_STATUS_ACTIVE,
 	TRIP_STATUS_CANCELLED,
 	TRIP_STATUS_PLANNED,
+	VEHICLE_GPS_REQUIRED_MESSAGE,
 	VEHICLE_NOT_FOUND_MESSAGE,
 	VEHICLE_PROFILE_REQUIRED_MESSAGE,
+	VEHICLE_TRIP_ALREADY_ACTIVE_MESSAGE,
 } from "@hack-the-andes-project/api/constants";
 import type {
 	PlannedTrip,
@@ -468,6 +472,24 @@ export const routeReviewFixtureClient = {
 				const trip = findTrip(input.id);
 				trip.status = TRIP_STATUS_CANCELLED;
 				return { id: trip.id, status: trip.status };
+			}),
+		start: (input: { id: string }) =>
+			respond(() => {
+				const trip = findTrip(input.id);
+				if (trip.status !== TRIP_STATUS_PLANNED)
+					throw new Error(TRIP_NOT_PLANNED_MESSAGE);
+				if (!findVehicle(trip.vehicleId).connectionId)
+					throw new Error(VEHICLE_GPS_REQUIRED_MESSAGE);
+				if (
+					plannedTrips.some(
+						(otherTrip) =>
+							otherTrip.vehicleId === trip.vehicleId &&
+							otherTrip.status === TRIP_STATUS_ACTIVE,
+					)
+				)
+					throw new Error(VEHICLE_TRIP_ALREADY_ACTIVE_MESSAGE);
+				trip.status = TRIP_STATUS_ACTIVE;
+				return tripDetail(trip);
 			}),
 	},
 };
