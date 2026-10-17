@@ -15,6 +15,10 @@ export interface FleetConfirmationDialogProps {
 	title: string;
 	description: string;
 	actionLabel: string;
+	pendingLabel: string;
+	cancelLabel: string;
+	errorTitle: string;
+	actionVariant: "default" | "destructive";
 	isPending: boolean;
 	error: Error | null;
 	onConfirm: () => void;
@@ -26,6 +30,10 @@ export function FleetConfirmationDialog({
 	title,
 	description,
 	actionLabel,
+	pendingLabel,
+	cancelLabel,
+	errorTitle,
+	actionVariant,
 	isPending,
 	error,
 	onConfirm,
@@ -45,14 +53,21 @@ export function FleetConfirmationDialog({
 				</AlertDialogHeader>
 				{error && (
 					<Alert variant="destructive">
-						<AlertTitle>No se pudo guardar el cambio</AlertTitle>
+						<AlertTitle>{errorTitle}</AlertTitle>
 						<AlertDescription>{error.message}</AlertDescription>
 					</Alert>
 				)}
 				<AlertDialogFooter>
-					<AlertDialogCancel disabled={isPending}>Volver</AlertDialogCancel>
-					<AlertDialogAction disabled={isPending} onClick={onConfirm}>
-						{isPending ? "Guardando…" : actionLabel}
+					<AlertDialogCancel className="min-h-11" disabled={isPending}>
+						{cancelLabel}
+					</AlertDialogCancel>
+					<AlertDialogAction
+						className="min-h-11"
+						variant={actionVariant}
+						disabled={isPending}
+						onClick={onConfirm}
+					>
+						{isPending ? pendingLabel : actionLabel}
 					</AlertDialogAction>
 				</AlertDialogFooter>
 			</AlertDialogContent>

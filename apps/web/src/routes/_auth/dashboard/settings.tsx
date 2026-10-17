@@ -86,6 +86,10 @@ function SettingsPage() {
 				</Empty>
 			)}
 			<FleetConfirmationDialog
+				pendingLabel="Guardando…"
+				cancelLabel="Volver"
+				errorTitle="No se pudo guardar el cambio"
+				actionVariant="default"
 				open={Boolean(removingConnection)}
 				title="Eliminar conexión GPS"
 				description={`Se eliminarán los vehículos y el historial de posiciones de «${removingConnection?.label ?? ""}», y se cancelarán sus viajes en curso.`}
