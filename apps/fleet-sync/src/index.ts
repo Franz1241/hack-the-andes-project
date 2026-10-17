@@ -47,11 +47,7 @@ async function syncAll(
 			const connections = await db
 				.select()
 				.from(gpsConnection)
-				.where(
-					connectionId
-						? eq(gpsConnection.id, connectionId)
-						: eq(gpsConnection.status, "active"),
-				);
+				.where(connectionId ? eq(gpsConnection.id, connectionId) : undefined);
 			if (connectionId && connections.length === 0) {
 				summary.error = "unknown_connection";
 				return summary;
