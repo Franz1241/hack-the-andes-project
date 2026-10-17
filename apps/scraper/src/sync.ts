@@ -113,6 +113,10 @@ async function syncTable<TRecord extends { sourceId: string }>(
 		records,
 	);
 
+	// `lastSeenAt` only ever moves forward (GREATEST): two runs of the same
+	// source can overlap (a manual run next to a cron fire), and a slower, older
+	// run writing its stamp last would otherwise make the newer run's sweep
+	// deactivate rows that were just confirmed present.
 	// New and changed rows go through one chunked upsert on the (source,
 	// sourceId) unique index: per-row UPDATEs cost ~45 ms each over Hyperdrive,
 	// which blew past the request budget on the ~1k-row SERFOR feed.
@@ -138,15 +142,20 @@ async function syncTable<TRecord extends { sourceId: string }>(
 			.insert(table)
 			.values(chunk)
 			.onDuplicateKeyUpdate({
-				set: Object.fromEntries(
-					overwrittenKeys.map((key) => [key, sql`values(${columns[key]})`]),
-				),
+				set: {
+					...Object.fromEntries(
+						overwrittenKeys.map((key) => [key, sql`values(${columns[key]})`]),
+					),
+					lastSeenAt: sql`greatest(${table.lastSeenAt}, values(${table.lastSeenAt}))`,
+				},
 			});
 	}
 	for (const chunk of chunked(plan.unchangedIds)) {
 		await db
 			.update(table)
-			.set({ lastSeenAt: runStartedAt })
+			.set({
+				lastSeenAt: sql`greatest(${table.lastSeenAt}, ${sql.param(runStartedAt, table.lastSeenAt)})`,
+			})
 			.where(inArray(table.id, chunk));
 	}
 	const [deactivation] = await db
