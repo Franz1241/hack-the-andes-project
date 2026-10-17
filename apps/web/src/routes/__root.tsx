@@ -65,7 +65,7 @@ function RootComponent() {
 				<div className="min-h-svh">
 					<Outlet />
 				</div>
-				<Toaster richColors />
+				<Toaster />
 			</ThemeProvider>
 			{import.meta.env.DEV && (
 				<>

@@ -1,24 +1,30 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "cn";
+import {
+	CircleCheckIcon,
+	InfoIcon,
+	OctagonXIcon,
+	TriangleAlertIcon,
+} from "lucide-react";
 import type * as React from "react";
 
 const alertVariants = cva(
-	"group/alert relative grid w-full gap-0.5 rounded-lg border px-2.5 py-2 text-left text-xs has-data-[slot=alert-action]:relative has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 has-data-[slot=alert-action]:pr-18 *:[svg:not([class*='size-'])]:size-4 *:[svg]:row-span-2 *:[svg]:translate-y-0",
+	"group/alert relative flex w-full items-start gap-3 rounded-lg border px-4 py-3 text-left has-data-[slot=alert-action]:pr-18 *:[svg:not([class*='size-'])]:size-4 *:[svg]:mt-0.5 *:[svg]:shrink-0",
 	{
 		variants: {
 			variant: {
-				default: "bg-card text-card-foreground",
+				default: "border-border bg-card text-card-foreground",
 				destructive:
-					"border-l-2 border-l-destructive bg-card text-card-foreground *:[svg]:text-destructive",
-				low: "border-l-2 border-l-risk-low bg-card text-card-foreground *:[svg]:text-risk-low",
+					"border-destructive/25 bg-destructive/8 text-card-foreground *:[svg]:text-destructive",
+				low: "border-risk-low/25 bg-risk-low/8 text-card-foreground *:[svg]:text-risk-low",
 				moderate:
-					"border-l-2 border-l-risk-moderate bg-card text-card-foreground *:[svg]:text-risk-moderate",
-				high: "border-l-2 border-l-risk-high bg-card text-card-foreground *:[svg]:text-risk-high",
+					"border-risk-moderate/35 bg-risk-moderate/12 text-card-foreground *:[svg]:text-risk-moderate",
+				high: "border-risk-high/30 bg-risk-high/10 text-card-foreground *:[svg]:text-risk-high",
 				critical:
-					"border-l-2 border-l-risk-critical bg-card text-card-foreground *:[svg]:text-risk-critical",
-				info: "border-l-2 border-l-info bg-card text-card-foreground *:[svg]:text-info",
+					"border-risk-critical/25 bg-risk-critical/8 text-card-foreground *:[svg]:text-risk-critical",
+				info: "border-info/25 bg-info/8 text-card-foreground *:[svg]:text-info",
 				success:
-					"border-l-2 border-l-success bg-card text-card-foreground *:[svg]:text-success",
+					"border-success/25 bg-success/8 text-card-foreground *:[svg]:text-success",
 			},
 		},
 		defaultVariants: {
@@ -27,9 +33,21 @@ const alertVariants = cva(
 	},
 );
 
+const alertVariantIcons = {
+	default: null,
+	destructive: <OctagonXIcon aria-hidden="true" />,
+	critical: <OctagonXIcon aria-hidden="true" />,
+	high: <TriangleAlertIcon aria-hidden="true" />,
+	moderate: <TriangleAlertIcon aria-hidden="true" />,
+	low: <InfoIcon aria-hidden="true" />,
+	info: <InfoIcon aria-hidden="true" />,
+	success: <CircleCheckIcon aria-hidden="true" />,
+};
+
 function Alert({
 	className,
-	variant,
+	variant = "default",
+	children,
 	...props
 }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
 	return (
@@ -38,7 +56,10 @@ function Alert({
 			role="alert"
 			className={cn(alertVariants({ variant }), className)}
 			{...props}
-		/>
+		>
+			{alertVariantIcons[variant ?? "default"]}
+			<div className="flex min-w-0 flex-1 flex-col gap-0.5">{children}</div>
+		</div>
 	);
 }
 
@@ -47,7 +68,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="alert-title"
 			className={cn(
-				"type-heading group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
+				"font-sans font-semibold text-sm/5 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
 				className,
 			)}
 			{...props}
@@ -63,7 +84,7 @@ function AlertDescription({
 		<div
 			data-slot="alert-description"
 			className={cn(
-				"type-body text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-2",
+				"text-pretty text-muted-foreground text-sm/5 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-1",
 				className,
 			)}
 			{...props}
@@ -75,10 +96,7 @@ function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
 	return (
 		<div
 			data-slot="alert-action"
-			className={cn(
-				"absolute top-[calc(--spacing(1.25))] right-[calc(--spacing(1.25))]",
-				className,
-			)}
+			className={cn("absolute top-2.5 right-2.5", className)}
 			{...props}
 		/>
 	);

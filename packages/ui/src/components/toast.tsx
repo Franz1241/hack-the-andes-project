@@ -68,7 +68,7 @@ function ToastContent({ className, ...props }: ToastPrimitive.Content.Props) {
 		<ToastPrimitive.Content
 			data-slot="toast-content"
 			className={cn(
-				"flex h-full items-center gap-3 overflow-hidden p-4 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
+				"flex h-full items-start gap-3 overflow-hidden px-4 py-3 transition-opacity duration-250 ease-[cubic-bezier(0.22,1,0.36,1)] data-behind:opacity-0 data-expanded:opacity-100",
 				className,
 			)}
 			{...props}
@@ -80,7 +80,7 @@ function ToastTitle({ className, ...props }: ToastPrimitive.Title.Props) {
 	return (
 		<ToastPrimitive.Title
 			data-slot="toast-title"
-			className={cn("type-heading", className)}
+			className={cn("font-sans font-semibold text-sm/5", className)}
 			{...props}
 		/>
 	);
@@ -93,7 +93,7 @@ function ToastDescription({
 	return (
 		<ToastPrimitive.Description
 			data-slot="toast-description"
-			className={cn("type-body text-muted-foreground", className)}
+			className={cn("text-muted-foreground text-sm/5", className)}
 			{...props}
 		/>
 	);
@@ -166,7 +166,7 @@ function ToastIcon({ type }: { type: string | undefined }) {
 	return (
 		<span
 			data-slot="toast-icon"
-			className="shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none"
+			className="mt-0.5 shrink-0 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none"
 		>
 			{icon}
 		</span>
