@@ -26,7 +26,11 @@ import type {
 	VehicleCreateInput,
 	VehicleProfileUpdateInput,
 } from "@hack-the-andes-project/api/route-review-schemas";
-import { METERS_PER_KM } from "@hack-the-andes-project/business/constants";
+import {
+	METERS_PER_KM,
+	MS_PER_HOUR,
+	MS_PER_MINUTE,
+} from "@hack-the-andes-project/business/constants";
 import { compareRouteCandidates } from "@hack-the-andes-project/business/route-review/ranking";
 import type { RouteRiskLevel } from "@hack-the-andes-project/business/route-review/risk";
 
@@ -38,9 +42,7 @@ import {
 	FIXTURE_ORGANIZATION_ID,
 	FIXTURE_STORAGE_KEY,
 	HIGH_RISK_MIN_SCORE,
-	HOUR_MS,
 	ISO_DATE_PATTERN,
-	MINUTE_MS,
 	MODERATE_RISK_MIN_SCORE,
 } from "./constants";
 import limaHuancayoRoutes from "./lima-huancayo-routes.json";
@@ -74,7 +76,9 @@ function buildCandidate(
 	const route = limaHuancayoRoutes[scenario.routeKey];
 	const segmentId = (index: number) => `${scenario.id}:${index}`;
 	const hoursAfterDeparture = (hours: number | null) =>
-		hours === null ? null : new Date(departureAt.getTime() + hours * HOUR_MS);
+		hours === null
+			? null
+			: new Date(departureAt.getTime() + hours * MS_PER_HOUR);
 	const segmentScores = route.segments.map((segment): HorizonScores => {
 		const midpointKm = (segment.startM + segment.endM) / 2 / METERS_PER_KM;
 		const coveringHotspots = scenario.hotspots.filter(
@@ -116,7 +120,7 @@ function buildCandidate(
 			source: signal.source,
 			sourceUrl: signal.sourceUrl,
 			observedAt: new Date(
-				now.getTime() - signal.observedMinutesAgo * MINUTE_MS,
+				now.getTime() - signal.observedMinutesAgo * MS_PER_MINUTE,
 			),
 			validFrom: hoursAfterDeparture(signal.validFromHoursAfterDeparture),
 			validUntil: hoursAfterDeparture(signal.validUntilHoursAfterDeparture),
@@ -188,7 +192,7 @@ const gpsVehicleDefaults = {
 	provider: "demo" as const,
 	lastLat: -12.0553,
 	lastLng: -77.1186,
-	lastPositionAt: new Date(seededAt.getTime() - 3 * MINUTE_MS),
+	lastPositionAt: new Date(seededAt.getTime() - 3 * MS_PER_MINUTE),
 };
 const manualVehicleDefaults = {
 	...vehicleDefaults,
@@ -386,7 +390,7 @@ function persist() {
 	} catch {}
 }
 
-const nextHour = Math.ceil(seededAt.getTime() / HOUR_MS) * HOUR_MS;
+const nextHour = Math.ceil(seededAt.getTime() / MS_PER_HOUR) * MS_PER_HOUR;
 for (const tripReview of storedState?.tripReviews ?? []) {
 	tripReviewIds.set(
 		tripReview.tripId,
@@ -436,7 +440,7 @@ for (const seed of storedState
 		originPlaceId: "lima",
 		destinationPlaceId: "huancayo",
 		vehicleId: seed.vehicleId,
-		departureAt: new Date(nextHour + seed.departureInHours * HOUR_MS),
+		departureAt: new Date(nextHour + seed.departureInHours * MS_PER_HOUR),
 	});
 	const trip = plan({
 		reviewId: review.id,
