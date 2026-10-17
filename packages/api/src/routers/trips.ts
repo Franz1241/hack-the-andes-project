@@ -1,4 +1,9 @@
-import { MS_PER_SECOND } from "@hack-the-andes-project/business/constants";
+import {
+	DEMO_TRIP_SCENARIOS,
+	MS_PER_SECOND,
+} from "@hack-the-andes-project/business/constants";
+import { loadAlertableIncidents } from "@hack-the-andes-project/business/fleet/load-alertable-incidents";
+import { planDemoTrip } from "@hack-the-andes-project/business/fleet/plan-demo-trip";
 import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
 import { fetchRouteCandidates } from "@hack-the-andes-project/business/routing/osrm";
 import {
@@ -14,6 +19,9 @@ import { z } from "zod";
 
 import {
 	ALERT_STATUS_OPEN,
+	DEMO_CLEAR_ROUTE_NOT_FOUND_MESSAGE,
+	DEMO_HAZARD_ROUTE_NOT_FOUND_MESSAGE,
+	DEMO_VEHICLE_REQUIRED_MESSAGE,
 	ROUTING_FAILED_MESSAGE,
 	TRIP_NOT_ACTIVE_MESSAGE,
 	TRIP_NOT_FOUND_MESSAGE,
@@ -201,6 +209,65 @@ export const tripsRouter = {
 				},
 			});
 			return createdTrip;
+		}),
+	planDemo: organizationProcedure
+		.input(
+			z.object({
+				vehicleId: fleetIdSchema,
+				scenario: z.enum(DEMO_TRIP_SCENARIOS),
+			}),
+		)
+		.output(
+			z.object({
+				destination: latLngSchema,
+				incidentTitle: z.string().nullable(),
+			}),
+		)
+		.handler(async ({ context, input }) => {
+			const selectedVehicle = await context.db.query.vehicle.findFirst({
+				columns: { lastLat: true, lastLng: true },
+				where: { id: input.vehicleId, organizationId: context.organizationId },
+				with: { connection: { columns: { provider: true } } },
+			});
+			if (
+				selectedVehicle?.connection?.provider !== "demo" ||
+				selectedVehicle.lastLat === null ||
+				selectedVehicle.lastLng === null
+			) {
+				throw new ORPCError("BAD_REQUEST", {
+					message: DEMO_VEHICLE_REQUIRED_MESSAGE,
+				});
+			}
+			context.log.set({
+				fleet: {
+					organizationId: context.organizationId,
+					vehicleId: input.vehicleId,
+					demoScenario: input.scenario,
+				},
+			});
+			const plan = await planDemoTrip({
+				osrmBaseUrl: context.osrmBaseUrl,
+				origin: { lat: selectedVehicle.lastLat, lng: selectedVehicle.lastLng },
+				scenario: input.scenario,
+				incidents: await loadAlertableIncidents(context.db),
+			}).catch((cause: unknown) => {
+				throw new ORPCError("BAD_REQUEST", {
+					message: ROUTING_FAILED_MESSAGE,
+					cause,
+				});
+			});
+			if (!plan)
+				throw new ORPCError("BAD_REQUEST", {
+					message:
+						input.scenario === "hazard"
+							? DEMO_HAZARD_ROUTE_NOT_FOUND_MESSAGE
+							: DEMO_CLEAR_ROUTE_NOT_FOUND_MESSAGE,
+				});
+			context.log.set({ fleet: { demoIncidentId: plan.incident?.id } });
+			return {
+				destination: plan.destination,
+				incidentTitle: plan.incident?.title ?? null,
+			};
 		}),
 	cancel: organizationProcedure
 		.input(entityIdInputSchema)
