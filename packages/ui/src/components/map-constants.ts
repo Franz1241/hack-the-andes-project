@@ -4,7 +4,6 @@ export const PERU_INITIAL_ZOOM_LEVEL = 5;
 export const INCIDENT_FILL_OPACITY_RATIO = 0.08;
 export const INCIDENT_LINE_WIDTH_PX = 3;
 export const INCIDENT_POINT_RADIUS_PX = 6;
-export const INCIDENT_POINT_STROKE_COLOR = "#ffffff";
 export const INCIDENT_POINT_STROKE_WIDTH_PX = 2;
 export const INCIDENT_GEOMETRY_SOURCE_ID = "incidents";
 export const INCIDENT_FILL_LAYER_ID = "incident-areas";

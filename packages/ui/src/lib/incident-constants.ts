@@ -45,12 +45,6 @@ export const INCIDENT_SOURCE_LABELS: Record<string, string> = {
 	sratma_accidents: "MTC · Accidentes de tránsito (SRATMA)",
 };
 
-export const INCIDENT_SEVERITY_COLORS = {
-	critical: "#e11d48",
-	warning: "#d97706",
-	info: "#0284c7",
-} satisfies Record<keyof typeof INCIDENT_SEVERITY_LABELS, string>;
-
 export const INCIDENT_SEVERITY_OPTIONS: (keyof typeof INCIDENT_SEVERITY_LABELS)[] =
 	["critical", "warning", "info"];
 
