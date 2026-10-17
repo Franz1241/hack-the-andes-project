@@ -14,6 +14,7 @@ export interface Incident {
 	lng: number | null;
 	geometry: Geometry | null;
 	description: string | null;
+	imageUrl: string | null;
 	roadCode: string | null;
 	roadName: string | null;
 	roadKm: string | null;
