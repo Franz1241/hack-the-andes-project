@@ -21,6 +21,10 @@ export const SCRAPER_FREQUENT_CRON = "*/5 * * * *";
 export const SCRAPER_HOURLY_CRON = "0 * * * *";
 export const SCRAPER_DAILY_CRON = "0 9 * * *";
 
+export const FLEET_SYNC_DEV_PORT = 3003;
+export const FLEET_SYNC_WORKER_NAME = "hack-the-andes-fleet-sync";
+export const FLEET_SYNC_CRON = "*/2 * * * *";
+
 // Workers Logs keeps the evlog wide events and stamps each invocation with its
 // cpuTime/wallTime (what the Free plan's 10 ms CPU limit kills on); traces add
 // the per-request waterfall and Issues groups uncaught exceptions.

@@ -1,5 +1,6 @@
 export * from "./constants";
 export * from "./crypto/index";
+export * from "./fleet/index";
 export * from "./hazards/alertable";
 export * from "./hazards/alternative";
 export * from "./hazards/eta";
