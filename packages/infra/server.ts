@@ -14,14 +14,19 @@ import { hyperdriveRef } from "./hyperdrive.ts";
 
 // Workers have no git context at runtime, so resolve the commit at deploy time
 // and pass it as a plaintext var binding for evlog's build identity.
-let serviceVersion = process.env.SERVICE_VERSION ?? "";
-if (!serviceVersion) {
+function resolveServiceVersion(): string {
+	const fromEnv = process.env.SERVICE_VERSION;
+	if (fromEnv) {
+		return fromEnv;
+	}
 	try {
-		serviceVersion = execSync("git rev-parse --short HEAD").toString().trim();
+		return execSync("git rev-parse --short HEAD").toString().trim();
 	} catch {
-		serviceVersion = "unknown";
+		return "unknown";
 	}
 }
+
+export const serviceVersion = resolveServiceVersion();
 
 export const server = Cloudflare.Worker("server", {
 	name: SERVER_WORKER_NAME,
