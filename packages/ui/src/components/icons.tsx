@@ -3,6 +3,8 @@ export {
 	BellIcon,
 	CloudLightningIcon,
 	ExternalLinkIcon,
+	EyeIcon,
+	EyeOffIcon,
 	MapIcon,
 	MapPinIcon,
 	Moon,
