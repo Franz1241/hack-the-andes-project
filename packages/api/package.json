@@ -16,11 +16,13 @@
 		"@orpc/openapi": "catalog:",
 		"@orpc/server": "catalog:",
 		"@orpc/zod": "catalog:",
+		"drizzle-orm": "catalog:",
 		"evlog": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@hack-the-andes-project/config": "workspace:*",
+		"@types/geojson": "catalog:",
 		"typescript": "^6.0.3"
 	}
 }
