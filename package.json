@@ -20,7 +20,7 @@
 		"db:generate": "pnpm --filter @hack-the-andes-project/db db:generate",
 		"db:migrate": "pnpm --filter @hack-the-andes-project/db db:migrate",
 		"db:studio": "pnpm --filter @hack-the-andes-project/db db:studio",
-		"deploy": "pnpm --filter @hack-the-andes-project/infra deploy",
+		"deploy": "pnpm --filter @hack-the-andes-project/infra run deploy",
 		"deploy:server": "pnpm --filter @hack-the-andes-project/infra deploy:server",
 		"deploy:web": "pnpm --filter @hack-the-andes-project/infra deploy:web",
 		"deploy:illapa": "pnpm --filter @hack-the-andes-project/infra deploy:illapa",
