@@ -10,6 +10,7 @@ import {
 } from "@hack-the-andes-project/ui/components/table";
 import { useEffect, useRef, useState } from "react";
 import { m } from "@/paraglide/messages";
+import { LogoBlock } from "@/showcase/logo";
 
 const TYPE_SPECIMENS = [
 	{
@@ -146,6 +147,7 @@ export function TypeSection() {
 				</code>{" "}
 				{m.ds_type_paragraph_end()}
 			</p>
+			<LogoBlock />
 		</ShowcaseSection>
 	);
 }

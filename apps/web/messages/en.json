@@ -392,5 +392,19 @@
 	"account_sign_out": "Sign out",
 	"ds_theme_switch_title": "Light or dark theme",
 	"ds_theme_switch_description": "Light by default. A switch turns on dark mode; your preference is saved on this device.",
-	"ds_sidebar_description": "A sidebar that expands or collapses to icons with tooltips. Theme, language, and account stay within reach; on phones, it opens as a drawer."
+	"ds_sidebar_description": "A sidebar that expands or collapses to icons with tooltips. Theme, language, and account stay within reach; on phones, it opens as a drawer.",
+	"ds_logo_kicker": "Identity · Mayu",
+	"ds_logo_title": "Logo",
+	"ds_logo_description": "A raindrop carrying a starlight lightning bolt. The aqua mark and lowercase illapa wordmark identify the product; they never indicate risk.",
+	"ds_logo_mark_label": "ILLAPA mark: raindrop with a lightning bolt",
+	"ds_logo_light_surface": "Mark and lockup · light surface",
+	"ds_logo_dark_surface": "Mark and lockup · dark surface",
+	"ds_logo_app_icon": "App icon",
+	"ds_logo_icon_size": "{size} px",
+	"ds_logo_rules_title": "Usage rules",
+	"ds_logo_clear_space": "Leave clear space equal to the bolt’s width on every side.",
+	"ds_logo_minimum_size": "Minimum size: 16 px for the icon and 96 px wide for the full lockup.",
+	"ds_logo_colors": "Use brand-river + brand-starlight or one solid colour. Never use risk colours.",
+	"ds_logo_geometry": "Keep the original proportions and orientation. Never stretch or rotate the logo.",
+	"ds_logo_backgrounds": "Always place a solid surface behind the logo when using it over photos or maps."
 }

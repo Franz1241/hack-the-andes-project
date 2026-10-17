@@ -392,5 +392,19 @@
 	"account_sign_out": "Cerrar sesión",
 	"ds_theme_switch_title": "Tema claro u oscuro",
 	"ds_theme_switch_description": "Claro por defecto. Un interruptor permite elegir el modo oscuro; la preferencia se guarda en este dispositivo.",
-	"ds_sidebar_description": "Una barra lateral que se expande o se contrae a iconos con etiquetas al pasar el cursor. Tema, idioma y cuenta siempre a mano; en el teléfono se abre como un panel."
+	"ds_sidebar_description": "Una barra lateral que se expande o se contrae a iconos con etiquetas al pasar el cursor. Tema, idioma y cuenta siempre a mano; en el teléfono se abre como un panel.",
+	"ds_logo_kicker": "Identidad · Mayu",
+	"ds_logo_title": "Logo",
+	"ds_logo_description": "Gota de rayo: una gota aqua lleva un rayo de luz de estrella. El símbolo y la firma illapa identifican al producto, sin representar niveles de riesgo.",
+	"ds_logo_mark_label": "Símbolo de ILLAPA: gota con rayo",
+	"ds_logo_light_surface": "Símbolo y firma · superficie clara",
+	"ds_logo_dark_surface": "Símbolo y firma · superficie oscura",
+	"ds_logo_app_icon": "Icono de la aplicación",
+	"ds_logo_icon_size": "{size} px",
+	"ds_logo_rules_title": "Reglas de uso",
+	"ds_logo_clear_space": "Deja un espacio libre equivalente al ancho del rayo en cada lado.",
+	"ds_logo_minimum_size": "Tamaño mínimo: 16 px para el icono y 96 px de ancho para la firma completa.",
+	"ds_logo_colors": "Usa brand-river + brand-starlight o un solo color sólido. Nunca uses colores de riesgo.",
+	"ds_logo_geometry": "Mantén las proporciones y la orientación: no estires ni gires el logo.",
+	"ds_logo_backgrounds": "Sobre fotos o mapas, coloca siempre una superficie uniforme detrás del logo."
 }

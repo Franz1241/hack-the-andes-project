@@ -16,6 +16,8 @@ export const SHOWCASE_SECTIONS = [
 	{ id: "panel", label: m.ds_panel_title },
 ];
 
+export const SHOWCASE_APP_ICON_SIZES_PX = [64, 32, 16];
+
 interface RiskLevel {
 	variant: "low" | "moderate" | "high" | "critical";
 	label: () => string;
