@@ -3,7 +3,10 @@ import { generateEncryptionKeyBase64 } from "@hack-the-andes-project/business/cr
 import * as incidentLoading from "@hack-the-andes-project/business/fleet/load-alertable-incidents";
 import * as demoTripPlanning from "@hack-the-andes-project/business/fleet/plan-demo-trip";
 import * as fleetSync from "@hack-the-andes-project/business/fleet/sync-connection";
-import type { HazardIncident } from "@hack-the-andes-project/business/hazards/types";
+import type {
+	HazardIncident,
+	RouteCandidate,
+} from "@hack-the-andes-project/business/hazards/types";
 import {
 	DEMO_VEHICLES,
 	samsaraProvider,
@@ -426,6 +429,166 @@ describe("fleet procedure boundaries", () => {
 			},
 			scenario: "hazard",
 			incidents: [incident],
+		});
+	});
+
+	describe("immediate hazard evaluation", () => {
+		const destination = { lat: 0.1, lng: 0.1 };
+		const route: RouteCandidate = {
+			geometry: {
+				type: "LineString",
+				coordinates: [
+					[0, 0],
+					[destination.lng, destination.lat],
+				],
+			},
+			distanceM: 15_700,
+			durationS: 900,
+		};
+		const huaico: HazardIncident = {
+			id: "huaico",
+			category: "landslide",
+			severity: "critical",
+			title: "Huaico en la ruta",
+			geometry: null,
+			lat: 0.05,
+			lng: 0.05,
+		};
+		const writeResult = {
+			affectedRows: 1,
+			constructor: { name: "ResultSetHeader" } satisfies {
+				name: "ResultSetHeader";
+			},
+			fieldCount: 0,
+			info: "",
+			insertId: 0,
+			serverStatus: 0,
+			warningStatus: 0,
+			changedRows: 1,
+		};
+
+		beforeEach(() => {
+			vi.spyOn(database.query.vehicle, "findFirst").mockResolvedValue(
+				positionedVehicle,
+			);
+			vi.spyOn(routing, "fetchRouteCandidates").mockResolvedValue([route]);
+		});
+
+		it("persists an alert for an incident on the new route before fleet-sync runs", async () => {
+			vi.spyOn(incidentLoading, "loadAlertableIncidents").mockResolvedValue([
+				huaico,
+			]);
+			const query = vi
+				.spyOn(database.$client, "query")
+				.mockImplementation(async (options) => [
+					typeof options === "object" && options.rowsAsArray ? [] : writeResult,
+					[],
+				]);
+			const findTrip = vi.spyOn(database.query.trip, "findFirst");
+			const context = contextFor(session);
+			const client = createRouterClient(appRouter, { context });
+			const createdTrip = await client.trips.create({
+				...tripInput,
+				destination,
+			});
+			const tripWrite = query.mock.calls.find(
+				([options]) =>
+					typeof options === "object" &&
+					options.sql.startsWith("insert into `hack_the_andes_trip`"),
+			);
+			const tripParameters = tripWrite?.[1];
+			if (!Array.isArray(tripParameters))
+				throw new Error("Expected trip insert parameters");
+			const [tripId, organizationId, vehicleId] = tripParameters;
+			expect(createdTrip).toMatchObject({
+				id: tripId,
+				organizationId,
+				vehicleId,
+				lastEvaluatedAt: createdTrip.createdAt,
+			});
+			expect(createdTrip.lastEvaluatedAt).toBeInstanceOf(Date);
+			const createdAtParameter = createdTrip.createdAt
+				.toISOString()
+				.replace("T", " ")
+				.replace("Z", "");
+			expect(tripParameters).toContain(createdAtParameter);
+			expect(findTrip).not.toHaveBeenCalled();
+			expect(routing.fetchRouteCandidates).toHaveBeenCalledTimes(1);
+			const alertWrite = query.mock.calls.find(
+				([options]) =>
+					typeof options === "object" &&
+					options.sql.startsWith("insert into `hack_the_andes_alert`"),
+			);
+			expect(alertWrite?.[1]).toEqual(
+				expect.arrayContaining([
+					tripId,
+					organizationId,
+					vehicleId,
+					huaico.id,
+					"hazard_ahead",
+					"open",
+				]),
+			);
+			expect(query).toHaveBeenCalledWith(
+				expect.objectContaining({
+					sql: expect.stringMatching(
+						/^update `hack_the_andes_trip` set .*`last_evaluated_at`/,
+					),
+				}),
+				expect.arrayContaining([tripId, organizationId, createdAtParameter]),
+			);
+			expect(context.log.getContext()).toMatchObject({
+				fleet: { alertsCreated: 1, alertsUpdated: 0 },
+			});
+		});
+
+		it("still creates the trip when hazard evaluation fails", async () => {
+			vi.spyOn(incidentLoading, "loadAlertableIncidents").mockRejectedValue(
+				new Error("select private-sql"),
+			);
+			vi.spyOn(database.$client, "query").mockResolvedValue([writeResult, []]);
+			const context = contextFor(session);
+			const client = createRouterClient(appRouter, { context });
+			await expect(
+				client.trips.create({ ...tripInput, destination }),
+			).resolves.toMatchObject({
+				status: "active",
+				lastEvaluatedAt: null,
+			});
+			expect(context.log.getContext()).toMatchObject({
+				fleet: { tripEvaluationError: "Error" },
+			});
+			expect(JSON.stringify(context.log.getContext())).not.toContain(
+				"private-sql",
+			);
+		});
+	});
+
+	it("records the routing failure behind a rejected demo plan", async () => {
+		const demoVehicle = {
+			...positionedVehicle,
+			connection: { provider: "demo" },
+		};
+		vi.spyOn(database.query.vehicle, "findFirst").mockResolvedValue(
+			demoVehicle,
+		);
+		vi.spyOn(incidentLoading, "loadAlertableIncidents").mockResolvedValue([]);
+		vi.spyOn(demoTripPlanning, "planDemoTrip").mockRejectedValue(
+			new Error("OSRM responded with 503"),
+		);
+		const context = contextFor(session);
+		const client = createRouterClient(appRouter, { context });
+		await expect(
+			client.trips.planDemo({
+				vehicleId: positionedVehicle.id,
+				scenario: "hazard",
+			}),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: ROUTING_FAILED_MESSAGE,
+		});
+		expect(context.log.getContext()).toMatchObject({
+			fleet: { demoRouteError: "OSRM responded with 503" },
 		});
 	});
 

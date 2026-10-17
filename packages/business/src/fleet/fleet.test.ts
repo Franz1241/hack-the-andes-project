@@ -21,6 +21,7 @@ import {
 	MATUCANA,
 	pointIncident,
 } from "../hazards/test-fixtures";
+import type { RouteCandidate } from "../hazards/types";
 import { DEMO_VEHICLES } from "../providers/constants";
 import { type DemoTrip, simulateDemoPositions } from "../providers/demo";
 import { evaluateTrip } from "./evaluate-trip";
@@ -373,6 +374,38 @@ describe("evaluateTrip with real Drizzle queries", () => {
 		);
 		expect(query.mock.calls.at(-1)?.[0].sql).toContain("not in");
 		expect(query.mock.calls.at(-1)?.[1]).toContain(hazard.id);
+	});
+
+	it("uses supplied route candidates for a new alert without another OSRM request", async () => {
+		const hazard = pointIncident("huaico", MATUCANA);
+		const alternativeRoute: RouteCandidate = {
+			...LIMA_HUANCAYO_ROUTE,
+			geometry: { type: "LineString", coordinates: [LIMA, HUANCAYO] },
+		};
+		const fetchMock = vi.fn<typeof fetch>();
+		vi.stubGlobal("fetch", fetchMock);
+		const result = await evaluateTrip({
+			db: await testDatabase(),
+			osrmBaseUrl: "https://osrm.test",
+			trip: activeTrip,
+			vehicle: storedVehicle,
+			incidents: [hazard],
+			routeCandidates: [LIMA_HUANCAYO_ROUTE, alternativeRoute],
+			now,
+			log: createLogger(),
+		});
+		expect(result).toMatchObject({
+			ok: true,
+			alertsCreated: 1,
+			alertsUpdated: 0,
+		});
+		expect(fetchMock).not.toHaveBeenCalled();
+		const alertWrite = query.mock.calls.find(([options]) =>
+			options.sql.startsWith("insert into `hack_the_andes_alert`"),
+		);
+		expect(alertWrite?.[1]).toEqual(
+			expect.arrayContaining([hazard.id, JSON.stringify(alternativeRoute)]),
+		);
 	});
 
 	it("refreshes an existing alert without fetching another alternative", async () => {
