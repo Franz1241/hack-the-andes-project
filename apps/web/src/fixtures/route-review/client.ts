@@ -339,7 +339,7 @@ for (const seed of [
 	{
 		vehicleId: "fixture-vehicle-volvo-fh",
 		departureInHours: 6,
-		candidateId: "illapa:canete_yauyos",
+		candidateId: "sutran:carretera_central_ruta_5",
 		name: "Lima → Huancayo · cemento",
 		cancelled: false,
 	},
@@ -360,14 +360,14 @@ for (const seed of [
 	{
 		vehicleId: "fixture-vehicle-isuzu-nqr",
 		departureInHours: 3,
-		candidateId: "sutran:antioquia_huarochiri",
+		candidateId: "sutran:carretera_central_ruta_4",
 		name: "Lima → Huancayo · reparto farmacias",
 		cancelled: false,
 	},
 	{
 		vehicleId: "fixture-vehicle-hino-500",
 		departureInHours: 10,
-		candidateId: "sutran:huaral_acos",
+		candidateId: "sutran:carretera_central_ruta_2",
 		name: "Lima → Huancayo · fertilizantes",
 		cancelled: true,
 	},
