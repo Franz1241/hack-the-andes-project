@@ -6,14 +6,23 @@
 		"./*": "./src/*.ts"
 	},
 	"scripts": {
-		"check-types": "tsc --noEmit",
+		"build": "tsc -b",
+		"check-types": "tsc -b",
 		"test": "vitest run"
 	},
 	"dependencies": {
+		"@hack-the-andes-project/db": "workspace:*",
+		"@turf/boolean-point-in-polygon": "catalog:",
+		"@turf/buffer": "catalog:",
+		"@turf/helpers": "catalog:",
+		"@turf/length": "catalog:",
+		"@turf/line-intersect": "catalog:",
+		"@turf/nearest-point-on-line": "catalog:",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
 		"@hack-the-andes-project/config": "workspace:*",
+		"@types/geojson": "catalog:",
 		"typescript": "^6.0.3",
 		"vitest": "catalog:"
 	}
