@@ -9,6 +9,7 @@
 	"scripts": {
 		"dev": "pnpm --filter @hack-the-andes-project/infra dev",
 		"dev:web": "pnpm --filter web dev:bare",
+		"dev:illapa": "pnpm --filter illapa dev",
 		"dev:native": "pnpm --filter native dev",
 		"build": "pnpm -r --if-present build",
 		"check-types": "pnpm -r check-types",
@@ -22,11 +23,13 @@
 		"deploy": "pnpm --filter @hack-the-andes-project/infra deploy",
 		"deploy:server": "pnpm --filter @hack-the-andes-project/infra deploy:server",
 		"deploy:web": "pnpm --filter @hack-the-andes-project/infra deploy:web",
+		"deploy:illapa": "pnpm --filter @hack-the-andes-project/infra deploy:illapa",
 		"deploy:scraper": "pnpm --filter @hack-the-andes-project/infra deploy:scraper",
 		"deploy:plan": "pnpm --filter @hack-the-andes-project/infra plan",
 		"destroy": "pnpm --filter @hack-the-andes-project/infra destroy",
 		"logs:server": "pnpm --filter @hack-the-andes-project/infra logs:server",
 		"logs:web": "pnpm --filter @hack-the-andes-project/infra logs:web",
+		"logs:illapa": "pnpm --filter @hack-the-andes-project/infra logs:illapa",
 		"logs:scraper": "pnpm --filter @hack-the-andes-project/infra logs:scraper",
 		"infra:login": "pnpm --filter @hack-the-andes-project/infra login",
 		"infra:refresh": "pnpm --filter @hack-the-andes-project/infra refresh",
@@ -42,7 +45,7 @@
 		"submit:native:ios": "pnpm --filter native submit:ios",
 		"update:native:preview": "pnpm --filter native update:preview",
 		"update:native:prod": "pnpm --filter native update:prod",
-		"env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./apps/native/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./apps/scraper/",
+		"env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/illapa/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./apps/native/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./apps/scraper/",
 		"postinstall": "pnpm env:generate"
 	},
 	"dependencies": {

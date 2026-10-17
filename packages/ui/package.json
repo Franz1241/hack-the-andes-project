@@ -25,6 +25,7 @@
 		"embla-carousel-react": "^8.6.0",
 		"input-otp": "^1.5.0",
 		"lucide-react": "^1.41.0",
+		"maplibre-gl": "^6.14.0",
 		"next-themes": "catalog:",
 		"react": "^19.2.8",
 		"react-day-picker": "^10.0.2",
@@ -39,6 +40,7 @@
 	"devDependencies": {
 		"@hack-the-andes-project/config": "workspace:*",
 		"@tailwindcss/postcss": "^4.3.3",
+		"@types/geojson": "^7946.0.16",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.7",
 		"tailwindcss": "catalog:",
