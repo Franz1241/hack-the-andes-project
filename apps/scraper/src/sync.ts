@@ -11,7 +11,11 @@ import type { RequestLogger } from "evlog";
 
 import { DB_WRITE_CHUNK_SIZE, MAX_RUN_ERROR_MESSAGE_CHARS } from "./constants";
 import { contentHash } from "./lib/hash";
-import type { ScrapeSource, SnapshotMode } from "./sources/types";
+import type {
+	ScrapeServices,
+	ScrapeSource,
+	SnapshotMode,
+} from "./sources/types";
 
 const UPSERT_PRESERVED_KEYS = new Set([
 	"id",
@@ -213,7 +217,7 @@ export async function runSource(
 	db: Database,
 	source: ScrapeSource,
 	log: RequestLogger,
-	jevApiKey: string,
+	services: ScrapeServices,
 ): Promise<SourceRunResult> {
 	const runStartedAt = new Date();
 	let result: SourceRunResult = {
@@ -229,10 +233,10 @@ export async function runSource(
 		const table = PRIMARY_TABLE_BY_KIND[source.kind];
 		const existing = await loadExisting(db, table, source.id);
 		const context = {
+			...services,
 			now: runStartedAt,
 			knownSourceIds: new Set(existing.map((row) => row.sourceId)),
 			log,
-			jevApiKey,
 		};
 		const persist = async <TRecord extends { sourceId: string }>(
 			records: TRecord[],
