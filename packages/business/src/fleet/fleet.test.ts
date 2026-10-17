@@ -17,6 +17,7 @@ import {
 	pointIncident,
 } from "../hazards/test-fixtures";
 import { evaluateTrip } from "./evaluate-trip";
+import { resolveObsoleteAlerts } from "./resolve-obsolete-alerts";
 import { syncConnection } from "./sync-connection";
 
 interface QueryOptions {
@@ -230,7 +231,7 @@ describe("syncConnection with real Drizzle queries", () => {
 });
 
 describe("evaluateTrip with real Drizzle queries", () => {
-	it("completes an arrival and resolves only open alerts", async () => {
+	it("completes an arrival and resolves open and acknowledged alerts", async () => {
 		const fetchMock = vi.fn<typeof fetch>();
 		vi.stubGlobal("fetch", fetchMock);
 		const result = await evaluateTrip({
@@ -247,7 +248,13 @@ describe("evaluateTrip with real Drizzle queries", () => {
 			completed: true,
 			alertsResolved: 1,
 		});
-		expect(query.mock.calls[0]?.[1]).toContain("open");
+		expect(query.mock.calls[0]?.[1]).toEqual(
+			expect.arrayContaining([
+				"open",
+				"acknowledged",
+				activeTrip.organizationId,
+			]),
+		);
 		expect(query.mock.calls[1]?.[1]).toContain("completed");
 		expect(fetchMock).not.toHaveBeenCalled();
 	});
@@ -376,4 +383,49 @@ describe("evaluateTrip with real Drizzle queries", () => {
 		expect(result).toMatchObject({ ok: true, skipped: "no_position" });
 		expect(query).not.toHaveBeenCalled();
 	});
+});
+
+it("resolves obsolete alerts for ended trips and inactive incidents within the tenant", async () => {
+	await resolveObsoleteAlerts({
+		db: await testDatabase(),
+		now,
+		organizationId: connection.organizationId,
+	});
+	const resolution = query.mock.calls[0];
+	expect(resolution?.[0].sql).toContain("not exists");
+	expect(resolution?.[0].sql).toContain(
+		"`hack_the_andes_trip`.`organization_id` = `hack_the_andes_alert`.`organization_id`",
+	);
+	expect(resolution?.[0].sql).toContain("`hack_the_andes_incident`.`active`");
+	expect(resolution?.[1]).toEqual(
+		expect.arrayContaining([
+			"resolved",
+			"open",
+			"acknowledged",
+			"active",
+			connection.organizationId,
+		]),
+	);
+});
+
+it("resolves acknowledged alerts after passing the hazard", async () => {
+	await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: activeTrip,
+		vehicle: storedVehicle,
+		incidents: [],
+		now,
+		log: createLogger(),
+	});
+	const resolution = query.mock.calls.at(-1);
+	expect(resolution?.[1]).toEqual(
+		expect.arrayContaining([
+			"resolved",
+			"open",
+			"acknowledged",
+			activeTrip.id,
+			activeTrip.organizationId,
+		]),
+	);
 });

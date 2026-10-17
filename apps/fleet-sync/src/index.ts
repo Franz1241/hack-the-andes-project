@@ -2,6 +2,7 @@ import {
 	type EvaluateTripResult,
 	evaluateTrip,
 	isAlertableIncident,
+	resolveObsoleteAlerts,
 	type SyncConnectionResult,
 	syncConnection,
 } from "@hack-the-andes-project/business";
@@ -52,6 +53,13 @@ async function syncAll(
 				summary.error = "unknown_connection";
 				return summary;
 			}
+			await resolveObsoleteAlerts({
+				db,
+				now,
+				organizationId: connectionId
+					? connections[0]?.organizationId
+					: undefined,
+			});
 			const connectionOutcomes = await Promise.allSettled(
 				connections.map((connection) =>
 					syncConnection({
@@ -133,6 +141,13 @@ async function syncAll(
 							error: "No se pudo evaluar el viaje.",
 						},
 			);
+			await resolveObsoleteAlerts({
+				db,
+				now,
+				organizationId: connectionId
+					? connections[0]?.organizationId
+					: undefined,
+			});
 			summary.ok =
 				summary.connections.every((result) => result.ok) &&
 				summary.trips.every((result) => result.ok);

@@ -1,4 +1,5 @@
 import { encryptJson } from "@hack-the-andes-project/business/crypto/index";
+import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
 import {
 	gpsCredentialsSchema,
 	providerFor,
@@ -205,6 +206,11 @@ export const connectionsRouter = {
 						inArray(trip.vehicleId, connectionVehicles),
 					),
 				);
+			await resolveObsoleteAlerts({
+				db: context.db,
+				organizationId: context.organizationId,
+				now: new Date(),
+			});
 			await context.db
 				.delete(vehiclePosition)
 				.where(inArray(vehiclePosition.vehicleId, connectionVehicles));

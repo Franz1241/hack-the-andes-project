@@ -362,3 +362,68 @@ describe("credential error isolation", () => {
 		);
 	});
 });
+
+describe("trip completion alert cleanup", () => {
+	it.each(["cancel", "complete"] as const)(
+		"resolves outstanding tenant alerts on %s",
+		async (action) => {
+			const status = action === "cancel" ? "cancelled" : "completed";
+			vi.spyOn(database.query.trip, "findFirst").mockResolvedValue({
+				id: "trip",
+				status,
+				name: "Trip",
+				organizationId: session.session.activeOrganizationId,
+				vehicleId: "vehicle",
+				originLat: 0,
+				originLng: 0,
+				destinationLat: 1,
+				destinationLng: 1,
+				destinationName: "Destination",
+				routeGeometry: {
+					type: "LineString",
+					coordinates: [
+						[0, 0],
+						[1, 1],
+					],
+				},
+				routeDistanceM: 1000,
+				routeDurationS: 100,
+				etaAt: null,
+				lastEvaluatedAt: null,
+				createdAt,
+				updatedAt: createdAt,
+			});
+			const query = vi.spyOn(database.$client, "query").mockResolvedValue([
+				{
+					affectedRows: 1,
+					constructor: { name: "ResultSetHeader" },
+					fieldCount: 0,
+					info: "",
+					insertId: 0,
+					serverStatus: 0,
+					warningStatus: 0,
+					changedRows: 1,
+				},
+				[],
+			]);
+			const client = createRouterClient(appRouter, {
+				context: contextFor(session),
+			});
+			await expect(client.trips[action]({ id: "trip" })).resolves.toEqual({
+				id: "trip",
+				status,
+			});
+			expect(query).toHaveBeenCalledWith(
+				expect.objectContaining({
+					sql: expect.stringContaining("update `hack_the_andes_alert`"),
+				}),
+				expect.arrayContaining([
+					session.session.activeOrganizationId,
+					"resolved",
+					"open",
+					"acknowledged",
+				]),
+			);
+		},
+	);
+});

@@ -4,7 +4,7 @@ import {
 	trip as tripTable,
 	type vehicle as vehicleTable,
 } from "@hack-the-andes-project/db/schema/fleet";
-import { and, eq, notInArray } from "drizzle-orm";
+import { and, eq, inArray, notInArray } from "drizzle-orm";
 import type { RequestLogger } from "evlog";
 
 import { MS_PER_SECOND } from "../constants";
@@ -95,13 +95,14 @@ export async function evaluateTrip({
 		};
 		let progress = projectOntoRoute(route.geometry, vehicleState.position);
 		const decision = decideTripProgress(progress);
-		const openAlerts = and(
+		const unresolvedAlerts = and(
 			eq(alert.tripId, trip.id),
 			eq(alert.organizationId, trip.organizationId),
-			eq(alert.status, "open"),
+			inArray(alert.status, ["open", "acknowledged"]),
 		);
 		const activeTrip = and(
 			eq(tripTable.id, trip.id),
+			eq(tripTable.organizationId, trip.organizationId),
 			eq(tripTable.status, "active"),
 		);
 		if (decision.arrived) {
@@ -111,7 +112,7 @@ export async function evaluateTrip({
 					status: "resolved",
 					resolvedAt: now,
 				})
-				.where(openAlerts);
+				.where(unresolvedAlerts);
 			result.alertsResolved = resolved.affectedRows;
 			const [completed] = await db
 				.update(tripTable)
@@ -233,7 +234,7 @@ export async function evaluateTrip({
 			})
 			.where(
 				and(
-					openAlerts,
+					unresolvedAlerts,
 					hazards.length > 0
 						? notInArray(
 								alert.incidentId,
