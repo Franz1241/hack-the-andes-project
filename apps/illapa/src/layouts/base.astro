@@ -1,5 +1,6 @@
 ---
 import "@/styles/global.css";
+import { ILLAPA_THEME_STORAGE_KEY } from "@/constants";
 
 interface Props {
 	title: string;
@@ -10,9 +11,19 @@ const { title, description } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es-PE" class="dark">
+<html lang="es-PE" class="light">
 	<head>
 		<meta charset="UTF-8" />
+		<script is:inline define:vars={{ themeStorageKey: ILLAPA_THEME_STORAGE_KEY }}>
+			let isDark = false;
+			try {
+				isDark = localStorage.getItem(themeStorageKey) === "dark";
+			} catch {
+				isDark = false;
+			}
+			document.documentElement.classList.toggle("dark", isDark);
+			document.documentElement.classList.toggle("light", !isDark);
+		</script>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>

@@ -2,7 +2,12 @@
 
 @layer base {
 	html {
+		color-scheme: light;
 		scroll-behavior: smooth;
+	}
+
+	html.dark {
+		color-scheme: dark;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

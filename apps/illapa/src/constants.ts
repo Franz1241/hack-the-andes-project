@@ -1,4 +1,5 @@
 export const ILLAPA_DEV_PORT = 3003;
+export const ILLAPA_THEME_STORAGE_KEY = "illapa-theme";
 
 export const PERU_BOUNDS: [[number, number], [number, number]] = [
 	[-82.2, -18.6],

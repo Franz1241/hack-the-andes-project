@@ -1,12 +1,13 @@
 ---
 import { buttonVariants } from "@hack-the-andes-project/ui/components/button";
 import { ENV } from "@/env.public";
+import ThemeSwitchIsland from "./theme-switch-island";
 ---
 
 <header class="absolute inset-x-0 top-0 z-20 border-b border-border bg-background/90 text-foreground">
 	<nav
 		aria-label="Principal"
-		class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-5 sm:px-8"
+		class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-5 py-5 sm:gap-6 sm:px-8"
 	>
 		<a href="/" class="type-heading focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
 			ILLAPA<span class="text-brand-river" aria-hidden="true">.</span>
@@ -16,11 +17,14 @@ import { ENV } from "@/env.public";
 			<a href="#como-funciona" class="font-sans text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Cómo funciona</a>
 			<a href="#fuentes" class="font-sans text-sm font-medium underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Fuentes</a>
 		</div>
-		<a
-			href={`${ENV.PUBLIC_APP_URL}/login`}
-			class={buttonVariants({ variant: "outline" })}
-		>
-			Entrar
-		</a>
+		<div class="flex shrink-0 items-center gap-3">
+			<ThemeSwitchIsland client:load />
+			<a
+				href={`${ENV.PUBLIC_APP_URL}/login`}
+				class={buttonVariants({ variant: "outline" })}
+			>
+				Entrar
+			</a>
+		</div>
 	</nav>
 </header>

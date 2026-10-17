@@ -6,8 +6,8 @@ import {
 	MarkerContent,
 	MarkerTooltip,
 } from "@hack-the-andes-project/ui/components/map";
+import { useTokenColors } from "@hack-the-andes-project/ui/hooks/use-token-colors";
 import { cn } from "@hack-the-andes-project/ui/lib/utils";
-import { useEffect, useState } from "react";
 
 import {
 	HERO_MAP_MAX_ZOOM,
@@ -24,19 +24,11 @@ import {
 } from "@/hero-data";
 
 export default function HeroMap() {
-	const [routeColor, setRouteColor] = useState("");
-
-	useEffect(() => {
-		setRouteColor(
-			getComputedStyle(document.documentElement)
-				.getPropertyValue("--foreground")
-				.trim(),
-		);
-	}, []);
+	const tokenColors = useTokenColors(["--foreground"]);
+	const routeColor = tokenColors["--foreground"];
 
 	return (
 		<MapCanvas
-			theme="dark"
 			className="h-full w-full"
 			bounds={PERU_BOUNDS}
 			fitBoundsOptions={{ padding: PERU_BOUNDS_PADDING_PX }}
@@ -74,7 +66,7 @@ export default function HeroMap() {
 							role="img"
 							aria-label={`${HERO_HAZARD_STATES[hazard.state].label}: ${hazard.name}, ${hazard.place}`}
 							className={cn(
-								"relative size-3 rounded-full ring-2 ring-background",
+								"relative size-3 rounded-full ring-2 ring-foreground",
 								HERO_HAZARD_STATES[hazard.state].dotClassName,
 							)}
 						/>
