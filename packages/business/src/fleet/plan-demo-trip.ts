@@ -14,7 +14,7 @@ import {
 	type DEMO_TRIP_SCENARIOS,
 } from "../constants";
 import { findHazardsAhead } from "../hazards/hazards-ahead";
-import type { HazardIncident, LatLng } from "../hazards/types";
+import type { HazardIncident, LatLng, RouteCandidate } from "../hazards/types";
 import { fetchRouteCandidates } from "../routing/osrm";
 
 export type DemoTripScenario = (typeof DEMO_TRIP_SCENARIOS)[number];
@@ -69,17 +69,22 @@ export async function planDemoTrip({
 							distanceM <= DEMO_HAZARD_MAX_DISTANCE_M,
 					)
 					.sort((left, right) => left.distanceM - right.distanceM)
-					.map(({ incident, coordinates }) => ({
-						// Aiming past the incident, away from the truck, makes the road
-						// route run through it instead of stopping at it.
-						coordinates: destination(
-							coordinates,
-							DEMO_HAZARD_OVERSHOOT_M,
-							bearing(originCoordinates, coordinates),
-							{ units: "meters" },
-						).geometry.coordinates,
-						incident,
-					}))
+					.flatMap(({ incident, coordinates }) => [
+						{
+							// Aiming past the incident, away from the truck, makes the road
+							// route run through it instead of stopping at it. The overshoot
+							// can land on unroutable terrain (sea, mountains, across a
+							// border), so the incident point itself is the fallback.
+							coordinates: destination(
+								coordinates,
+								DEMO_HAZARD_OVERSHOOT_M,
+								bearing(originCoordinates, coordinates),
+								{ units: "meters" },
+							).geometry.coordinates,
+							incident,
+						},
+						{ coordinates, incident },
+					])
 			: DEMO_CLEAR_TRIP_BEARINGS_DEG.map((bearingDeg) => {
 					const { coordinates } = destination(
 						originCoordinates,
@@ -103,25 +108,42 @@ export async function planDemoTrip({
 		heading: null,
 		recordedAt: new Date(),
 	};
+	let routedCandidatesCount = 0;
+	let lastRoutingError: Error | null = null;
 	for (const candidate of candidates.slice(0, DEMO_TRIP_MAX_ATTEMPTS_COUNT)) {
 		const [lng, lat] = candidate.coordinates;
 		if (lng === undefined || lat === undefined) continue;
-		const [route] = await fetchRouteCandidates({
-			baseUrl: osrmBaseUrl,
-			origin,
-			destination: { lat, lng },
-			fetchImpl,
-		});
-		if (!route || route.distanceM < DEMO_TRIP_MIN_ROUTE_DISTANCE_M) continue;
+		let routes: RouteCandidate[];
+		try {
+			routes = await fetchRouteCandidates({
+				baseUrl: osrmBaseUrl,
+				origin,
+				destination: { lat, lng },
+				fetchImpl,
+			});
+		} catch (cause: unknown) {
+			lastRoutingError =
+				cause instanceof Error ? cause : new Error(String(cause));
+			continue;
+		}
+		routedCandidatesCount += 1;
+		const [route] = routes;
+		if (!route) continue;
+		if (route.distanceM < DEMO_TRIP_MIN_ROUTE_DISTANCE_M) continue;
 		const hazards = findHazardsAhead({
 			route,
 			vehicle,
 			incidents: candidate.incident ? [candidate.incident] : incidents,
-			lookaheadM: Number.POSITIVE_INFINITY,
 		});
 		if (candidate.incident ? hazards.length > 0 : hazards.length === 0) {
 			return { destination: { lat, lng }, incident: candidate.incident };
 		}
+	}
+	if (routedCandidatesCount === 0 && lastRoutingError) {
+		throw new Error(
+			`Every demo trip candidate failed to route: ${lastRoutingError.message}`,
+			{ cause: lastRoutingError },
+		);
 	}
 	return null;
 }
