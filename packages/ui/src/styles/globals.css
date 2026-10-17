@@ -272,7 +272,7 @@
 		@apply hidden!;
 	}
 	.maplibregl-ctrl-attrib {
-		@apply bg-background! text-muted-foreground! border-border! rounded-md! border! shadow-sm!;
+		@apply type-label! bg-popover! text-muted-foreground! border-border! rounded-none! border! shadow-none! has-[:focus-visible]:ring-1! has-[:focus-visible]:ring-ring!;
 	}
 	.maplibregl-ctrl-attrib a {
 		@apply text-muted-foreground!;
@@ -281,6 +281,6 @@
 		@apply text-foreground!;
 	}
 	.maplibregl-ctrl-attrib-button {
-		@apply bg-transparent! dark:invert;
+		@apply bg-transparent! rounded-none! shadow-none! focus-visible:outline-none! dark:invert;
 	}
 }

@@ -7,12 +7,12 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import * as React from "react";
 
 const codeBlockVariants = cva(
-	"group/code-block relative flex w-full min-w-0 flex-col overflow-hidden rounded-none text-sm has-[>[data-slot=code-block-content]:focus-visible]:ring-1 has-[>[data-slot=code-block-content]:focus-visible]:ring-ring/50 data-[size=sm]:text-xs",
+	"group/code-block relative flex w-full min-w-0 flex-col overflow-hidden rounded-none text-sm has-[>[data-slot=code-block-content]:focus-visible]:ring-1 has-[>[data-slot=code-block-content]:focus-visible]:ring-ring data-[size=sm]:text-xs",
 	{
 		variants: {
 			variant: {
 				default:
-					"border border-input text-foreground has-[>[data-slot=code-block-content]:focus-visible]:border-ring dark:bg-input/30",
+					"border border-border bg-card text-card-foreground has-[>[data-slot=code-block-content]:focus-visible]:border-ring",
 				destructive:
 					"border border-destructive/30 text-destructive dark:border-destructive/40",
 			},
@@ -75,7 +75,7 @@ function CodeBlockActions({
 		<div
 			data-slot="code-block-actions"
 			className={cn(
-				"-my-1 ms-auto -me-1.5 flex shrink-0 items-center gap-1 [[data-slot=code-block]>&]:absolute [[data-slot=code-block]>&]:end-2 [[data-slot=code-block]>&]:top-2 [[data-slot=code-block]>&]:z-10 [[data-slot=code-block]>&]:m-0 [[data-slot=code-block]>&]:opacity-0 [[data-slot=code-block]>&]:pointer-coarse:opacity-100 [[data-slot=code-block]>&]:transition-opacity [[data-slot=code-block]>&]:group-focus-within/code-block:opacity-100 [[data-slot=code-block]>&]:group-hover/code-block:opacity-100 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:end-1.5 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:top-1.5 [[data-slot=code-block]>&]:*:[button]:bg-background [[data-slot=code-block]>&]:*:[button]:ring-1 [[data-slot=code-block]>&]:*:[button]:ring-foreground/10",
+				"-my-1 ms-auto -me-1.5 flex shrink-0 items-center gap-1 [[data-slot=code-block]>&]:absolute [[data-slot=code-block]>&]:end-2 [[data-slot=code-block]>&]:top-2 [[data-slot=code-block]>&]:z-10 [[data-slot=code-block]>&]:m-0 [[data-slot=code-block]>&]:opacity-0 [[data-slot=code-block]>&]:pointer-coarse:opacity-100 [[data-slot=code-block]>&]:transition-opacity [[data-slot=code-block]>&]:group-focus-within/code-block:opacity-100 [[data-slot=code-block]>&]:group-hover/code-block:opacity-100 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:end-1.5 group-data-[size=sm]/code-block:[[data-slot=code-block]>&]:top-1.5 [[data-slot=code-block]>&]:*:[button]:border [[data-slot=code-block]>&]:*:[button]:border-border [[data-slot=code-block]>&]:*:[button]:bg-background",
 				className,
 			)}
 			{...props}
