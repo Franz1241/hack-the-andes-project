@@ -1,112 +1,113 @@
+import { m } from "@/paraglide/messages";
 export const SHOWCASE_SECTIONS = [
-	{ id: "color", label: "Color" },
-	{ id: "tipografia", label: "Tipografía" },
-	{ id: "espacio", label: "Espacio" },
-	{ id: "componentes", label: "Componentes" },
-	{ id: "riesgo", label: "Riesgo" },
-	{ id: "criterios", label: "Criterios" },
-	{ id: "panel", label: "Panel de rutas" },
+	{ id: "color", label: m.ds_nav_color },
+	{ id: "tipografia", label: m.ds_nav_type },
+	{ id: "espacio", label: m.ds_nav_spacing },
+	{ id: "componentes", label: m.ds_nav_components },
+	{ id: "riesgo", label: m.ds_risk_label },
+	{ id: "criterios", label: m.ds_nav_guidelines },
+	{ id: "panel", label: m.ds_panel_title },
 ];
 
 interface RiskLevel {
 	variant: "low" | "moderate" | "high" | "critical";
-	label: string;
-	colorName: string;
+	label: () => string;
+	colorName: () => string;
 	fillClassName: string;
 	inkClassName: string;
-	recommendation: string;
+	recommendation: () => string;
 }
 
 export const RISK_LEVELS: RiskLevel[] = [
 	{
 		variant: "low",
-		label: "Bajo",
-		colorName: "Verde",
+		label: m.risk_low,
+		colorName: m.risk_color_low,
 		fillClassName: "bg-risk-low",
 		inkClassName: "text-risk-low-foreground",
-		recommendation: "Continuar",
+		recommendation: m.recommendation_continue,
 	},
 	{
 		variant: "moderate",
-		label: "Moderado",
-		colorName: "Amarillo",
+		label: m.risk_moderate,
+		colorName: m.risk_color_moderate,
 		fillClassName: "bg-risk-moderate",
 		inkClassName: "text-risk-moderate-foreground",
-		recommendation: "Monitorear",
+		recommendation: m.recommendation_monitor,
 	},
 	{
 		variant: "high",
-		label: "Alto",
-		colorName: "Naranja",
+		label: m.risk_high,
+		colorName: m.risk_color_high,
 		fillClassName: "bg-risk-high",
 		inkClassName: "text-risk-high-foreground",
-		recommendation: "Retrasar",
+		recommendation: m.recommendation_delay,
 	},
 	{
 		variant: "critical",
-		label: "Crítico",
-		colorName: "Rojo",
+		label: m.risk_critical,
+		colorName: m.risk_color_critical,
 		fillClassName: "bg-risk-critical",
 		inkClassName: "text-risk-critical-foreground",
-		recommendation: "Desviar",
+		recommendation: m.recommendation_reroute,
 	},
 ];
 
 interface RouteExample {
 	id: string;
-	name: string;
+	name: () => string;
 	risk: RiskLevel["variant"];
-	riskLabel: string;
-	horizon: string;
-	cause: string;
-	recommendation: string;
+	riskLabel: () => string;
+	horizon: () => string;
+	cause: () => string;
+	recommendation: () => string;
 }
 
 export const ROUTE_EXAMPLES: RouteExample[] = [
 	{
 		id: "PE-22",
-		name: "Carretera Central km 112 · La Oroya",
+		name: m.ds_route_central_name,
 		risk: "critical",
-		riskLabel: "Crítico",
-		horizon: "Ahora",
-		cause: "Huaico · cierre SUTRAN",
-		recommendation: "Desviar",
+		riskLabel: m.risk_critical,
+		horizon: m.horizon_now,
+		cause: m.ds_route_central_cause,
+		recommendation: m.recommendation_reroute,
 	},
 	{
 		id: "PE-1N",
-		name: "Panamericana Norte · Chiclayo–Piura",
+		name: m.ds_route_north_name,
 		risk: "high",
-		riskLabel: "Alto",
-		horizon: "6 h",
-		cause: "Lluvias intensas · aviso naranja",
-		recommendation: "Retrasar",
+		riskLabel: m.risk_high,
+		horizon: () => m.horizon_hours({ hours: "6" }),
+		cause: m.ds_route_north_cause,
+		recommendation: m.recommendation_delay,
 	},
 	{
 		id: "PE-30C",
-		name: "Interoceánica · Puerto Maldonado",
+		name: m.ds_route_interoceanic_name,
 		risk: "moderate",
-		riskLabel: "Moderado",
-		horizon: "24 h",
-		cause: "Lluvias en evaluación",
-		recommendation: "Monitorear",
+		riskLabel: m.risk_moderate,
+		horizon: () => m.horizon_hours({ hours: "24" }),
+		cause: m.ds_route_interoceanic_cause,
+		recommendation: m.recommendation_monitor,
 	},
 	{
 		id: "PE-1S",
-		name: "Panamericana Sur · Lima–Ica",
+		name: m.ds_route_south_name,
 		risk: "low",
-		riskLabel: "Bajo",
-		horizon: "Ahora",
-		cause: "Sin incidentes reportados",
-		recommendation: "Continuar",
+		riskLabel: m.risk_low,
+		horizon: m.horizon_now,
+		cause: m.ds_route_south_cause,
+		recommendation: m.recommendation_continue,
 	},
 	{
 		id: "PE-3S",
-		name: "Longitudinal de la Sierra · Cusco–Abancay",
+		name: m.ds_route_sierra_name,
 		risk: "high",
-		riskLabel: "Alto",
-		horizon: "48 h",
-		cause: "Probabilidad de deslizamientos",
-		recommendation: "Monitorear",
+		riskLabel: m.risk_high,
+		horizon: () => m.horizon_hours({ hours: "48" }),
+		cause: m.ds_route_sierra_cause,
+		recommendation: m.recommendation_monitor,
 	},
 ];
 

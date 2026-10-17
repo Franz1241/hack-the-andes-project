@@ -1,87 +1,85 @@
 import { Badge } from "@hack-the-andes-project/ui/components/badge";
 import { Button } from "@hack-the-andes-project/ui/components/button";
 import { ShowcaseSection } from "@hack-the-andes-project/ui/components/showcase/section";
+import { m } from "@/paraglide/messages";
 
 export function DoDontSection() {
 	return (
 		<ShowcaseSection
+			kicker={m.ds_section_kicker()}
 			id="criterios"
 			number="06"
-			title="Criterios que se ven"
-			description="Tres reglas para mantener la lectura clara cuando una decisión no puede esperar."
+			title={m.ds_guidelines_title()}
+			description={m.ds_guidelines_description()}
 		>
 			<div className="flex flex-col gap-8">
 				<div>
-					<h3 className="type-heading mb-4">La marca nunca representa datos</h3>
+					<h3 className="type-heading mb-4">{m.ds_brand_rule()}</h3>
 					<div className="grid gap-4 md:grid-cols-2">
 						<div className="flex flex-col items-start gap-5 border p-6">
-							<p className="type-label">Sí · Semántica de riesgo</p>
-							<Badge variant="high">Alto · Lluvias intensas</Badge>
+							<p className="type-label">{m.ds_brand_do()}</p>
+							<Badge variant="high">{m.ds_high_rain_badge()}</Badge>
 							<p className="text-muted-foreground text-sm">
-								Relleno risk-high y su tinta asociada.
+								{m.ds_brand_do_description()}
 							</p>
 						</div>
 						<div className="flex flex-col items-start gap-5 border p-6">
-							<p className="type-label text-destructive">
-								No · Marca como riesgo
-							</p>
+							<p className="type-label text-destructive">{m.ds_brand_dont()}</p>
 							<span className="dark bg-brand-flame px-2 py-1 text-background text-sm">
-								Alto · Lluvias intensas
+								{m.ds_high_rain_badge()}
 							</span>
 							<p className="text-muted-foreground text-sm">
-								brand-flame identifica a Fénix; no codifica una alerta.
+								{m.ds_brand_dont_description()}
 							</p>
 						</div>
 					</div>
 				</div>
 				<div>
-					<h3 className="type-heading mb-4">
-						El riesgo siempre lleva una etiqueta
-					</h3>
+					<h3 className="type-heading mb-4">{m.ds_label_rule()}</h3>
 					<div className="grid gap-4 md:grid-cols-2">
 						<div className="flex flex-col items-start gap-5 border p-6">
-							<p className="type-label">Sí · Color y texto</p>
-							<Badge variant="critical">Crítico · Cierre confirmado</Badge>
+							<p className="type-label">{m.ds_label_do()}</p>
+							<Badge variant="critical">{m.ds_critical_closure()}</Badge>
 							<p className="text-muted-foreground text-sm">
-								Se entiende incluso sin distinguir el color.
+								{m.ds_label_do_description()}
 							</p>
 						</div>
 						<div className="flex flex-col items-start gap-5 border p-6">
-							<p className="type-label text-destructive">No · Solo color</p>
+							<p className="type-label text-destructive">{m.ds_label_dont()}</p>
 							<span
 								className="size-3 rounded-full bg-risk-critical"
 								role="img"
-								aria-label="Ejemplo incorrecto: indicador sin etiqueta visible"
+								aria-label={m.ds_unlabeled_indicator()}
 							/>
 							<p className="text-muted-foreground text-sm">
-								Un punto solo no explica la gravedad ni la causa.
+								{m.ds_label_dont_description()}
 							</p>
 						</div>
 					</div>
 				</div>
 				<div>
-					<h3 className="type-heading mb-4">Una acción principal por grupo</h3>
+					<h3 className="type-heading mb-4">{m.ds_action_rule()}</h3>
 					<div className="grid gap-4 md:grid-cols-2">
 						<div className="flex flex-col items-start gap-5 border p-6">
-							<p className="type-label">Sí · Prioridad clara</p>
+							<p className="type-label">{m.ds_action_do()}</p>
 							<div className="flex flex-wrap gap-2">
-								<Button>Evaluar desvío</Button>
-								<Button variant="outline">Ver fuente</Button>
+								<Button>{m.ds_evaluate_reroute()}</Button>
+								<Button variant="outline">{m.ds_view_source()}</Button>
 							</div>
 							<p className="text-muted-foreground text-sm">
-								La decisión destaca; el contexto acompaña.
+								{m.ds_action_do_description()}
 							</p>
 						</div>
 						<div className="flex flex-col items-start gap-5 border p-6">
 							<p className="type-label text-destructive">
-								No · Acciones que compiten
+								{m.ds_action_dont()}
 							</p>
 							<div className="flex flex-wrap gap-2">
-								<Button>Evaluar desvío</Button>
-								<Button>Ver fuente</Button>
+								<Button>{m.ds_evaluate_reroute()}</Button>
+								<Button>{m.ds_view_source()}</Button>
 							</div>
 							<p className="text-muted-foreground text-sm">
-								Dos acciones principales dificultan elegir el siguiente paso.
+								{m.ds_action_dont_description()}
 							</p>
 						</div>
 					</div>

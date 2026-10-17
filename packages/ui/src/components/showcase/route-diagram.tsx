@@ -4,15 +4,20 @@ import {
 	ROUTE_VIEW_BOX,
 } from "./constants";
 
-export function RouteDiagram() {
+interface RouteDiagramProps {
+	label: string;
+	title: string;
+}
+
+export function RouteDiagram({ label, title }: RouteDiagramProps) {
 	return (
 		<svg
 			viewBox={ROUTE_VIEW_BOX}
 			className="w-full"
 			role="img"
-			aria-label="Tramos de una ruta: bajo, moderado, alto y crítico, de izquierda a derecha"
+			aria-label={label}
 		>
-			<title>Riesgo por tramo de ruta</title>
+			<title>{title}</title>
 			{ROUTE_SEGMENTS.map((segment) => (
 				<polyline
 					key={segment.className}

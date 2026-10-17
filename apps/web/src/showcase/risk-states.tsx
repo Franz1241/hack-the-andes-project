@@ -9,14 +9,16 @@ import { RouteDiagram } from "@hack-the-andes-project/ui/components/showcase/rou
 import { ShowcaseSection } from "@hack-the-andes-project/ui/components/showcase/section";
 import { cn } from "@hack-the-andes-project/ui/lib/utils";
 import { RISK_LEVELS } from "@/constants";
+import { m } from "@/paraglide/messages";
 
 export function RiskStatesSection() {
 	return (
 		<ShowcaseSection
+			kicker={m.ds_section_kicker()}
 			id="riesgo"
 			number="05"
-			title="El riesgo siempre tiene nombre"
-			description="Verde, amarillo, naranja y rojo: una escala alineada con los colores de aviso SENAMHI. El nivel, la causa y el horizonte se leen juntos."
+			title={m.ds_risk_title()}
+			description={m.ds_risk_description()}
 		>
 			<div className="grid grid-cols-2 lg:grid-cols-4">
 				{RISK_LEVELS.map((risk) => (
@@ -28,31 +30,32 @@ export function RiskStatesSection() {
 							risk.inkClassName,
 						)}
 					>
-						<p className="type-label">{risk.colorName}</p>
-						<h3 className="type-heading">{risk.label}</h3>
+						<p className="type-label">{risk.colorName()}</p>
+						<h3 className="type-heading">{risk.label()}</h3>
 						<p className="text-sm">
-							Ejemplo: {risk.recommendation.toLowerCase()}
+							{m.ds_risk_recommendation({
+								recommendation: risk.recommendation().toLowerCase(),
+							})}
 						</p>
 					</div>
 				))}
 			</div>
 			<p className="mt-4 text-muted-foreground text-xs">
-				La recomendación depende del tramo y de la evidencia. El color por sí
-				solo no determina una acción.
+				{m.ds_risk_recommendation_note()}
 			</p>
 			<div className="mt-10 grid gap-10 md:grid-cols-2">
 				<div className="flex flex-col gap-5">
-					<h3 className="type-heading">Etiquetas de riesgo</h3>
+					<h3 className="type-heading">{m.ds_risk_badges_title()}</h3>
 					<div className="flex flex-wrap gap-3">
 						{RISK_LEVELS.map((risk) => (
 							<Badge key={risk.variant} variant={risk.variant}>
-								{risk.label}
+								{risk.label()}
 							</Badge>
 						))}
 					</div>
 				</div>
 				<div className="flex flex-col gap-5">
-					<h3 className="type-heading">Marcadores de mapa</h3>
+					<h3 className="type-heading">{m.ds_risk_markers_title()}</h3>
 					<div className="flex flex-wrap gap-5">
 						{RISK_LEVELS.map((risk) => (
 							<div key={risk.variant} className="flex items-center gap-2">
@@ -60,7 +63,7 @@ export function RiskStatesSection() {
 									aria-hidden="true"
 									className={cn("size-3 shrink-0", risk.fillClassName)}
 								/>
-								<span className="text-sm">{risk.label}</span>
+								<span className="text-sm">{risk.label()}</span>
 							</div>
 						))}
 					</div>
@@ -68,15 +71,18 @@ export function RiskStatesSection() {
 			</div>
 			<figure className="mt-10 border bg-card p-5">
 				<figcaption className="type-label">
-					Riesgo por tramo · esquema de ejemplo
+					{m.ds_risk_diagram_caption()}
 				</figcaption>
-				<RouteDiagram />
+				<RouteDiagram
+					label={m.ds_route_diagram_label()}
+					title={m.ds_route_diagram_title()}
+				/>
 				<div className="grid grid-cols-2 gap-4 md:grid-cols-4">
 					{RISK_LEVELS.map((risk) => (
 						<div key={risk.variant} className="flex flex-col items-start gap-2">
-							<Badge variant={risk.variant}>{risk.label}</Badge>
+							<Badge variant={risk.variant}>{risk.label()}</Badge>
 							<span className="text-muted-foreground text-xs">
-								{risk.colorName}
+								{risk.colorName()}
 							</span>
 						</div>
 					))}
@@ -85,21 +91,15 @@ export function RiskStatesSection() {
 			<div className="mt-8 grid gap-4 md:grid-cols-2">
 				<Alert variant="critical">
 					<TriangleAlertIcon />
-					<AlertTitle>Crítico · Cierre confirmado</AlertTitle>
+					<AlertTitle>{m.ds_critical_closure()}</AlertTitle>
 					<AlertDescription>
-						Carretera Central km 112, La Oroya. Huaico y cierre SUTRAN. Ahora:
-						desviar y validar la alternativa antes del despacho. Escenario de
-						ejemplo.
+						{m.ds_critical_alert_description()}
 					</AlertDescription>
 				</Alert>
 				<Alert variant="high">
 					<TriangleAlertIcon />
-					<AlertTitle>Alto · Predicción de 6–48 h</AlertTitle>
-					<AlertDescription>
-						Panamericana Norte, Chiclayo–Piura. Lluvias intensas y aviso SENAMHI
-						naranja. Retrasar la salida y revisar la actualización. Escenario de
-						ejemplo; no confirma un cierre.
-					</AlertDescription>
+					<AlertTitle>{m.ds_high_forecast_title()}</AlertTitle>
+					<AlertDescription>{m.ds_high_alert_description()}</AlertDescription>
 				</Alert>
 			</div>
 		</ShowcaseSection>

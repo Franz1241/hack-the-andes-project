@@ -9,33 +9,34 @@ import {
 	TableRow,
 } from "@hack-the-andes-project/ui/components/table";
 import { useEffect, useRef, useState } from "react";
+import { m } from "@/paraglide/messages";
 
 const TYPE_SPECIMENS = [
-	{ token: "type-display", use: "Portada · Stack Sans Notch", copy: "Fénix" },
+	{ token: "type-display", use: m.ds_type_display_use, copy: m.ds_hero_title },
 	{
 		token: "type-title",
-		use: "Secciones · Stack Sans Notch",
-		copy: "Anticipar el riesgo",
+		use: m.ds_type_title_use,
+		copy: m.ds_type_title_sample,
 	},
 	{
 		token: "type-heading",
-		use: "Paneles · Stack Sans Notch",
-		copy: "Carretera Central",
+		use: m.ds_type_heading_use,
+		copy: m.ds_carretera_central,
 	},
 	{
 		token: "type-body",
-		use: "Lectura · IBM Plex Mono",
-		copy: "Lluvias intensas en La Oroya.",
+		use: m.ds_type_body_use,
+		copy: m.ds_type_body_sample,
 	},
 	{
 		token: "type-label",
-		use: "Etiquetas · IBM Plex Mono",
-		copy: "Aviso SENAMHI naranja",
+		use: m.ds_type_label_use,
+		copy: m.ds_senamhi_orange_warning,
 	},
 	{
 		token: "type-data",
-		use: "Datos · IBM Plex Mono",
-		copy: "112 km / 06:00 / 24 h",
+		use: m.ds_type_data_use,
+		copy: m.ds_type_data_sample,
 	},
 ];
 
@@ -62,23 +63,21 @@ export function TypeSection() {
 	}, []);
 	return (
 		<ShowcaseSection
+			kicker={m.ds_section_kicker()}
 			id="tipografia"
 			number="02"
-			title="Una voz, dos familias"
-			description="Stack Sans Notch para declarar. IBM Plex Mono para explicar, comparar y decidir. El tamaño responde al espacio disponible."
+			title={m.ds_type_title()}
+			description={m.ds_type_description()}
 		>
 			<div ref={specimensRef} className="min-w-0">
 				<Table>
-					<TableCaption>
-						Especificación activa: tamaño / interlineado / peso / espaciado
-						entre letras.
-					</TableCaption>
+					<TableCaption>{m.ds_type_caption()}</TableCaption>
 					<TableHeader>
 						<TableRow>
-							<TableHead>Token</TableHead>
-							<TableHead>Especificación</TableHead>
-							<TableHead>Uso</TableHead>
-							<TableHead>Muestra</TableHead>
+							<TableHead>{m.ds_type_token()}</TableHead>
+							<TableHead>{m.ds_type_specification()}</TableHead>
+							<TableHead>{m.ds_type_use()}</TableHead>
+							<TableHead>{m.ds_type_specimen()}</TableHead>
 						</TableRow>
 					</TableHeader>
 					<TableBody>
@@ -88,16 +87,16 @@ export function TypeSection() {
 									<code>{specimen.token}</code>
 								</TableCell>
 								<TableCell>
-									{specifications[specimen.token] ?? "Midiendo…"}
+									{specifications[specimen.token] ?? m.ds_measuring()}
 								</TableCell>
-								<TableCell>{specimen.use}</TableCell>
+								<TableCell>{specimen.use()}</TableCell>
 								<TableCell>
 									<div className="max-w-md overflow-hidden">
 										<p
 											data-type-specimen={specimen.token}
 											className={`${specimen.token} truncate`}
 										>
-											{specimen.copy}
+											{specimen.copy()}
 										</p>
 									</div>
 								</TableCell>
@@ -107,18 +106,18 @@ export function TypeSection() {
 				</Table>
 			</div>
 			<p className="type-body mt-10 max-w-3xl">
-				En la Carretera Central, una alerta debe ayudar a decidir antes de
-				salir. Consulta el{" "}
+				{m.ds_type_paragraph_start()}{" "}
 				<a
 					className="underline underline-offset-4 focus-visible:outline focus-visible:outline-ring"
 					href="#riesgo"
 				>
-					nivel de riesgo y su horizonte
+					{m.ds_type_paragraph_link()}
 				</a>
-				, confirma la causa y comparte la recomendación con tu equipo. El
-				identificador{" "}
-				<code className="border bg-muted px-1 text-foreground">PE-22</code>{" "}
-				mantiene cada aviso vinculado a su ruta.
+				{m.ds_type_paragraph_middle()}{" "}
+				<code className="border bg-muted px-1 text-foreground">
+					{m.ds_sample_route_code()}
+				</code>{" "}
+				{m.ds_type_paragraph_end()}
 			</p>
 		</ShowcaseSection>
 	);

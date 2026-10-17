@@ -35,6 +35,15 @@ interface ColorPairProps {
 	background: string;
 	foreground: string;
 	className?: string;
+	contrastLabels: ContrastLabels;
+	formatContrast: (level: string, guidance: string) => string;
+}
+
+interface ContrastLabels {
+	large: string;
+	fail: string;
+	warning: string;
+	body: string;
 }
 
 // Canvas resolves CSS color spaces to sRGB and composites translucent ink over its surface.
@@ -80,6 +89,8 @@ export function ColorPair({
 	background,
 	foreground,
 	className,
+	contrastLabels,
+	formatContrast,
 }: ColorPairProps) {
 	const sampleRef = useRef<HTMLDivElement>(null);
 	const [info, setInfo] = useState<ColorInfo | null>(null);
@@ -121,8 +132,8 @@ export function ColorPair({
 			: info.ratio >= CONTRAST_AA_RATIO
 				? "AA"
 				: info.ratio >= CONTRAST_LARGE_RATIO
-					? "Solo texto grande"
-					: "Insuficiente";
+					? contrastLabels.large
+					: contrastLabels.fail;
 	return (
 		<div
 			className={cn("flex min-w-0 flex-col overflow-hidden border", className)}
@@ -153,10 +164,12 @@ export function ColorPair({
 							{info.background} / {info.foreground}
 						</span>
 						<span className="type-label">
-							{level}
-							{info.ratio < CONTRAST_AA_RATIO
-								? " · No usar en texto pequeño"
-								: " · Texto normal"}
+							{formatContrast(
+								level,
+								info.ratio < CONTRAST_AA_RATIO
+									? contrastLabels.warning
+									: contrastLabels.body,
+							)}
 						</span>
 					</>
 				)}

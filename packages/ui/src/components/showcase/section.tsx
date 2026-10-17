@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 interface ShowcaseSectionProps {
 	id: string;
 	number: string;
+	kicker: string;
 	title: string;
 	description: string;
 	children: ReactNode;
@@ -13,6 +14,7 @@ interface ShowcaseSectionProps {
 export function ShowcaseSection({
 	id,
 	number,
+	kicker,
 	title,
 	description,
 	children,
@@ -26,7 +28,7 @@ export function ShowcaseSection({
 		>
 			<header className="mb-10 flex max-w-3xl flex-col gap-4">
 				<p className="type-label text-muted-foreground">
-					{number} / Sistema Fénix
+					{number} / {kicker}
 				</p>
 				<h2 id={`${id}-title`} className="type-title">
 					{title}

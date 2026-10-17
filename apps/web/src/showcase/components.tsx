@@ -107,6 +107,7 @@ import {
 } from "@hack-the-andes-project/ui/components/tooltip";
 import type { ComponentProps } from "react";
 import { toast } from "sonner";
+import { m } from "@/paraglide/messages";
 
 const BUTTON_VARIANTS: NonNullable<ComponentProps<typeof Button>["variant"]>[] =
 	["default", "secondary", "outline", "ghost", "destructive", "link"];
@@ -124,72 +125,84 @@ const ICON_SIZES: NonNullable<ComponentProps<typeof Button>["size"]>[] = [
 ];
 interface BadgeExample {
 	variant: NonNullable<ComponentProps<typeof Badge>["variant"]>;
-	label: string;
+	label: () => string;
 }
 const BADGE_EXAMPLES: BadgeExample[] = [
-	{ variant: "default", label: "Ruta seleccionada" },
-	{ variant: "secondary", label: "En evaluación" },
-	{ variant: "outline", label: "PE-22" },
-	{ variant: "ghost", label: "Detalle" },
-	{ variant: "destructive", label: "Error de registro" },
-	{ variant: "link", label: "Ver fuente" },
-	{ variant: "low", label: "Bajo" },
-	{ variant: "moderate", label: "Moderado" },
-	{ variant: "high", label: "Alto" },
-	{ variant: "critical", label: "Crítico" },
-	{ variant: "info", label: "Información" },
-	{ variant: "success", label: "Guardado" },
+	{ variant: "default", label: m.ds_selected_route },
+	{ variant: "secondary", label: m.ds_under_review },
+	{ variant: "outline", label: m.ds_sample_route_code },
+	{ variant: "ghost", label: m.ds_detail },
+	{ variant: "destructive", label: m.ds_record_error },
+	{ variant: "link", label: m.ds_view_source },
+	{ variant: "low", label: m.risk_low },
+	{ variant: "moderate", label: m.risk_moderate },
+	{ variant: "high", label: m.risk_high },
+	{ variant: "critical", label: m.risk_critical },
+	{ variant: "info", label: m.ds_status_info },
+	{ variant: "success", label: m.ds_saved },
 ];
 
 export function ComponentsSection() {
+	const stateLabels = {
+		default: m.ds_state_default(),
+		hover: m.ds_state_hover(),
+		focus: m.ds_state_focus(),
+		active: m.ds_state_active(),
+		disabled: m.ds_state_disabled(),
+		invalid: m.ds_state_invalid(),
+	};
 	return (
 		<ShowcaseSection
+			kicker={m.ds_section_kicker()}
 			id="componentes"
 			number="04"
-			title="Piezas de la operación"
-			description="Controles previsibles, estados visibles y mensajes concretos. Prueba los campos, las pestañas, los menús y las notificaciones; todo funciona de forma local."
+			title={m.ds_components_title()}
+			description={m.ds_components_description()}
 		>
 			<div className="flex min-w-0 flex-col gap-12">
 				<div className="flex min-w-0 flex-col gap-6">
 					<div>
-						<h3 className="type-heading">Button · Decidir y actuar</h3>
+						<h3 className="type-heading">{m.ds_buttons_title()}</h3>
 						<p className="mt-2 text-muted-foreground text-sm">
-							Una acción principal por grupo. Secundario y outline para
-							alternativas; ghost y link para consulta; destructive para
-							eliminar.
+							{m.ds_buttons_description()}
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-3">
 						<Button>
-							Evaluar ruta <ArrowRightIcon data-icon="inline-end" />
+							{m.ds_evaluate_route()}
+							<ArrowRightIcon data-icon="inline-end" />
 						</Button>
-						<Button variant="outline">Ver fuentes</Button>
+						<Button variant="outline">{m.ds_view_sources()}</Button>
 					</div>
 					<StateMatrix
+						variantLabel={m.ds_variant()}
+						stateLabels={stateLabels}
 						rows={BUTTON_VARIANTS}
 						render={(variant, state) => (
 							<Button variant={variant} {...previewState(state)}>
-								{variant === "destructive" ? "Eliminar aviso" : "Evaluar ruta"}
+								{variant === "destructive"
+									? m.ds_delete_alert()
+									: m.ds_evaluate_route()}
 							</Button>
 						)}
 					/>
 					<div className="grid gap-8 lg:grid-cols-2">
 						<div className="flex flex-col gap-4">
-							<p className="type-label text-muted-foreground">Tamaños</p>
+							<p className="type-label text-muted-foreground">{m.ds_sizes()}</p>
 							<div className="flex flex-wrap items-end gap-4">
 								{BUTTON_SIZES.map((size) => (
 									<div key={size} className="flex flex-col items-start gap-2">
 										<code className="text-muted-foreground text-xs">
 											{size}
 										</code>
-										<Button size={size}>Continuar</Button>
+										<Button size={size}>{m.recommendation_continue()}</Button>
 									</div>
 								))}
 							</div>
 						</div>
 						<div className="flex flex-col gap-4">
 							<p className="type-label text-muted-foreground">
-								Solo icono · Con nombre accesible
+								{m.ds_icon_buttons()}
 							</p>
 							<div className="flex flex-wrap items-end gap-4">
 								{ICON_SIZES.map((size) => (
@@ -200,7 +213,7 @@ export function ComponentsSection() {
 										<Button
 											size={size}
 											variant="outline"
-											aria-label="Buscar ruta"
+											aria-label={m.ds_search_route()}
 										>
 											<SearchIcon />
 										</Button>
@@ -212,82 +225,81 @@ export function ComponentsSection() {
 					<div className="flex flex-wrap items-center gap-4">
 						<Button disabled aria-busy="true">
 							<Spinner data-icon="inline-start" />
-							Evaluando ruta…
+							{m.ds_evaluating_route()}
 						</Button>
 						<Button variant="outline">
 							<BellIcon data-icon="inline-start" />
-							Monitorear
+							{m.recommendation_monitor()}
 						</Button>
 						<Button variant="secondary" className="max-w-full">
-							<span className="truncate">
-								Monitorear Panamericana Norte · Chiclayo–Piura
-							</span>
+							<span className="truncate">{m.ds_monitor_long_route()}</span>
 						</Button>
 					</div>
 				</div>
 				<Separator />
 				<div className="flex min-w-0 flex-col gap-6">
 					<div>
-						<h3 className="type-heading">Campos · Contexto antes de enviar</h3>
+						<h3 className="type-heading">{m.ds_fields_title()}</h3>
 						<p className="mt-2 text-muted-foreground text-sm">
-							Etiqueta persistente, ayuda concreta y errores vinculados al
-							campo.
+							{m.ds_fields_description()}
 						</p>
 					</div>
 					<FieldGroup className="grid gap-6 md:grid-cols-2">
 						<Field>
-							<Label htmlFor="route-search">Buscar ruta</Label>
+							<Label htmlFor="route-search">{m.ds_search_route()}</Label>
 							<InputGroup>
 								<InputGroupAddon>
 									<SearchIcon />
 								</InputGroupAddon>
 								<InputGroupInput
 									id="route-search"
-									placeholder="Carretera Central"
+									placeholder={m.ds_carretera_central()}
 								/>
 								<InputGroupAddon align="inline-end">
-									<InputGroupText>PE</InputGroupText>
+									<InputGroupText>{m.ds_country_code()}</InputGroupText>
 								</InputGroupAddon>
 							</InputGroup>
 							<p className="text-muted-foreground text-xs">
-								Busca por carretera, ciudad o código.
+								{m.ds_search_route_hint()}
 							</p>
 						</Field>
 						<Field data-invalid>
 							<Label htmlFor="invalid-location">
-								Kilómetro del incidente *
+								{m.ds_incident_kilometer()}
 							</Label>
 							<Input
 								id="invalid-location"
-								defaultValue="La Oroya"
+								defaultValue={m.ds_la_oroya()}
 								aria-invalid="true"
 								aria-describedby="location-error"
 								required
 							/>
 							<p id="location-error" className="text-destructive text-xs">
-								Ingresa el kilómetro, por ejemplo: 112.
+								{m.ds_incident_kilometer_error()}
 							</p>
 						</Field>
 						<Field>
-							<Label htmlFor="route-notes">Observación del operador</Label>
+							<Label htmlFor="route-notes">{m.ds_operator_notes()}</Label>
 							<Textarea
 								id="route-notes"
-								defaultValue="Lluvias intensas en el acceso a La Oroya. Confirmar el estado del tramo antes de despachar."
+								defaultValue={m.ds_operator_notes_sample()}
 							/>
 						</Field>
 						<Field data-disabled>
-							<Label htmlFor="disabled-source">Fuente de referencia</Label>
+							<Label htmlFor="disabled-source">{m.ds_reference_source()}</Label>
 							<Input
 								id="disabled-source"
-								defaultValue="SUTRAN · cierre confirmado"
+								defaultValue={m.ds_confirmed_source()}
 								disabled
 							/>
 							<p className="text-muted-foreground text-xs">
-								Este dato proviene del aviso y no se puede editar.
+								{m.ds_reference_source_hint()}
 							</p>
 						</Field>
 					</FieldGroup>
 					<StateMatrix
+						variantLabel={m.ds_variant()}
+						stateLabels={stateLabels}
 						rows={["Input", "Textarea", "Checkbox"]}
 						states={["default", "hover", "focus", "disabled", "invalid"]}
 						render={(control, state) => {
@@ -299,19 +311,21 @@ export function ComponentsSection() {
 									className="min-w-40"
 								>
 									<Label htmlFor={fieldId}>
-										{control === "Checkbox" ? "Recibir avisos" : "Ruta"}
+										{control === "Checkbox"
+											? m.ds_receive_alerts()
+											: m.ds_route_label()}
 									</Label>
 									{control === "Input" ? (
 										<Input
 											id={fieldId}
-											defaultValue="PE-22"
+											defaultValue={m.ds_sample_route_code()}
 											aria-invalid={state === "invalid" || undefined}
 											{...previewState(state)}
 										/>
 									) : control === "Textarea" ? (
 										<Textarea
 											id={fieldId}
-											defaultValue="Verificar el tramo."
+											defaultValue={m.ds_check_segment()}
 											aria-invalid={state === "invalid" || undefined}
 											{...previewState(state)}
 										/>
@@ -330,105 +344,89 @@ export function ComponentsSection() {
 				</div>
 				<Separator />
 				<div className="flex flex-col gap-6">
-					<h3 className="type-heading">Badge · Estado con nombre</h3>
+					<h3 className="type-heading">{m.ds_badges_title()}</h3>
 					<div className="flex flex-wrap gap-3">
 						{BADGE_EXAMPLES.map((badge) => (
 							<div key={badge.variant} className="flex flex-col gap-2">
 								<code className="text-muted-foreground text-xs">
 									{badge.variant}
 								</code>
-								<Badge variant={badge.variant}>{badge.label}</Badge>
+								<Badge variant={badge.variant}>{badge.label()}</Badge>
 							</div>
 						))}
 					</div>
 					<div className="max-w-full">
 						<Badge variant="outline" className="max-w-full">
-							<span className="truncate">
-								Interoceánica · Puerto Maldonado · tramo en evaluación
-							</span>
+							<span className="truncate">{m.ds_long_badge()}</span>
 						</Badge>
 						<p className="mt-2 text-muted-foreground text-xs">
-							Las etiquetas largas se truncan; el detalle conserva el nombre
-							completo.
+							{m.ds_long_badge_hint()}
 						</p>
 					</div>
 				</div>
 				<div className="grid min-w-0 gap-6 lg:grid-cols-2">
 					<Card>
 						<CardHeader>
-							<CardTitle>Carretera Central</CardTitle>
-							<CardDescription>
-								Km 112 · La Oroya · ejemplo de tarjeta
-							</CardDescription>
+							<CardTitle>{m.ds_carretera_central()}</CardTitle>
+							<CardDescription>{m.ds_route_card_description()}</CardDescription>
 						</CardHeader>
 						<CardContent className="flex flex-col gap-4">
-							<Badge variant="critical">Crítico</Badge>
-							<p>
-								Cierre SUTRAN por huaico. Revisa una alternativa antes de
-								despachar.
-							</p>
+							<Badge variant="critical">{m.risk_critical()}</Badge>
+							<p>{m.ds_route_card_alert()}</p>
 						</CardContent>
 						<CardFooter className="flex-wrap gap-2">
-							<Button
-								onClick={() =>
-									toast.info("Ejemplo: evaluación de desvío abierta.")
-								}
-							>
-								Evaluar desvío
+							<Button onClick={() => toast.info(m.ds_toast_reroute_opened())}>
+								{m.ds_evaluate_reroute()}
 							</Button>
 							<Button
 								variant="outline"
-								onClick={() =>
-									toast.info("Ejemplo: fuente SUTRAN del cierre confirmado.")
-								}
+								onClick={() => toast.info(m.ds_toast_source_opened())}
 							>
-								Ver fuente
+								{m.ds_view_source()}
 							</Button>
 						</CardFooter>
 					</Card>
 					<div className="flex min-w-0 flex-col gap-4 border p-5">
-						<h3 className="type-heading">Tabs · Cambiar el horizonte</h3>
+						<h3 className="type-heading">{m.ds_tabs_title()}</h3>
 						<Tabs defaultValue="now">
-							<TabsList aria-label="Horizonte del aviso">
-								<TabsTrigger value="now">Ahora</TabsTrigger>
-								<TabsTrigger value="forecast">6–48 h</TabsTrigger>
+							<TabsList aria-label={m.ds_alert_horizon()}>
+								<TabsTrigger value="now">{m.horizon_now()}</TabsTrigger>
+								<TabsTrigger value="forecast">
+									{m.ds_forecast_window()}
+								</TabsTrigger>
 								<TabsTrigger value="history" disabled>
-									Historial
+									{m.ds_history()}
 								</TabsTrigger>
 							</TabsList>
 							<TabsContent value="now">
 								<Table>
 									<TableCaption>
-										Incidentes confirmados · datos de ejemplo.
+										{m.ds_confirmed_incidents_caption()}
 									</TableCaption>
 									<TableHeader>
 										<TableRow>
-											<TableHead>Ruta</TableHead>
-											<TableHead>Estado</TableHead>
+											<TableHead>{m.ds_route_label()}</TableHead>
+											<TableHead>{m.ds_status_label()}</TableHead>
 										</TableRow>
 									</TableHeader>
 									<TableBody>
 										<TableRow>
-											<TableCell>Carretera Central km 112</TableCell>
+											<TableCell>{m.ds_central_kilometer()}</TableCell>
 											<TableCell>
-												<Badge variant="critical">Crítico</Badge>
+												<Badge variant="critical">{m.risk_critical()}</Badge>
 											</TableCell>
 										</TableRow>
 										<TableRow>
-											<TableCell>Panamericana Sur</TableCell>
+											<TableCell>{m.ds_panamericana_sur()}</TableCell>
 											<TableCell>
-												<Badge variant="low">Bajo</Badge>
+												<Badge variant="low">{m.risk_low()}</Badge>
 											</TableCell>
 										</TableRow>
 									</TableBody>
 								</Table>
 							</TabsContent>
 							<TabsContent value="forecast">
-								<p className="py-4">
-									Aviso SENAMHI naranja: lluvias intensas previstas en
-									Chiclayo–Piura. Horizonte de 6 a 48 horas; confirmar antes de
-									salir.
-								</p>
+								<p className="py-4">{m.ds_forecast_tab_description()}</p>
 							</TabsContent>
 						</Tabs>
 					</div>
@@ -436,45 +434,46 @@ export function ComponentsSection() {
 				<Separator />
 				<div className="grid gap-8 md:grid-cols-2">
 					<div className="flex flex-col gap-5">
-						<h3 className="type-heading">Tooltip y menú contextual</h3>
+						<h3 className="type-heading">{m.ds_overlays_title()}</h3>
 						<div className="flex flex-wrap gap-3">
 							<TooltipProvider>
 								<Tooltip>
 									<TooltipTrigger render={<Button variant="outline" />}>
-										¿Qué significa 6–48 h?
+										{m.ds_forecast_tooltip_trigger()}
 									</TooltipTrigger>
-									<TooltipContent>
-										Ventana estimada de una predicción; no confirma un cierre.
-									</TooltipContent>
+									<TooltipContent>{m.ds_forecast_tooltip()}</TooltipContent>
 								</Tooltip>
 							</TooltipProvider>
 							<DropdownMenu>
 								<DropdownMenuTrigger render={<Button variant="outline" />}>
-									Acciones de ruta <ArrowDownIcon data-icon="inline-end" />
+									{m.ds_route_actions()}
+									<ArrowDownIcon data-icon="inline-end" />
 								</DropdownMenuTrigger>
 								<DropdownMenuContent>
 									<DropdownMenuGroup>
-										<DropdownMenuLabel>Carretera Central</DropdownMenuLabel>
+										<DropdownMenuLabel>
+											{m.ds_carretera_central()}
+										</DropdownMenuLabel>
 										<DropdownMenuItem
 											onClick={() =>
-												toast.success("Monitoreo activado en este ejemplo.")
+												toast.success(m.ds_toast_monitor_enabled())
 											}
 										>
-											Monitorear ruta
+											{m.ds_monitor_route()}
 										</DropdownMenuItem>
 										<DropdownMenuItem
 											onClick={() =>
-												toast.info("Recomendación de ejemplo: desviar.")
+												toast.info(m.ds_toast_reroute_recommendation())
 											}
 										>
-											Ver recomendación
+											{m.ds_view_recommendation()}
 										</DropdownMenuItem>
 										<DropdownMenuSeparator />
 										<DropdownMenuItem
 											variant="destructive"
-											onClick={() => toast.info("Aviso de ejemplo archivado.")}
+											onClick={() => toast.info(m.ds_toast_alert_archived())}
 										>
-											Archivar aviso
+											{m.ds_archive_alert()}
 										</DropdownMenuItem>
 									</DropdownMenuGroup>
 								</DropdownMenuContent>
@@ -482,50 +481,47 @@ export function ComponentsSection() {
 						</div>
 					</div>
 					<div className="flex flex-col gap-5">
-						<h3 className="type-heading">Notificaciones · Sonner</h3>
+						<h3 className="type-heading">{m.ds_notifications_title()}</h3>
 						<div className="flex flex-wrap gap-2">
 							<Button
 								variant="outline"
 								onClick={() =>
-									toast.success("Ruta guardada", {
-										description:
-											"Carretera Central añadida a tu monitoreo de ejemplo.",
+									toast.success(m.ds_toast_route_saved(), {
+										description: m.ds_toast_route_saved_description(),
 									})
 								}
 							>
-								Éxito
+								{m.ds_status_success()}
 							</Button>
 							<Button
 								variant="outline"
 								onClick={() =>
-									toast.info("Aviso actualizado", {
-										description:
-											"Interoceánica · Puerto Maldonado. Próxima revisión en 6 h.",
+									toast.info(m.ds_toast_alert_updated(), {
+										description: m.ds_toast_alert_updated_description(),
 									})
 								}
 							>
-								Información
+								{m.ds_status_info()}
 							</Button>
 							<Button
 								variant="outline"
 								onClick={() =>
-									toast.warning("Aviso SENAMHI naranja", {
-										description:
-											"Lluvias intensas previstas en Chiclayo–Piura.",
+									toast.warning(m.ds_senamhi_orange_warning(), {
+										description: m.ds_heavy_rain_forecast(),
 									})
 								}
 							>
-								Advertencia
+								{m.ds_warning()}
 							</Button>
 							<Button
 								variant="outline"
 								onClick={() =>
-									toast.error("No se pudo guardar el aviso", {
-										description: "Ejemplo de error. Intenta nuevamente.",
+									toast.error(m.ds_toast_save_failed(), {
+										description: m.ds_toast_save_failed_description(),
 									})
 								}
 							>
-								Error
+								{m.ds_error()}
 							</Button>
 						</div>
 					</div>
@@ -534,15 +530,15 @@ export function ComponentsSection() {
 					<div
 						className="flex flex-col gap-5 border p-6"
 						role="status"
-						aria-label="Cargando el resumen de ruta"
+						aria-label={m.ds_loading_route_summary()}
 					>
-						<h3 className="type-heading">Skeleton · Cargando datos</h3>
+						<h3 className="type-heading">{m.ds_skeleton_title()}</h3>
 						<Skeleton className="h-5 w-2/3" />
 						<Skeleton className="h-4 w-full" />
 						<Skeleton className="h-4 w-4/5" />
 						<Skeleton className="h-24 w-full" />
 						<p className="text-muted-foreground text-xs">
-							Consultando el último estado de la ruta…
+							{m.ds_loading_route_status()}
 						</p>
 					</div>
 					<Empty className="border">
@@ -550,30 +546,21 @@ export function ComponentsSection() {
 							<EmptyMedia variant="icon">
 								<MapPinIcon />
 							</EmptyMedia>
-							<EmptyTitle>Sin rutas en seguimiento</EmptyTitle>
-							<EmptyDescription>
-								Añade una ruta para reunir sus avisos y recomendaciones.
-							</EmptyDescription>
+							<EmptyTitle>{m.ds_empty_title()}</EmptyTitle>
+							<EmptyDescription>{m.ds_empty_description()}</EmptyDescription>
 						</EmptyHeader>
 						<EmptyContent>
-							<Button
-								onClick={() =>
-									toast.success("Carretera Central añadida al ejemplo.")
-								}
-							>
-								Añadir ruta
+							<Button onClick={() => toast.success(m.ds_toast_route_added())}>
+								{m.ds_add_route()}
 							</Button>
 						</EmptyContent>
 					</Empty>
 				</div>
 				<Separator />
 				<div className="flex min-w-0 flex-col gap-6">
-					<h3 className="type-heading">
-						Conversación · De la alerta a la decisión
-					</h3>
+					<h3 className="type-heading">{m.ds_conversation_title()}</h3>
 					<p className="type-body text-muted-foreground">
-						Un hilo breve conserva la ruta, la fuente y la recomendación.
-						Contenido de demostración.
+						{m.ds_conversation_description()}
 					</p>
 					<div className="h-96 min-w-0 border bg-card p-4">
 						<MessageScrollerProvider>
@@ -582,17 +569,18 @@ export function ComponentsSection() {
 									<MessageScrollerContent>
 										<MessageScrollerItem messageId="context">
 											<Marker variant="separator">
-												<MarkerContent>Hoy · Carretera Central</MarkerContent>
+												<MarkerContent>
+													{m.ds_conversation_date()}
+												</MarkerContent>
 											</Marker>
 										</MessageScrollerItem>
 										<MessageScrollerItem messageId="operator" scrollAnchor>
 											<Message align="end">
 												<MessageContent>
-													<MessageHeader>Operaciones</MessageHeader>
+													<MessageHeader>{m.ds_operations()}</MessageHeader>
 													<Bubble align="end">
 														<BubbleContent>
-															¿Podemos salir hacia La Oroya por la Carretera
-															Central?
+															{m.ds_operator_message()}
 														</BubbleContent>
 													</Bubble>
 													<MessageFooter>08:12</MessageFooter>
@@ -602,15 +590,10 @@ export function ComponentsSection() {
 										<MessageScrollerItem messageId="assistant">
 											<Message>
 												<MessageContent>
-													<MessageHeader>
-														Fénix · Asistente de rutas
-													</MessageHeader>
+													<MessageHeader>{m.ds_assistant_name()}</MessageHeader>
 													<Bubble variant="secondary">
 														<BubbleContent>
-															Riesgo crítico en el km 112: huaico y cierre
-															confirmado por SUTRAN. Recomendación: desviar.
-															Valida la alternativa con operaciones antes del
-															despacho.
+															{m.ds_assistant_message()}
 														</BubbleContent>
 													</Bubble>
 													<Attachment state="done">
@@ -619,15 +602,15 @@ export function ComponentsSection() {
 														</AttachmentMedia>
 														<AttachmentContent>
 															<AttachmentTitle>
-																aviso-cierre-carretera-central.pdf
+																{m.ds_closure_attachment_name()}
 															</AttachmentTitle>
 															<AttachmentDescription>
-																Referencia de ejemplo · SUTRAN
+																{m.ds_attachment_reference()}
 															</AttachmentDescription>
 														</AttachmentContent>
 													</Attachment>
 													<MessageFooter>
-														08:13 · Cierre confirmado
+														{m.ds_assistant_timestamp()}
 													</MessageFooter>
 												</MessageContent>
 											</Message>
@@ -641,10 +624,10 @@ export function ComponentsSection() {
 														</AttachmentMedia>
 														<AttachmentContent>
 															<AttachmentTitle>
-																reporte-de-campo-la-oroya.pdf
+																{m.ds_field_attachment_name()}
 															</AttachmentTitle>
 															<AttachmentDescription>
-																No se pudo cargar el archivo.
+																{m.ds_attachment_error()}
 															</AttachmentDescription>
 														</AttachmentContent>
 													</Attachment>
@@ -653,7 +636,7 @@ export function ComponentsSection() {
 										</MessageScrollerItem>
 									</MessageScrollerContent>
 								</MessageScrollerViewport>
-								<MessageScrollerButton aria-label="Ir al último mensaje">
+								<MessageScrollerButton aria-label={m.ds_scroll_latest()}>
 									<ArrowDownIcon />
 								</MessageScrollerButton>
 							</MessageScroller>

@@ -2,18 +2,12 @@ import { cn } from "cn";
 import type { ReactNode } from "react";
 
 const DEFAULT_STATES = ["default", "hover", "focus", "active", "disabled"];
-const STATE_LABELS: Record<string, string> = {
-	default: "Reposo",
-	hover: "Hover",
-	focus: "Foco",
-	active: "Pulsado",
-	disabled: "Deshabilitado",
-	invalid: "Inválido",
-};
 
 interface StateMatrixProps<Row extends string> {
 	rows: readonly Row[];
 	states?: readonly string[];
+	stateLabels: Record<string, string>;
+	variantLabel: string;
 	render: (row: Row, state: string) => ReactNode;
 	className?: string;
 }
@@ -21,6 +15,8 @@ interface StateMatrixProps<Row extends string> {
 export function StateMatrix<Row extends string>({
 	rows,
 	states = DEFAULT_STATES,
+	stateLabels,
+	variantLabel,
 	render,
 	className,
 }: StateMatrixProps<Row>) {
@@ -30,7 +26,7 @@ export function StateMatrix<Row extends string>({
 				<thead>
 					<tr>
 						<th scope="col">
-							<span className="sr-only">Variante</span>
+							<span className="sr-only">{variantLabel}</span>
 						</th>
 						{states.map((state) => (
 							<th
@@ -38,7 +34,7 @@ export function StateMatrix<Row extends string>({
 								scope="col"
 								className="type-label text-left text-muted-foreground"
 							>
-								{STATE_LABELS[state] ?? state}
+								{stateLabels[state] ?? state}
 							</th>
 						))}
 					</tr>

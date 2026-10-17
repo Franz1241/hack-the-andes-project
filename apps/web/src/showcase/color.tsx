@@ -1,100 +1,111 @@
 import { ColorPair } from "@hack-the-andes-project/ui/components/showcase/color-pair";
 import { ShowcaseSection } from "@hack-the-andes-project/ui/components/showcase/section";
+import { m } from "@/paraglide/messages";
 
 const COLOR_PAIRS = [
-	{ name: "Lienzo", background: "background", foreground: "foreground" },
-	{ name: "Tarjeta", background: "card", foreground: "card-foreground" },
 	{
-		name: "Capa emergente",
+		name: m.ds_color_canvas,
+		background: "background",
+		foreground: "foreground",
+	},
+	{ name: m.ds_color_card, background: "card", foreground: "card-foreground" },
+	{
+		name: m.ds_color_popover,
 		background: "popover",
 		foreground: "popover-foreground",
 	},
 	{
-		name: "Acción principal",
+		name: m.ds_color_primary,
 		background: "primary",
 		foreground: "primary-foreground",
 	},
 	{
-		name: "Acción secundaria",
+		name: m.ds_color_secondary,
 		background: "secondary",
 		foreground: "secondary-foreground",
 	},
 	{
-		name: "Información de apoyo",
+		name: m.ds_color_muted,
 		background: "muted",
 		foreground: "muted-foreground",
 	},
-	{ name: "Selección", background: "accent", foreground: "accent-foreground" },
 	{
-		name: "Destructivo sobre lienzo",
+		name: m.ds_color_accent,
+		background: "accent",
+		foreground: "accent-foreground",
+	},
+	{
+		name: m.ds_color_destructive,
 		background: "background",
 		foreground: "destructive",
 	},
 	{
-		name: "Riesgo bajo",
+		name: m.ds_color_risk_low,
 		background: "risk-low",
 		foreground: "risk-low-foreground",
 	},
 	{
-		name: "Riesgo moderado",
+		name: m.ds_color_risk_moderate,
 		background: "risk-moderate",
 		foreground: "risk-moderate-foreground",
 	},
 	{
-		name: "Riesgo alto",
+		name: m.ds_color_risk_high,
 		background: "risk-high",
 		foreground: "risk-high-foreground",
 	},
 	{
-		name: "Riesgo crítico",
+		name: m.ds_color_risk_critical,
 		background: "risk-critical",
 		foreground: "risk-critical-foreground",
 	},
-	{ name: "Información", background: "info", foreground: "info-foreground" },
-	{ name: "Éxito", background: "success", foreground: "success-foreground" },
+	{ name: m.ds_status_info, background: "info", foreground: "info-foreground" },
+	{
+		name: m.ds_status_success,
+		background: "success",
+		foreground: "success-foreground",
+	},
 ];
 
 const PALETTE_GROUPS = [
 	{
-		name: "Superficies",
-		description: "Capas sobrias para organizar la operación.",
+		name: m.ds_palette_surfaces,
+		description: m.ds_palette_surfaces_description,
 		tokens: ["background", "card", "popover", "muted", "secondary", "accent"],
 	},
 	{
-		name: "Tinta",
-		description: "Jerarquía de lectura, sin ruido.",
+		name: m.ds_palette_ink,
+		description: m.ds_palette_ink_description,
 		tokens: ["foreground", "muted-foreground", "primary", "primary-foreground"],
 	},
 	{
-		name: "Marca",
-		description: "Solo identidad, nunca en datos.",
+		name: m.ds_palette_brand,
+		description: m.ds_palette_brand_description,
 		tokens: ["brand-ember", "brand-flame", "brand-gold"],
 	},
 	{
-		name: "Riesgo",
-		description:
-			"Verde · Bajo / Amarillo · Moderado / Naranja · Alto / Rojo · Crítico.",
+		name: m.ds_risk_label,
+		description: m.ds_palette_risk_description,
 		tokens: ["risk-low", "risk-moderate", "risk-high", "risk-critical"],
 	},
 	{
-		name: "Estado",
-		description:
-			"Información / Éxito. Un estado del sistema no es un nivel de riesgo.",
+		name: m.ds_status_label,
+		description: m.ds_palette_status_description,
 		tokens: ["info", "success", "destructive"],
 	},
 	{
-		name: "Gráficos",
-		description: "Series comparativas; el riesgo conserva su propia escala.",
+		name: m.ds_palette_charts,
+		description: m.ds_palette_charts_description,
 		tokens: ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"],
 	},
 	{
-		name: "Líneas",
-		description: "Separación, controles y foco de teclado.",
+		name: m.ds_palette_lines,
+		description: m.ds_palette_lines_description,
 		tokens: ["border", "input", "ring"],
 	},
 	{
-		name: "Navegación",
-		description: "La barra lateral comparte las superficies del sistema.",
+		name: m.ds_palette_navigation,
+		description: m.ds_palette_navigation_description,
 		tokens: [
 			"sidebar",
 			"sidebar-foreground",
@@ -108,43 +119,58 @@ const PALETTE_GROUPS = [
 	},
 ];
 
-const TOKEN_LABELS: Record<string, string> = {
-	"risk-low": "Bajo · Verde",
-	"risk-moderate": "Moderado · Amarillo",
-	"risk-high": "Alto · Naranja",
-	"risk-critical": "Crítico · Rojo",
-	info: "Información",
-	success: "Éxito",
-	"brand-ember": "Brasa",
-	"brand-flame": "Llama",
-	"brand-gold": "Oro",
+const TOKEN_LABELS: Record<string, () => string> = {
+	"risk-low": m.ds_palette_low_label,
+	"risk-moderate": m.ds_palette_moderate_label,
+	"risk-high": m.ds_palette_high_label,
+	"risk-critical": m.ds_palette_critical_label,
+	info: m.ds_status_info,
+	success: m.ds_status_success,
+	"brand-ember": m.ds_brand_ember,
+	"brand-flame": m.ds_brand_flame,
+	"brand-gold": m.ds_brand_gold,
 };
 
 export function ColorSection() {
 	return (
 		<ShowcaseSection
+			kicker={m.ds_section_kicker()}
 			id="color"
 			number="01"
-			title="Color con propósito"
-			description="Primero el significado, después el color. Cada superficie tiene su tinta y su contraste medido en el tema activo."
+			title={m.ds_color_title()}
+			description={m.ds_color_description()}
 		>
 			<div className="grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-3">
 				{COLOR_PAIRS.map((pair) => (
-					<ColorPair key={pair.name} {...pair} />
+					<ColorPair
+						key={`${pair.background}-${pair.foreground}`}
+						{...pair}
+						name={pair.name()}
+						contrastLabels={{
+							large: m.ds_contrast_large(),
+							fail: m.ds_contrast_fail(),
+							warning: m.ds_contrast_warning(),
+							body: m.ds_contrast_body(),
+						}}
+						formatContrast={(level, guidance) =>
+							m.ds_contrast_result({ level, guidance })
+						}
+					/>
 				))}
 			</div>
 			<p className="type-body mt-6 max-w-3xl text-muted-foreground">
-				AA requiere 4.5:1 para texto normal. Las parejas que no llegan al umbral
-				quedan señaladas: el color de riesgo se usa como relleno con su tinta,
-				nunca como texto sobre el lienzo.
+				{m.ds_color_contrast_guidance()}
 			</p>
 			<div className="mt-12 flex flex-col gap-10">
 				{PALETTE_GROUPS.map((group) => (
-					<div key={group.name} className="grid gap-5 md:grid-cols-[14rem_1fr]">
+					<div
+						key={group.name()}
+						className="grid gap-5 md:grid-cols-[14rem_1fr]"
+					>
 						<div>
-							<h3 className="type-heading">{group.name}</h3>
+							<h3 className="type-heading">{group.name()}</h3>
 							<p className="mt-2 text-muted-foreground text-sm">
-								{group.description}
+								{group.description()}
 							</p>
 						</div>
 						<div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4">
@@ -156,7 +182,7 @@ export function ColorSection() {
 										style={{ backgroundColor: `var(--${token})` }}
 									/>
 									<p className="mt-2 break-words text-xs">
-										{TOKEN_LABELS[token] ?? token}
+										{TOKEN_LABELS[token]?.() ?? token}
 									</p>
 									<code className="break-words text-muted-foreground text-xs">
 										--{token}

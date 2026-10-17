@@ -31,15 +31,17 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { ROUTE_EXAMPLES } from "@/constants";
+import { m } from "@/paraglide/messages";
 
 export function ExampleScreenSection() {
 	const [selectedRoute, setSelectedRoute] = useState(ROUTE_EXAMPLES[0]);
 	return (
 		<ShowcaseSection
+			kicker={m.ds_section_kicker()}
 			id="panel"
 			number="07"
-			title="Del sistema a la ruta"
-			description="La misma gramática en una pantalla de trabajo: riesgo, horizonte, causa y una recomendación accionable."
+			title={m.ds_panel_section_title()}
+			description={m.ds_panel_section_description()}
 		>
 			<div className="relative isolate min-w-0 overflow-hidden border bg-background p-4 sm:p-6">
 				<TopoBackground className="text-foreground/[0.06]" />
@@ -47,29 +49,34 @@ export function ExampleScreenSection() {
 					<div className="flex flex-wrap items-start justify-between gap-4">
 						<div className="flex flex-col gap-3">
 							<p className="type-label text-muted-foreground">
-								Fénix / Operaciones
+								{m.ds_panel_kicker()}
 							</p>
-							<h3 className="type-heading">Panel de rutas</h3>
+							<h3 className="type-heading">{m.ds_panel_title()}</h3>
 							<p className="text-muted-foreground text-sm">
-								Cinco rutas. Una vista para anticipar la próxima decisión.
+								{m.ds_panel_description()}
 							</p>
 						</div>
-						<Badge variant="outline">Datos de demostración</Badge>
+						<Badge variant="outline">{m.ds_demo_data()}</Badge>
 					</div>
 					<div className="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
 						<div className="min-w-0 border bg-card p-2">
 							<Table className="lg:table-fixed">
-								<TableCaption>
-									Selecciona una ruta para consultar el aviso. Escenarios
-									ilustrativos, sin datos en vivo.
-								</TableCaption>
+								<TableCaption>{m.ds_panel_caption()}</TableCaption>
 								<TableHeader>
 									<TableRow>
-										<TableHead className="lg:w-1/3">Ruta</TableHead>
-										<TableHead className="lg:w-24">Riesgo</TableHead>
-										<TableHead className="lg:w-28">Horizonte</TableHead>
-										<TableHead>Causa</TableHead>
-										<TableHead className="lg:w-40">Recomendación</TableHead>
+										<TableHead className="lg:w-1/3">
+											{m.ds_route_label()}
+										</TableHead>
+										<TableHead className="lg:w-24">
+											{m.ds_risk_label()}
+										</TableHead>
+										<TableHead className="lg:w-28">
+											{m.ds_horizon_label()}
+										</TableHead>
+										<TableHead>{m.ds_cause_label()}</TableHead>
+										<TableHead className="lg:w-40">
+											{m.ds_recommendation_label()}
+										</TableHead>
 									</TableRow>
 								</TableHeader>
 								<TableBody>
@@ -87,22 +94,22 @@ export function ExampleScreenSection() {
 													onClick={() => setSelectedRoute(route)}
 													aria-pressed={selectedRoute.id === route.id}
 												>
-													{route.name}
+													{route.name()}
 												</Button>
 												<p className="type-data px-2.5 text-muted-foreground lg:px-0">
 													{route.id}
 												</p>
 											</TableCell>
 											<TableCell>
-												<Badge variant={route.risk}>{route.riskLabel}</Badge>
+												<Badge variant={route.risk}>{route.riskLabel()}</Badge>
 											</TableCell>
 											<TableCell>
-												<span className="type-data">{route.horizon}</span>
+												<span className="type-data">{route.horizon()}</span>
 											</TableCell>
 											<TableCell className="whitespace-normal">
-												{route.cause}
+												{route.cause()}
 											</TableCell>
-											<TableCell>{route.recommendation}</TableCell>
+											<TableCell>{route.recommendation()}</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
@@ -111,53 +118,60 @@ export function ExampleScreenSection() {
 						<Card>
 							<CardHeader>
 								<p className="type-label text-muted-foreground">
-									Ruta seleccionada
+									{m.ds_selected_route()}
 								</p>
-								<CardTitle>{selectedRoute.name}</CardTitle>
+								<CardTitle>{selectedRoute.name()}</CardTitle>
 								<CardDescription>
-									{selectedRoute.id} · Horizonte:{" "}
-									{selectedRoute.horizon.toLowerCase()}
+									{m.ds_panel_route_horizon({
+										route: selectedRoute.id,
+										horizon: selectedRoute.horizon().toLowerCase(),
+									})}
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="flex flex-col gap-5">
 								<Badge variant={selectedRoute.risk}>
-									{selectedRoute.riskLabel}
+									{selectedRoute.riskLabel()}
 								</Badge>
 								<Alert variant={selectedRoute.risk}>
-									<AlertTitle>{selectedRoute.cause}</AlertTitle>
+									<AlertTitle>{selectedRoute.cause()}</AlertTitle>
 									<AlertDescription>
-										Recomendación: {selectedRoute.recommendation.toLowerCase()}.
-										Confirma el estado del tramo y coordina con operaciones
-										antes de salir.
+										{m.ds_panel_recommendation({
+											recommendation: selectedRoute
+												.recommendation()
+												.toLowerCase(),
+										})}
 									</AlertDescription>
 								</Alert>
 								<p className="text-muted-foreground text-xs">
-									La evidencia y el horizonte acompañan cada decisión. Revisa la
-									vigencia del aviso antes del despacho.
+									{m.ds_panel_evidence_note()}
 								</p>
 							</CardContent>
 							<CardFooter className="flex-wrap gap-2">
 								<Button
 									onClick={() =>
 										toast.info(
-											`Recomendación de ejemplo: ${selectedRoute.recommendation.toLowerCase()}`,
-											{ description: selectedRoute.name },
+											m.ds_panel_toast_recommendation({
+												recommendation: selectedRoute
+													.recommendation()
+													.toLowerCase(),
+											}),
+											{ description: selectedRoute.name() },
 										)
 									}
 								>
-									{selectedRoute.recommendation}
+									{selectedRoute.recommendation()}
 									<ArrowRightIcon data-icon="inline-end" />
 								</Button>
 								<Button
 									variant="outline"
 									onClick={() =>
-										toast.success("Seguimiento activado en el ejemplo", {
-											description: selectedRoute.name,
+										toast.success(m.ds_toast_follow_enabled(), {
+											description: selectedRoute.name(),
 										})
 									}
 								>
 									<BellIcon data-icon="inline-start" />
-									Seguir ruta
+									{m.ds_follow_route()}
 								</Button>
 							</CardFooter>
 						</Card>
