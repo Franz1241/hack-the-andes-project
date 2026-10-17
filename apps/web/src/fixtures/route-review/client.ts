@@ -36,8 +36,10 @@ import {
 	FIXTURE_HORIZONS,
 	FIXTURE_LATENCY_MS,
 	FIXTURE_ORGANIZATION_ID,
+	FIXTURE_STORAGE_KEY,
 	HIGH_RISK_MIN_SCORE,
 	HOUR_MS,
+	ISO_DATE_PATTERN,
 	MINUTE_MS,
 	MODERATE_RISK_MIN_SCORE,
 } from "./constants";
@@ -198,7 +200,35 @@ const manualVehicleDefaults = {
 	lastPositionAt: null,
 };
 
-const vehicles: ProfiledVehicleSummary[] = [
+interface StoredTripReview {
+	tripId: string;
+	input: RouteReviewInput;
+	evaluatedAt: Date;
+}
+
+interface StoredFixtureState {
+	vehicles: ProfiledVehicleSummary[];
+	plannedTrips: PlannedTripSummary[];
+	tripReviews: StoredTripReview[];
+}
+
+function readStoredState(): StoredFixtureState | null {
+	try {
+		const storedState = localStorage.getItem(FIXTURE_STORAGE_KEY);
+		return storedState
+			? JSON.parse(storedState, (_key, value) =>
+					typeof value === "string" && ISO_DATE_PATTERN.test(value)
+						? new Date(value)
+						: value,
+				)
+			: null;
+	} catch {
+		return null;
+	}
+}
+
+const storedState = readStoredState();
+const vehicles: ProfiledVehicleSummary[] = storedState?.vehicles ?? [
 	{
 		...gpsVehicleDefaults,
 		id: "fixture-vehicle-volvo-fh",
@@ -239,7 +269,7 @@ const vehicles: ProfiledVehicleSummary[] = [
 	},
 ];
 const reviews = new Map<string, RouteReview>();
-const plannedTrips: PlannedTripSummary[] = [];
+const plannedTrips: PlannedTripSummary[] = storedState?.plannedTrips ?? [];
 const tripReviewIds = new Map<string, string>();
 
 function findVehicle(id: string) {
@@ -260,10 +290,9 @@ function findCandidate(review: RouteReview, candidateId: string) {
 	return candidate;
 }
 
-function evaluate(input: RouteReviewInput): RouteReview {
+function evaluate(input: RouteReviewInput, now = new Date()): RouteReview {
 	const profile = findVehicle(input.vehicleId).profile;
 	if (!profile) throw new Error(VEHICLE_PROFILE_REQUIRED_MESSAGE);
-	const now = new Date();
 	const scenarios =
 		input.originPlaceId === "lima" && input.destinationPlaceId === "huancayo"
 			? LIMA_HUANCAYO_SCENARIOS
@@ -331,44 +360,78 @@ function tripDetail(trip: PlannedTripSummary): PlannedTrip {
 	return { ...trip, review };
 }
 
+function persist() {
+	const tripReviews = plannedTrips.flatMap((trip): StoredTripReview[] => {
+		const review = reviews.get(tripReviewIds.get(trip.id) ?? "");
+		return review
+			? [
+					{
+						tripId: trip.id,
+						input: {
+							originPlaceId: review.originPlaceId,
+							destinationPlaceId: review.destinationPlaceId,
+							vehicleId: review.vehicleId,
+							departureAt: review.departureAt,
+						},
+						evaluatedAt: review.evaluatedAt,
+					},
+				]
+			: [];
+	});
+	try {
+		localStorage.setItem(
+			FIXTURE_STORAGE_KEY,
+			JSON.stringify({ vehicles, plannedTrips, tripReviews }),
+		);
+	} catch {}
+}
+
 const nextHour = Math.ceil(seededAt.getTime() / HOUR_MS) * HOUR_MS;
-for (const seed of [
-	{
-		vehicleId: "fixture-vehicle-volvo-fh",
-		departureInHours: 6,
-		candidateId: "sutran:carretera_central_ruta_5",
-		name: "Lima → Huancayo · cemento",
-		cancelled: false,
-	},
-	{
-		vehicleId: "fixture-vehicle-volvo-fh",
-		departureInHours: 22,
-		candidateId: "illapa:pe22_central",
-		name: "Lima → Huancayo · retorno de vacíos",
-		cancelled: false,
-	},
-	{
-		vehicleId: "fixture-vehicle-scania-r450",
-		departureInHours: 20,
-		candidateId: "illapa:pe22_central",
-		name: "Lima → Huancayo · abarrotes",
-		cancelled: false,
-	},
-	{
-		vehicleId: "fixture-vehicle-isuzu-nqr",
-		departureInHours: 3,
-		candidateId: "sutran:carretera_central_ruta_4",
-		name: "Lima → Huancayo · reparto farmacias",
-		cancelled: false,
-	},
-	{
-		vehicleId: "fixture-vehicle-hino-500",
-		departureInHours: 10,
-		candidateId: "sutran:carretera_central_ruta_2",
-		name: "Lima → Huancayo · fertilizantes",
-		cancelled: true,
-	},
-]) {
+for (const tripReview of storedState?.tripReviews ?? []) {
+	tripReviewIds.set(
+		tripReview.tripId,
+		evaluate(tripReview.input, tripReview.evaluatedAt).id,
+	);
+}
+for (const seed of storedState
+	? []
+	: [
+			{
+				vehicleId: "fixture-vehicle-volvo-fh",
+				departureInHours: 6,
+				candidateId: "sutran:carretera_central_ruta_5",
+				name: "Lima → Huancayo · cemento",
+				cancelled: false,
+			},
+			{
+				vehicleId: "fixture-vehicle-volvo-fh",
+				departureInHours: 22,
+				candidateId: "illapa:pe22_central",
+				name: "Lima → Huancayo · retorno de vacíos",
+				cancelled: false,
+			},
+			{
+				vehicleId: "fixture-vehicle-scania-r450",
+				departureInHours: 20,
+				candidateId: "illapa:pe22_central",
+				name: "Lima → Huancayo · abarrotes",
+				cancelled: false,
+			},
+			{
+				vehicleId: "fixture-vehicle-isuzu-nqr",
+				departureInHours: 3,
+				candidateId: "sutran:carretera_central_ruta_4",
+				name: "Lima → Huancayo · reparto farmacias",
+				cancelled: false,
+			},
+			{
+				vehicleId: "fixture-vehicle-hino-500",
+				departureInHours: 10,
+				candidateId: "sutran:carretera_central_ruta_2",
+				name: "Lima → Huancayo · fertilizantes",
+				cancelled: true,
+			},
+		]) {
 	const review = evaluate({
 		originPlaceId: "lima",
 		destinationPlaceId: "huancayo",
@@ -382,10 +445,13 @@ for (const seed of [
 	});
 	if (seed.cancelled) trip.status = TRIP_STATUS_CANCELLED;
 }
+persist();
 
 async function respond<Result>(produce: () => Result): Promise<Result> {
 	await new Promise((resolve) => setTimeout(resolve, FIXTURE_LATENCY_MS));
-	return structuredClone(produce());
+	const result = produce();
+	persist();
+	return structuredClone(result);
 }
 
 export const routeReviewFixtureClient = {
