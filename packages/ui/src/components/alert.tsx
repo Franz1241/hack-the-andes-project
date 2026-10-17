@@ -3,13 +3,22 @@ import { cn } from "cn";
 import type * as React from "react";
 
 const alertVariants = cva(
-	"group/alert relative grid w-full gap-0.5 rounded-none border px-2.5 py-2 text-left text-xs has-data-[slot=alert-action]:relative has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 has-data-[slot=alert-action]:pr-18 *:[svg:not([class*='size-'])]:size-4 *:[svg]:row-span-2 *:[svg]:translate-y-0 *:[svg]:text-current",
+	"group/alert relative grid w-full gap-0.5 rounded-none border px-2.5 py-2 text-left text-xs has-data-[slot=alert-action]:relative has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2 has-data-[slot=alert-action]:pr-18 *:[svg:not([class*='size-'])]:size-4 *:[svg]:row-span-2 *:[svg]:translate-y-0",
 	{
 		variants: {
 			variant: {
 				default: "bg-card text-card-foreground",
 				destructive:
-					"bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+					"border-l-2 border-l-destructive bg-card text-card-foreground *:[svg]:text-destructive",
+				low: "border-l-2 border-l-risk-low bg-card text-card-foreground *:[svg]:text-risk-low",
+				moderate:
+					"border-l-2 border-l-risk-moderate bg-card text-card-foreground *:[svg]:text-risk-moderate",
+				high: "border-l-2 border-l-risk-high bg-card text-card-foreground *:[svg]:text-risk-high",
+				critical:
+					"border-l-2 border-l-risk-critical bg-card text-card-foreground *:[svg]:text-risk-critical",
+				info: "border-l-2 border-l-info bg-card text-card-foreground *:[svg]:text-info",
+				success:
+					"border-l-2 border-l-success bg-card text-card-foreground *:[svg]:text-success",
 			},
 		},
 		defaultVariants: {
@@ -38,7 +47,7 @@ function AlertTitle({ className, ...props }: React.ComponentProps<"div">) {
 		<div
 			data-slot="alert-title"
 			className={cn(
-				"font-medium group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
+				"type-heading group-has-[>svg]/alert:col-start-2 [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground",
 				className,
 			)}
 			{...props}
@@ -54,7 +63,7 @@ function AlertDescription({
 		<div
 			data-slot="alert-description"
 			className={cn(
-				"text-balance text-muted-foreground text-xs/relaxed md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-2",
+				"type-body text-balance text-muted-foreground md:text-pretty [&_a]:underline [&_a]:underline-offset-3 [&_a]:hover:text-foreground [&_p:not(:last-child)]:mb-2",
 				className,
 			)}
 			{...props}
