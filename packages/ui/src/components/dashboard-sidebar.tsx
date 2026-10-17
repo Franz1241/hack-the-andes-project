@@ -1,10 +1,6 @@
 "use client";
 
-import {
-	CloudLightningIcon,
-	PanelLeftCloseIcon,
-	PanelLeftOpenIcon,
-} from "lucide-react";
+import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import {
 	type ComponentType,
 	type ReactElement,
@@ -14,6 +10,7 @@ import {
 } from "react";
 
 import { SIDEBAR_TOGGLE_SHORTCUT } from "../constants";
+import { IllapaLockup, IllapaMark } from "./illapa-logo";
 import {
 	Sidebar,
 	SidebarContent,
@@ -98,16 +95,19 @@ export function DashboardSidebar({
 							render={homeLink}
 							tooltip="illapa"
 							aria-label="illapa"
-							className="group-data-[collapsible=icon]:justify-center"
+							className="h-16 group-data-[collapsible=icon]:justify-center"
 							onClick={() => setOpenMobile(false)}
 						>
-							<CloudLightningIcon />
-							<span className="flex min-w-0 flex-col gap-0.5 transition-opacity duration-200 group-data-[collapsible=icon]:hidden group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
-								<span className="type-heading">illapa</span>
-								<span className="type-label text-muted-foreground">
-									Inteligencia en ruta
+							{collapsed ? (
+								<IllapaMark className="size-8!" />
+							) : (
+								<span className="flex min-w-0 flex-col gap-0.5">
+									<IllapaLockup markClassName="size-6!" />
+									<span className="type-label pl-8 text-muted-foreground">
+										Inteligencia en ruta
+									</span>
 								</span>
-							</span>
+							)}
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>

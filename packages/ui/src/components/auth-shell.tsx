@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { BellIcon, CloudLightningIcon, MapIcon, TruckIcon } from "./icons";
+import { BellIcon, MapIcon, TruckIcon } from "./icons";
+import { IllapaLockup } from "./illapa-logo";
 import { RainStreaks, StarRiver } from "./mayu-art";
 
 const AUTH_HIGHLIGHTS = [
@@ -23,17 +24,6 @@ const AUTH_HIGHLIGHTS = [
 	},
 ];
 
-function BrandMark() {
-	return (
-		<span className="relative flex items-center gap-3">
-			<span className="flex size-9 items-center justify-center text-brand-river">
-				<CloudLightningIcon aria-hidden className="size-5" />
-			</span>
-			<span className="type-title">ILLAPA</span>
-		</span>
-	);
-}
-
 export interface AuthShellProps {
 	children: ReactNode;
 	headerActions?: ReactNode;
@@ -45,7 +35,7 @@ export function AuthShell({ children, headerActions }: AuthShellProps) {
 			<aside className="dark relative hidden overflow-hidden border-border border-r bg-background p-12 text-foreground lg:flex lg:flex-col lg:justify-between lg:gap-12">
 				<StarRiver className="opacity-50" />
 				<RainStreaks className="text-foreground/10" />
-				<BrandMark />
+				<IllapaLockup className="relative" />
 				<div className="relative max-w-lg">
 					<h1 className="type-title text-balance">
 						Tu flota, un paso adelante del clima y la carretera.
@@ -76,7 +66,7 @@ export function AuthShell({ children, headerActions }: AuthShellProps) {
 			<main className="flex min-w-0 flex-col bg-background px-6 py-8 text-foreground sm:px-10">
 				<div className="flex flex-wrap items-center justify-between gap-4 lg:justify-end">
 					<div className="lg:hidden">
-						<BrandMark />
+						<IllapaLockup className="relative" />
 					</div>
 					{headerActions && (
 						<div className="ml-auto flex items-center gap-2">
