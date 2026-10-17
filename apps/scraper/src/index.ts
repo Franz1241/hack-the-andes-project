@@ -30,11 +30,10 @@ async function runSources(
 	sources: ScrapeSource[],
 ): Promise<RunSummary> {
 	const log = createLogger({ job: "scrape", trigger });
-	const now = new Date();
 	const db = await createDb(ENV.HYPERDRIVE);
 	const results: RunSummary["results"] = [];
 	for (const source of sources) {
-		const result = await runSource(db, source, now);
+		const result = await runSource(db, source);
 		results.push(result);
 		log.set({ sources: [result] });
 	}

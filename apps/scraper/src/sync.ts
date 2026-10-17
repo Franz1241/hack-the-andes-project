@@ -91,7 +91,6 @@ async function syncTable<TRecord extends { sourceId: string }>(
 	source: string,
 	records: TRecord[],
 	runStartedAt: Date,
-	now: Date,
 ): Promise<SyncCounts> {
 	const existingRows = await db
 		.select({
@@ -115,9 +114,9 @@ async function syncTable<TRecord extends { sourceId: string }>(
 				source,
 				contentHash: hash,
 				active: true,
-				firstSeenAt: now,
-				lastSeenAt: now,
-				lastChangedAt: now,
+				firstSeenAt: runStartedAt,
+				lastSeenAt: runStartedAt,
+				lastChangedAt: runStartedAt,
 			})),
 		);
 	}
@@ -128,20 +127,20 @@ async function syncTable<TRecord extends { sourceId: string }>(
 				...record,
 				contentHash: hash,
 				active: true,
-				lastSeenAt: now,
-				lastChangedAt: now,
+				lastSeenAt: runStartedAt,
+				lastChangedAt: runStartedAt,
 			})
 			.where(eq(table.id, id));
 	}
 	for (const chunk of chunked(plan.unchangedIds)) {
 		await db
 			.update(table)
-			.set({ lastSeenAt: now })
+			.set({ lastSeenAt: runStartedAt })
 			.where(inArray(table.id, chunk));
 	}
 	const [deactivation] = await db
 		.update(table)
-		.set({ active: false, lastChangedAt: now })
+		.set({ active: false, lastChangedAt: runStartedAt })
 		.where(
 			and(
 				eq(table.source, source),
@@ -164,10 +163,11 @@ export interface SourceRunResult extends SyncCounts {
 	error?: string;
 }
 
+// Every timestamp written by a run is `runStartedAt`, so the deactivation
+// sweep (`lastSeenAt < runStartedAt`) can never catch rows this run touched.
 export async function runSource(
 	db: Database,
 	source: ScrapeSource,
-	now: Date,
 ): Promise<SourceRunResult> {
 	const runStartedAt = new Date();
 	let result: SourceRunResult = {
@@ -181,26 +181,18 @@ export async function runSource(
 	};
 	try {
 		if (source.kind === "incident") {
-			const records = await source.fetch({ now });
+			const records = await source.fetch({ now: runStartedAt });
 			const counts = await syncTable(
 				db,
 				incident,
 				source.id,
 				records,
 				runStartedAt,
-				now,
 			);
 			result = { ...result, ...counts, ok: true, fetched: records.length };
 		} else {
-			const records = await source.fetch({ now });
-			const counts = await syncTable(
-				db,
-				poi,
-				source.id,
-				records,
-				runStartedAt,
-				now,
-			);
+			const records = await source.fetch({ now: runStartedAt });
+			const counts = await syncTable(db, poi, source.id, records, runStartedAt);
 			result = { ...result, ...counts, ok: true, fetched: records.length };
 		}
 	} catch (error) {
