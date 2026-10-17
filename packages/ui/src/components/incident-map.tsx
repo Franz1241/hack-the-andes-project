@@ -1,15 +1,11 @@
 import type { Incident } from "@hack-the-andes-project/ui/lib/incident";
-import {
-	INCIDENT_CATEGORY_LABELS,
-	INCIDENT_SEVERITY_COLORS,
-	INCIDENT_SEVERITY_LABELS,
-} from "@hack-the-andes-project/ui/lib/incident-constants";
+import { INCIDENT_SEVERITY_COLORS } from "@hack-the-andes-project/ui/lib/incident-constants";
 import type { FeatureCollection, Geometry } from "geojson";
 import type { ExpressionSpecification } from "maplibre-gl";
 import { useMemo, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "./alert";
-import { INCIDENT_CATEGORY_ICONS } from "./incident-icons";
+import { IncidentMarker } from "./incident-marker";
 import {
 	INCIDENT_FILL_LAYER_ID,
 	INCIDENT_FILL_OPACITY_RATIO,
@@ -27,7 +23,6 @@ import {
 	Layer,
 	type MapProps,
 	MapView,
-	Marker,
 	NavigationControl,
 	Source,
 } from "./map-view";
@@ -160,33 +155,13 @@ export function IncidentMap({
 						}}
 					/>
 				</Source>
-				{incidents.map((incident) => {
-					if (incident.lat === null || incident.lng === null) return null;
-					const CategoryIcon = INCIDENT_CATEGORY_ICONS[incident.category];
-					return (
-						<Marker
-							key={incident.id}
-							latitude={incident.lat}
-							longitude={incident.lng}
-						>
-							<button
-								type="button"
-								aria-label={`${incident.title} · ${INCIDENT_CATEGORY_LABELS[incident.category]} · ${INCIDENT_SEVERITY_LABELS[incident.severity]}`}
-								title={incident.title}
-								onClick={(event) => {
-									event.stopPropagation();
-									onIncidentSelect(incident.id);
-								}}
-								className="flex size-7 items-center justify-center rounded-full border-2 border-white text-white shadow-md transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
-								style={{
-									backgroundColor: INCIDENT_SEVERITY_COLORS[incident.severity],
-								}}
-							>
-								<CategoryIcon className="size-4" />
-							</button>
-						</Marker>
-					);
-				})}
+				{incidents.map((incident) => (
+					<IncidentMarker
+						key={incident.id}
+						incident={incident}
+						onSelect={onIncidentSelect}
+					/>
+				))}
 				{children}
 			</MapView>
 			{isMapLoading && (
