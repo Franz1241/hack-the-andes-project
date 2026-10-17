@@ -36,7 +36,7 @@ export default function UserMenu() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="bg-card">
 				<DropdownMenuGroup>
-					<DropdownMenuLabel>My Account</DropdownMenuLabel>
+					<DropdownMenuLabel>Mi cuenta</DropdownMenuLabel>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem>{session.user.email}</DropdownMenuItem>
 					<DropdownMenuItem
@@ -53,7 +53,7 @@ export default function UserMenu() {
 							});
 						}}
 					>
-						Sign Out
+						Cerrar sesión
 					</DropdownMenuItem>
 				</DropdownMenuGroup>
 			</DropdownMenuContent>
