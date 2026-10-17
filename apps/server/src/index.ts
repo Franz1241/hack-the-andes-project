@@ -180,6 +180,8 @@ app.use("/*", async (c, next) => {
 		auth: c.get("auth"),
 		log: c.get("log"),
 		session: c.get("session"),
+		encryptionKey: ENV.CREDENTIALS_ENCRYPTION_KEY,
+		osrmBaseUrl: ENV.OSRM_BASE_URL,
 		waitUntil: waitUntilFor(c),
 	};
 

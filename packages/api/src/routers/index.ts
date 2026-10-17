@@ -1,11 +1,19 @@
 import type { RouterClient } from "@orpc/server";
 
 import { protectedProcedure, publicProcedure } from "../index";
+import { alertsRouter } from "./alerts";
+import { connectionsRouter } from "./connections";
 import { incidentsRouter } from "./incidents";
 import { newsRouter } from "./news";
 import { poisRouter } from "./pois";
+import { tripsRouter } from "./trips";
+import { vehiclesRouter } from "./vehicles";
 
 export const appRouter = {
+	connections: connectionsRouter,
+	vehicles: vehiclesRouter,
+	trips: tripsRouter,
+	alerts: alertsRouter,
 	incidents: incidentsRouter,
 	pois: poisRouter,
 	news: newsRouter,

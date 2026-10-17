@@ -7,10 +7,12 @@
 	},
 	"scripts": {
 		"build": "tsc -b",
-		"check-types": "tsc -b"
+		"check-types": "tsc -b",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@hack-the-andes-project/auth": "workspace:*",
+		"@hack-the-andes-project/business": "workspace:*",
 		"@hack-the-andes-project/db": "workspace:*",
 		"@orpc/client": "catalog:",
 		"@orpc/openapi": "catalog:",
@@ -23,6 +25,7 @@
 	"devDependencies": {
 		"@hack-the-andes-project/config": "workspace:*",
 		"@types/geojson": "catalog:",
-		"typescript": "^6.0.3"
+		"typescript": "^6.0.3",
+		"vitest": "catalog:"
 	}
 }

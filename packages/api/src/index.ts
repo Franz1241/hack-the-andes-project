@@ -86,3 +86,14 @@ const requireAuth = o.middleware(async ({ context, next }) => {
 });
 
 export const protectedProcedure = publicProcedure.use(requireAuth);
+
+const requireOrganization = o.middleware(async ({ context, next }) => {
+	const organizationId = context.session?.session.activeOrganizationId;
+	if (!organizationId) {
+		throw new ORPCError("FORBIDDEN");
+	}
+	return next({ context: { organizationId } });
+});
+
+export const organizationProcedure =
+	protectedProcedure.use(requireOrganization);
