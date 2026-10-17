@@ -1,5 +1,10 @@
 import { createRequire } from "node:module";
-import { samsaraProvider } from "@hack-the-andes-project/business/providers/index";
+import { generateEncryptionKeyBase64 } from "@hack-the-andes-project/business/crypto/index";
+import * as fleetSync from "@hack-the-andes-project/business/fleet/sync-connection";
+import {
+	DEMO_VEHICLES,
+	samsaraProvider,
+} from "@hack-the-andes-project/business/providers/index";
 import * as routing from "@hack-the-andes-project/business/routing/osrm";
 import type { vehicle } from "@hack-the-andes-project/db/schema/fleet";
 import { call, createRouterClient } from "@orpc/server";
@@ -246,6 +251,62 @@ describe("fleet procedure boundaries", () => {
 			message: CREDENTIALS_VALIDATION_FAILED_MESSAGE,
 		});
 		expect(query).not.toHaveBeenCalled();
+	});
+
+	it("places a new demo fleet right away instead of waiting for fleet-sync", async () => {
+		const sync = vi.spyOn(fleetSync, "syncConnection").mockResolvedValue({
+			connectionId: "demo-connection",
+			ok: true,
+			vehiclesSynced: DEMO_VEHICLES.length,
+			positionsInserted: DEMO_VEHICLES.length,
+		});
+		const query = vi.spyOn(database.$client, "query").mockResolvedValue([
+			[
+				{
+					constructor: { name: "RowDataPacket" },
+					...[
+						"demo-connection",
+						"demo",
+						"Flota demo",
+						"active",
+						null,
+						null,
+						"2026-10-17 00:00:00.000",
+						DEMO_VEHICLES.length,
+					],
+				},
+			],
+			[],
+		]);
+		const client = createRouterClient(appRouter, {
+			context: {
+				...contextFor(session),
+				encryptionKey: generateEncryptionKeyBase64(),
+			},
+		});
+		await expect(
+			client.connections.create({
+				label: "Flota demo",
+				credentials: { provider: "demo" },
+			}),
+		).resolves.toMatchObject({
+			provider: "demo",
+			vehicleCount: DEMO_VEHICLES.length,
+		});
+		expect(sync).toHaveBeenCalledWith(
+			expect.objectContaining({
+				connection: expect.objectContaining({
+					provider: "demo",
+					organizationId: session.session.activeOrganizationId,
+				}),
+			}),
+		);
+		expect(query).toHaveBeenCalledWith(
+			expect.objectContaining({
+				sql: expect.stringContaining("insert into `hack_the_andes_vehicle`"),
+			}),
+			expect.arrayContaining(DEMO_VEHICLES.map(({ plate }) => plate)),
+		);
 	});
 
 	it("rejects another organization's vehicle without routing or cancelling trips", async () => {
