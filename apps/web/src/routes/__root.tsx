@@ -1,20 +1,18 @@
-import type { AppRouterClient } from "@hack-the-andes-project/api/routers/index";
 import { Toaster } from "@hack-the-andes-project/ui/components/sonner";
-import { createORPCClient } from "@orpc/client";
-import { createTanstackQueryUtils } from "@orpc/tanstack-query";
+import { cn } from "@hack-the-andes-project/ui/lib/utils";
 import type { QueryClient } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Outlet,
+	useRouterState,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { useState } from "react";
 
 import Header from "@/components/header";
 import { ThemeProvider } from "@/components/theme-provider";
-import { link, type orpc } from "@/utils/orpc";
+import type { orpc } from "@/utils/orpc";
 
 import "../index.css";
 
@@ -45,8 +43,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 });
 
 function RootComponent() {
-	const [client] = useState<AppRouterClient>(() => createORPCClient(link));
-	const [orpcUtils] = useState(() => createTanstackQueryUtils(client));
+	const isDashboard = useRouterState({
+		select: (state) =>
+			state.location.pathname === "/dashboard" ||
+			state.location.pathname.startsWith("/dashboard/"),
+	});
 
 	return (
 		<>
@@ -57,14 +58,23 @@ function RootComponent() {
 				disableTransitionOnChange
 				storageKey="vite-ui-theme"
 			>
-				<div className="grid h-svh grid-rows-[auto_1fr]">
-					<Header />
+				<div
+					className={cn(
+						"min-h-svh",
+						!isDashboard && "grid grid-rows-[auto_1fr]",
+					)}
+				>
+					{!isDashboard && <Header />}
 					<Outlet />
 				</div>
 				<Toaster richColors />
 			</ThemeProvider>
-			<TanStackRouterDevtools position="bottom-left" />
-			<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+			{import.meta.env.DEV && (
+				<>
+					<TanStackRouterDevtools position="bottom-left" />
+					<ReactQueryDevtools position="bottom" buttonPosition="bottom-right" />
+				</>
+			)}
 		</>
 	);
 }
