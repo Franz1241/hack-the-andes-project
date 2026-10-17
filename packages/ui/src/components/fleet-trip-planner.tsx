@@ -50,6 +50,7 @@ export function FleetTripPlanner({
 	const [vehicleId, setVehicleId] = useState<string>();
 	const [destination, setDestination] = useState<FleetDestination>();
 	const [demoRoute, setDemoRoute] = useState<FleetDemoRoute>();
+	const [demoRouteError, setDemoRouteError] = useState<string>();
 	const [tripName, setTripName] = useState("");
 	const [destinationName, setDestinationName] = useState("");
 	const [error, setError] = useState<string>();
@@ -57,9 +58,16 @@ export function FleetTripPlanner({
 	const locatedVehicles = vehicles.filter(
 		(vehicle) => vehicle.lastLat !== null && vehicle.lastLng !== null,
 	);
+	function clearDemoRoute() {
+		setDemoRoute(undefined);
+		setDemoRouteError(undefined);
+		if (demoRoute) setDestinationName("");
+	}
 	async function planDemoRoute(scenario: FleetDemoRouteInput["scenario"]) {
 		if (!selectedVehicle) return;
 		setError(undefined);
+		clearDemoRoute();
+		setDestination(undefined);
 		try {
 			const plannedRoute = await onPlanDemoRoute({
 				vehicleId: selectedVehicle.id,
@@ -74,7 +82,7 @@ export function FleetTripPlanner({
 			);
 			setDestinationName("Destino demo");
 		} catch (cause) {
-			setError(
+			setDemoRouteError(
 				cause instanceof Error
 					? cause.message
 					: "No se pudo preparar la ruta demo.",
@@ -86,9 +94,9 @@ export function FleetTripPlanner({
 			<CardHeader>
 				<CardTitle>Nuevo viaje</CardTitle>
 				<CardDescription>
-					Elige un vehículo, nombra el viaje y haz clic en el mapa para marcar
-					el destino. También puedes mover el mapa con el teclado y usar su
-					centro.
+					{demoRoute
+						? "La ruta demo ya tiene un destino elegido automáticamente. Puedes crear el viaje sin marcar ni nombrar un destino."
+						: "Elige un vehículo y nombra el viaje. Usa una ruta demo o haz clic en el mapa para marcar el destino. También puedes mover el mapa con el teclado y usar su centro."}
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
@@ -107,8 +115,7 @@ export function FleetTripPlanner({
 								vehicleId: selectedVehicle.id,
 								name: String(formData.get("name")),
 								destination,
-								destinationName:
-									String(formData.get("destinationName")) || undefined,
+								destinationName: destinationName || undefined,
 							});
 							onClose();
 						} catch (cause) {
@@ -129,7 +136,7 @@ export function FleetTripPlanner({
 									onValueChange={(value) => {
 										setVehicleId(value ?? undefined);
 										setDestination(undefined);
-										setDemoRoute(undefined);
+										clearDemoRoute();
 									}}
 									disabled={isPending}
 									items={locatedVehicles.map((vehicle) => ({
@@ -165,18 +172,20 @@ export function FleetTripPlanner({
 									required
 								/>
 							</Field>
-							<Field>
-								<FieldLabel htmlFor="trip-destination-name">
-									Nombre del destino (opcional)
-								</FieldLabel>
-								<Input
-									id="trip-destination-name"
-									name="destinationName"
-									placeholder="Almacén de destino"
-									value={destinationName}
-									onChange={(event) => setDestinationName(event.target.value)}
-								/>
-							</Field>
+							{!demoRoute && (
+								<Field>
+									<FieldLabel htmlFor="trip-destination-name">
+										Nombre del destino (opcional)
+									</FieldLabel>
+									<Input
+										id="trip-destination-name"
+										name="destinationName"
+										placeholder="Almacén de destino"
+										value={destinationName}
+										onChange={(event) => setDestinationName(event.target.value)}
+									/>
+								</Field>
+							)}
 							{selectedVehicle?.provider === "demo" && (
 								<Field>
 									<FieldLabel id="trip-demo-route-label">Ruta demo</FieldLabel>
@@ -203,10 +212,27 @@ export function FleetTripPlanner({
 											? "Buscando una ruta…"
 											: demoRoute
 												? demoRoute.incidentTitle
-													? `La ruta pasa por «${demoRoute.incidentTitle}».`
-													: "La ruta no pasa por ningún incidente activo."
-												: "Marca un destino de prueba con o sin un incidente activo en el camino."}
+													? "Destino elegido automáticamente para pasar por un incidente activo."
+													: "Destino elegido automáticamente. La ruta no pasa por ningún incidente activo."
+												: "Elige una ruta de prueba. El destino se selecciona automáticamente."}
 									</FieldDescription>
+									{demoRouteError && (
+										<Alert variant="destructive">
+											<AlertTitle>No se pudo preparar la ruta demo</AlertTitle>
+											<AlertDescription>
+												<p>{demoRouteError}</p>
+												<p>Vuelve a elegir una opción para reintentar.</p>
+											</AlertDescription>
+										</Alert>
+									)}
+									{demoRoute?.incidentTitle && (
+										<Alert variant="high">
+											<AlertTitle>Incidente activo en la ruta demo</AlertTitle>
+											<AlertDescription>
+												La ruta pasa por «{demoRoute.incidentTitle}».
+											</AlertDescription>
+										</Alert>
+									)}
 								</Field>
 							)}
 						</FieldGroup>
@@ -243,19 +269,23 @@ export function FleetTripPlanner({
 							selectedVehicle && !isPending
 								? (nextDestination) => {
 										setDestination(nextDestination);
-										setDemoRoute(undefined);
+										clearDemoRoute();
 									}
 								: undefined
 						}
-						label="Seleccionar destino del viaje"
+						label={
+							demoRoute
+								? "Vista previa del destino demo"
+								: "Seleccionar destino del viaje"
+						}
 					/>
 					<output
 						className="type-data text-muted-foreground"
 						aria-live="polite"
 					>
 						{destination
-							? `Destino: ${destination.lat.toFixed(FLEET_COORDINATE_FRACTION_DIGITS)}, ${destination.lng.toFixed(FLEET_COORDINATE_FRACTION_DIGITS)}`
-							: "Selecciona un vehículo y marca un punto en el mapa."}
+							? `${demoRoute ? "Destino demo elegido automáticamente" : "Destino"}: ${destination.lat.toFixed(FLEET_COORDINATE_FRACTION_DIGITS)}, ${destination.lng.toFixed(FLEET_COORDINATE_FRACTION_DIGITS)}`
+							: "Selecciona un vehículo y elige una ruta demo o marca un punto en el mapa."}
 					</output>
 					{error && (
 						<Alert variant="destructive">
