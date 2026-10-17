@@ -65,11 +65,15 @@ export default function DemoRequestDialog({
 				setValidationError(null);
 			}}
 		>
-			<DialogTrigger render={<Button size="lg" className={triggerClassName} />}>
+			<DialogTrigger
+				render={
+					<Button variant="default" size="lg" className={triggerClassName} />
+				}
+			>
 				Solicitar una demo
 			</DialogTrigger>
 			<DialogContent
-				className="max-h-[90dvh] overflow-y-auto p-6 sm:max-w-md"
+				className="type-body max-h-[90dvh] overflow-y-auto p-6 sm:max-w-md"
 				showCloseButton={false}
 			>
 				<DialogHeader>
@@ -77,11 +81,20 @@ export default function DemoRequestDialog({
 					<DialogDescription>
 						Déjanos tus datos y te contactaremos para agendar. También puedes
 						llamarnos al{" "}
-						<a href={`tel:${contactPhone}`}>{contactPhoneDisplay}</a>.
+						<a
+							className="outline-none focus-visible:ring-1 focus-visible:ring-ring"
+							href={`tel:${contactPhone}`}
+						>
+							{contactPhoneDisplay}
+						</a>
+						.
 					</DialogDescription>
 				</DialogHeader>
 				{status === "sent" ? (
-					<p role="status">
+					<p
+						className="type-body rounded-lg border border-border bg-muted p-4 text-foreground"
+						role="status"
+					>
 						Recibimos tu solicitud. Pronto nos pondremos en contacto contigo.
 					</p>
 				) : (
@@ -130,8 +143,14 @@ export default function DemoRequestDialog({
 					>
 						<FieldGroup className="gap-4">
 							<Field data-invalid={validationError?.field === "name"}>
-								<FieldLabel htmlFor={`${formId}-name`}>Nombre</FieldLabel>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-name`}
+								>
+									Nombre
+								</FieldLabel>
 								<Input
+									className="type-body md:type-body h-10 text-foreground focus-visible:ring-ring!"
 									id={`${formId}-name`}
 									name="name"
 									autoComplete="name"
@@ -147,10 +166,14 @@ export default function DemoRequestDialog({
 								/>
 							</Field>
 							<Field data-invalid={validationError?.field === "company"}>
-								<FieldLabel htmlFor={`${formId}-company`}>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-company`}
+								>
 									Empresa (opcional)
 								</FieldLabel>
 								<Input
+									className="type-body md:type-body h-10 text-foreground focus-visible:ring-ring!"
 									id={`${formId}-company`}
 									name="company"
 									autoComplete="organization"
@@ -165,8 +188,14 @@ export default function DemoRequestDialog({
 								/>
 							</Field>
 							<Field data-invalid={validationError?.field === "phone"}>
-								<FieldLabel htmlFor={`${formId}-phone`}>Teléfono</FieldLabel>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-phone`}
+								>
+									Teléfono
+								</FieldLabel>
 								<Input
+									className="type-body md:type-body h-10 text-foreground focus-visible:ring-ring!"
 									id={`${formId}-phone`}
 									name="phone"
 									type="tel"
@@ -182,8 +211,14 @@ export default function DemoRequestDialog({
 								/>
 							</Field>
 							<Field data-invalid={validationError?.field === "email"}>
-								<FieldLabel htmlFor={`${formId}-email`}>Correo</FieldLabel>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-email`}
+								>
+									Correo
+								</FieldLabel>
 								<Input
+									className="type-body md:type-body h-10 text-foreground focus-visible:ring-ring!"
 									id={`${formId}-email`}
 									name="email"
 									type="email"
@@ -197,17 +232,23 @@ export default function DemoRequestDialog({
 									}
 									disabled={status === "submitting"}
 								/>
-								<FieldDescription id={`${formId}-contact-help`}>
+								<FieldDescription
+									className="type-body"
+									id={`${formId}-contact-help`}
+								>
 									Necesitamos tu teléfono o tu correo para contactarte.
 								</FieldDescription>
 							</Field>
 							{validationError && (
-								<FieldError id={`${formId}-error`}>
+								<FieldError
+									className="type-body text-destructive"
+									id={`${formId}-error`}
+								>
 									{validationError.message}
 								</FieldError>
 							)}
 							{status === "failed" && (
-								<FieldError>
+								<FieldError className="type-body text-destructive">
 									No pudimos enviar tu solicitud. Intenta de nuevo o llámanos.
 								</FieldError>
 							)}

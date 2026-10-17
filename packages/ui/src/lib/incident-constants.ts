@@ -22,6 +22,24 @@ export const INCIDENT_SEVERITY_LABELS = {
 	info: "Informativa",
 };
 
+export const INCIDENT_SEVERITY_FILL_CLASSES = {
+	critical: "bg-risk-critical text-risk-critical-foreground",
+	warning: "bg-risk-high text-risk-high-foreground",
+	info: "bg-info text-info-foreground",
+};
+
+export const INCIDENT_SEVERITY_TEXT_CLASSES = {
+	critical: "text-risk-critical",
+	warning: "text-risk-high",
+	info: "text-info",
+};
+
+export const INCIDENT_SEVERITY_TOKENS = {
+	critical: "--risk-critical",
+	warning: "--risk-high",
+	info: "--info",
+};
+
 export const ROAD_STATUS_LABELS = {
 	interrumpido: "Vía interrumpida",
 	restringido: "Tránsito restringido",
@@ -38,12 +56,6 @@ export const INCIDENT_SOURCE_LABELS: Record<string, string> = {
 	rpp_latest_news: "RPP Noticias",
 	sratma_accidents: "MTC · Accidentes de tránsito (SRATMA)",
 };
-
-export const INCIDENT_SEVERITY_COLORS = {
-	critical: "#e11d48",
-	warning: "#d97706",
-	info: "#0284c7",
-} satisfies Record<keyof typeof INCIDENT_SEVERITY_LABELS, string>;
 
 export const INCIDENT_SEVERITY_OPTIONS: (keyof typeof INCIDENT_SEVERITY_LABELS)[] =
 	["critical", "warning", "info"];

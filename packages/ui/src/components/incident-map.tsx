@@ -1,5 +1,6 @@
+import { useTokenColors } from "@hack-the-andes-project/ui/hooks/use-token-colors";
 import type { Incident } from "@hack-the-andes-project/ui/lib/incident";
-import { INCIDENT_SEVERITY_COLORS } from "@hack-the-andes-project/ui/lib/incident-constants";
+import { INCIDENT_SEVERITY_TOKENS } from "@hack-the-andes-project/ui/lib/incident-constants";
 import type { FeatureCollection, Geometry } from "geojson";
 import type { ExpressionSpecification } from "maplibre-gl";
 import { useMemo, useState } from "react";
@@ -15,7 +16,6 @@ import {
 	INCIDENT_LINE_WIDTH_PX,
 	INCIDENT_POINT_LAYER_ID,
 	INCIDENT_POINT_RADIUS_PX,
-	INCIDENT_POINT_STROKE_COLOR,
 	INCIDENT_POINT_STROKE_WIDTH_PX,
 } from "./map-constants";
 import { MapLegend } from "./map-legend";
@@ -27,16 +27,6 @@ import {
 	Source,
 } from "./map-view";
 import { Skeleton } from "./skeleton";
-
-const severityColor: ExpressionSpecification = [
-	"match",
-	["get", "severity"],
-	"critical",
-	INCIDENT_SEVERITY_COLORS.critical,
-	"warning",
-	INCIDENT_SEVERITY_COLORS.warning,
-	INCIDENT_SEVERITY_COLORS.info,
-];
 
 interface IncidentFeatureProperties {
 	incidentId: string;
@@ -58,6 +48,26 @@ export function IncidentMap({
 	interactiveLayerIds,
 	...props
 }: IncidentMapProps) {
+	const tokenColors = useTokenColors([
+		...Object.values(INCIDENT_SEVERITY_TOKENS),
+		"--background",
+	]);
+	const criticalColor = tokenColors[INCIDENT_SEVERITY_TOKENS.critical];
+	const warningColor = tokenColors[INCIDENT_SEVERITY_TOKENS.warning];
+	const infoColor = tokenColors[INCIDENT_SEVERITY_TOKENS.info];
+	const pointStrokeColor = tokenColors["--background"];
+	const severityColor: ExpressionSpecification | null =
+		criticalColor && warningColor && infoColor
+			? [
+					"match",
+					["get", "severity"],
+					"critical",
+					criticalColor,
+					"warning",
+					warningColor,
+					infoColor,
+				]
+			: null;
 	const [isMapLoading, setIsMapLoading] = useState(true);
 	const [hasMapError, setHasMapError] = useState(false);
 	const incidentFeatures = useMemo<
@@ -114,47 +124,49 @@ export function IncidentMap({
 				}}
 			>
 				<NavigationControl position="top-right" />
-				<Source
-					id={INCIDENT_GEOMETRY_SOURCE_ID}
-					type="geojson"
-					data={incidentFeatures}
-				>
-					<Layer
-						id={INCIDENT_FILL_LAYER_ID}
-						type="fill"
-						filter={["==", ["geometry-type"], "Polygon"]}
-						paint={{
-							"fill-color": severityColor,
-							"fill-opacity": INCIDENT_FILL_OPACITY_RATIO,
-						}}
-					/>
-					<Layer
-						id={INCIDENT_LINE_LAYER_ID}
-						type="line"
-						filter={[
-							"match",
-							["geometry-type"],
-							["LineString", "Polygon"],
-							true,
-							false,
-						]}
-						paint={{
-							"line-color": severityColor,
-							"line-width": INCIDENT_LINE_WIDTH_PX,
-						}}
-					/>
-					<Layer
-						id={INCIDENT_POINT_LAYER_ID}
-						type="circle"
-						filter={["==", ["geometry-type"], "Point"]}
-						paint={{
-							"circle-color": severityColor,
-							"circle-radius": INCIDENT_POINT_RADIUS_PX,
-							"circle-stroke-color": INCIDENT_POINT_STROKE_COLOR,
-							"circle-stroke-width": INCIDENT_POINT_STROKE_WIDTH_PX,
-						}}
-					/>
-				</Source>
+				{severityColor && pointStrokeColor && (
+					<Source
+						id={INCIDENT_GEOMETRY_SOURCE_ID}
+						type="geojson"
+						data={incidentFeatures}
+					>
+						<Layer
+							id={INCIDENT_FILL_LAYER_ID}
+							type="fill"
+							filter={["==", ["geometry-type"], "Polygon"]}
+							paint={{
+								"fill-color": severityColor,
+								"fill-opacity": INCIDENT_FILL_OPACITY_RATIO,
+							}}
+						/>
+						<Layer
+							id={INCIDENT_LINE_LAYER_ID}
+							type="line"
+							filter={[
+								"match",
+								["geometry-type"],
+								["LineString", "Polygon"],
+								true,
+								false,
+							]}
+							paint={{
+								"line-color": severityColor,
+								"line-width": INCIDENT_LINE_WIDTH_PX,
+							}}
+						/>
+						<Layer
+							id={INCIDENT_POINT_LAYER_ID}
+							type="circle"
+							filter={["==", ["geometry-type"], "Point"]}
+							paint={{
+								"circle-color": severityColor,
+								"circle-radius": INCIDENT_POINT_RADIUS_PX,
+								"circle-stroke-color": pointStrokeColor,
+								"circle-stroke-width": INCIDENT_POINT_STROKE_WIDTH_PX,
+							}}
+						/>
+					</Source>
+				)}
 				{incidents.map((incident) => (
 					<IncidentMarker
 						key={incident.id}

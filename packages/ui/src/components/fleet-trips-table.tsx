@@ -37,8 +37,8 @@ export function FleetTripsTable({ trips, onFinish }: FleetTripsTableProps) {
 				{trips.map((trip) => (
 					<TableRow key={trip.id}>
 						<TableCell>
-							<p className="font-medium">{trip.name}</p>
-							<p className="text-muted-foreground text-xs">
+							<p className="type-label">{trip.name}</p>
+							<p className="type-data text-muted-foreground">
 								{trip.destinationName} ·{" "}
 								{formatFleetDistance(trip.routeDistanceM)}
 							</p>
@@ -55,7 +55,7 @@ export function FleetTripsTable({ trips, onFinish }: FleetTripsTableProps) {
 							{trip.etaAt ? <DateTime value={trip.etaAt} /> : "Sin estimación"}
 						</TableCell>
 						<TableCell>
-							<Badge variant={trip.openAlertCount ? "destructive" : "outline"}>
+							<Badge variant="outline" className="type-data!">
 								{trip.openAlertCount}
 							</Badge>
 						</TableCell>

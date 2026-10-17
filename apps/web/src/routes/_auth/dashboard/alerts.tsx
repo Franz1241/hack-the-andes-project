@@ -61,10 +61,8 @@ function AlertsPage() {
 		<div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="flex flex-col gap-2">
-					<h2 className="font-heading font-medium text-xl">
-						Riesgos por delante
-					</h2>
-					<p className="text-muted-foreground text-sm">
+					<h2 className="type-title">Riesgos por delante</h2>
+					<p className="type-body text-muted-foreground">
 						Revisa las alertas de tus viajes y sus rutas alternativas. Se
 						actualizan cada 30 segundos.
 					</p>

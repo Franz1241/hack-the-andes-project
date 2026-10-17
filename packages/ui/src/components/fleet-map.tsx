@@ -103,7 +103,7 @@ export function FleetMap({
 					>
 						<MapPinIcon
 							aria-label="Destino seleccionado"
-							className="size-9 fill-background text-primary drop-shadow"
+							className="size-9 fill-background text-primary"
 						/>
 					</Marker>
 				)}

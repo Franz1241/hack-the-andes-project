@@ -92,7 +92,7 @@ export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
 							)}
 						</div>
 					)}
-					<SheetTitle className="text-balance break-words font-semibold text-base leading-snug">
+					<SheetTitle className="text-balance break-words">
 						{incident?.title ?? "Detalle del incidente"}
 					</SheetTitle>
 					<SheetDescription>
@@ -129,21 +129,23 @@ export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
 									src={incident.imageUrl}
 									alt={`Foto reportada: ${incident.title}`}
 									loading="lazy"
-									className="aspect-video w-full rounded-md bg-muted object-cover"
+									className="aspect-video w-full rounded-lg bg-muted object-cover"
 								/>
 								<span className="sr-only">(abre la foto en otra pestaña)</span>
 							</a>
 						)}
 						{incident.description && (
-							<p className="whitespace-pre-line text-sm leading-relaxed">
+							<p className="type-body whitespace-pre-line">
 								{incident.description}
 							</p>
 						)}
-						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 border-t pt-4 text-xs">
+						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 border-t pt-4">
 							{details.map((detail) => (
 								<Fragment key={detail.label}>
-									<dt className="text-muted-foreground">{detail.label}</dt>
-									<dd className="break-words">{detail.value}</dd>
+									<dt className="type-label text-muted-foreground">
+										{detail.label}
+									</dt>
+									<dd className="type-data break-words">{detail.value}</dd>
 								</Fragment>
 							))}
 						</dl>

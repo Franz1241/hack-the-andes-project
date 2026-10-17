@@ -34,21 +34,25 @@ export function AlertCard({
 				<CardTitle className="break-words">{alert.title}</CardTitle>
 			</CardHeader>
 			<CardContent className="flex flex-col gap-3">
-				<p className="break-words text-sm">{alert.message}</p>
-				<dl className="grid gap-2 text-xs">
+				<p className="type-body break-words">{alert.message}</p>
+				<dl className="type-data grid gap-2">
 					<div>
-						<dt className="text-muted-foreground">Vehículo · viaje</dt>
+						<dt className="type-label text-muted-foreground">
+							Vehículo · viaje
+						</dt>
 						<dd>
 							{alert.vehicleName ?? "Vehículo eliminado"} ·{" "}
 							{alert.tripName ?? "Viaje no disponible"}
 						</dd>
 					</div>
 					<div>
-						<dt className="text-muted-foreground">Distancia por delante</dt>
+						<dt className="type-label text-muted-foreground">
+							Distancia por delante
+						</dt>
 						<dd>{formatFleetDistance(alert.distanceAheadM)}</dd>
 					</div>
 					<div>
-						<dt className="text-muted-foreground">
+						<dt className="type-label text-muted-foreground">
 							Llegada estimada al riesgo
 						</dt>
 						<dd>

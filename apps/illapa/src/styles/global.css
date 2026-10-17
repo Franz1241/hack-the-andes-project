@@ -1,52 +1,15 @@
 @import "@hack-the-andes-project/ui/globals.css";
-@import "@fontsource-variable/bricolage-grotesque/standard.css";
-
-:root {
-	--background: oklch(0.945 0.006 165);
-	--foreground: oklch(0.235 0.032 252);
-	--card: oklch(0.975 0.004 165);
-	--card-foreground: oklch(0.235 0.032 252);
-	--popover: oklch(0.975 0.004 165);
-	--popover-foreground: oklch(0.235 0.032 252);
-	--primary: oklch(0.235 0.032 252);
-	--primary-foreground: oklch(0.945 0.006 165);
-	--secondary: oklch(0.9 0.009 170);
-	--secondary-foreground: oklch(0.235 0.032 252);
-	--muted: oklch(0.9 0.009 170);
-	--muted-foreground: oklch(0.46 0.024 252);
-	--accent: oklch(0.83 0.17 86);
-	--accent-foreground: oklch(0.235 0.032 252);
-	--destructive: oklch(0.58 0.2 36);
-	--border: oklch(0.83 0.012 200);
-	--input: oklch(0.83 0.012 200);
-	--ring: oklch(0.52 0.13 252);
-}
-
-@theme inline {
-	--font-sans: "Bricolage Grotesque Variable", system-ui, sans-serif;
-	--font-heading: "Bricolage Grotesque Variable", system-ui, sans-serif;
-}
 
 @layer base {
 	html {
-		@apply scroll-smooth font-sans;
-		font-optical-sizing: auto;
+		color-scheme: light;
+		scroll-behavior: smooth;
 	}
-	body {
-		@apply antialiased;
+
+	html.dark {
+		color-scheme: dark;
 	}
-	h1,
-	h2,
-	h3 {
-		@apply font-heading tracking-tight text-balance;
-		font-variation-settings: "wdth" 90;
-	}
-	p {
-		@apply text-pretty;
-	}
-	:focus-visible {
-		@apply outline-2 outline-offset-2 outline-ring;
-	}
+
 	@media (prefers-reduced-motion: reduce) {
 		html {
 			scroll-behavior: auto;

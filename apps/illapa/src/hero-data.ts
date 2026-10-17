@@ -1,12 +1,37 @@
-export type HazardState = "active" | "watch" | "social";
-
 export interface HeroHazard {
 	name: string;
 	place: string;
-	state: HazardState;
+	state: "active" | "watch" | "social";
 	longitude: number;
 	latitude: number;
 }
+
+interface HeroHazardPresentation {
+	label: string;
+	variant: "critical" | "moderate" | "high";
+	dotClassName: string;
+}
+
+export const HERO_HAZARD_STATES: Record<
+	HeroHazard["state"],
+	HeroHazardPresentation
+> = {
+	active: {
+		label: "Confirmado",
+		variant: "critical",
+		dotClassName: "bg-risk-critical",
+	},
+	watch: {
+		label: "Pronóstico",
+		variant: "moderate",
+		dotClassName: "bg-risk-moderate",
+	},
+	social: {
+		label: "Anunciado",
+		variant: "high",
+		dotClassName: "bg-risk-high",
+	},
+};
 
 export const HERO_HAZARDS: HeroHazard[] = [
 	{
@@ -83,7 +108,7 @@ export interface FeedEntry {
 	time: string;
 	corridor: string;
 	message: string;
-	state: HazardState;
+	state: HeroHazard["state"];
 }
 
 export const HERO_FEED: FeedEntry[] = [

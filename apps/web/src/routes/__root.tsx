@@ -9,6 +9,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 import { ThemeProvider } from "@/components/theme-provider";
+import { m } from "@/paraglide/messages";
 import type { orpc } from "@/utils/orpc";
 
 import "../index.css";
@@ -23,17 +24,28 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 	head: () => ({
 		meta: [
 			{
-				title: "Illapa",
+				title: m.app_title(),
 			},
 			{
 				name: "description",
-				content: "Clima, incidencias y rutas para flotas de carga en el Perú.",
+				content: m.app_description(),
 			},
 		],
 		links: [
 			{
 				rel: "icon",
-				href: "/favicon.ico",
+				href: "/favicon.svg",
+				type: "image/svg+xml",
+			},
+			{
+				rel: "icon",
+				href: "/favicon-32.png",
+				sizes: "32x32",
+				type: "image/png",
+			},
+			{
+				rel: "apple-touch-icon",
+				href: "/apple-touch-icon.png",
 			},
 		],
 	}),
@@ -45,9 +57,10 @@ function RootComponent() {
 			<HeadContent />
 			<ThemeProvider
 				attribute="class"
-				defaultTheme="dark"
+				defaultTheme="light"
+				enableSystem={false}
 				disableTransitionOnChange
-				storageKey="vite-ui-theme"
+				storageKey="illapa-theme"
 			>
 				<div className="min-h-svh">
 					<Outlet />

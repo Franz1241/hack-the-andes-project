@@ -8,14 +8,15 @@ import { QueryCache, QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { ENV } from "../env.public";
+import { m } from "../paraglide/messages";
 
 export function createQueryClient() {
 	return new QueryClient({
 		queryCache: new QueryCache({
 			onError: (error, query) => {
-				toast.error(`Error: ${error.message}`, {
+				toast.error(m.query_error({ message: error.message }), {
 					action: {
-						label: "retry",
+						label: m.query_retry(),
 						onClick: () => {
 							query.invalidate();
 						},

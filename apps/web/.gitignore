@@ -62,3 +62,4 @@ dev-dist
 !.env.schema
 !.env.production
 /src/env.ts
+/src/paraglide

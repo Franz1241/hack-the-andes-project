@@ -1,3 +1,4 @@
+import { cn } from "cn";
 import { type ComponentProps, useState } from "react";
 
 import { EyeIcon, EyeOffIcon } from "./icons";
@@ -15,13 +16,23 @@ export interface PasswordInputProps
 
 export function PasswordInput({
 	groupClassName,
+	className,
 	...props
 }: PasswordInputProps) {
 	const [isVisible, setIsVisible] = useState(false);
 
 	return (
-		<InputGroup className={groupClassName}>
-			<InputGroupInput type={isVisible ? "text" : "password"} {...props} />
+		<InputGroup
+			className={cn(
+				"rounded-md text-foreground has-[[data-slot=input-group-control]:focus-visible]:ring-ring!",
+				groupClassName,
+			)}
+		>
+			<InputGroupInput
+				type={isVisible ? "text" : "password"}
+				className={cn("type-body md:type-body", className)}
+				{...props}
+			/>
 			<InputGroupAddon align="inline-end">
 				<InputGroupButton
 					size="icon-xs"

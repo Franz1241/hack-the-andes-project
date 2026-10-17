@@ -47,8 +47,8 @@ function SettingsPage() {
 		<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 md:p-6">
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="flex flex-col gap-2">
-					<h2 className="font-heading font-medium text-xl">Conexiones GPS</h2>
-					<p className="max-w-xl text-muted-foreground text-sm">
+					<h2 className="type-title">Conexiones GPS</h2>
+					<p className="type-body max-w-xl text-muted-foreground">
 						Conecta tu proveedor para importar vehículos, seguir sus posiciones
 						y planificar viajes con alertas en ruta.
 					</p>
