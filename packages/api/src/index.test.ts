@@ -361,6 +361,21 @@ describe("credential error isolation", () => {
 			/private-ciphertext|private-password/,
 		);
 	});
+
+	it("keeps the error class and driver code in the wide event", async () => {
+		const context = contextFor(session);
+		const failingProcedure = protectedProcedure.handler(() => {
+			throw new TypeError("insert private-ciphertext", {
+				cause: Object.assign(new Error("Duplicate entry private-password"), {
+					code: "ER_DUP_ENTRY",
+				}),
+			});
+		});
+		await call(failingProcedure, undefined, { context }).catch(() => null);
+		const loggedContext = JSON.stringify(context.log.getContext());
+		expect(loggedContext).toContain("TypeError:ER_DUP_ENTRY");
+		expect(loggedContext).not.toMatch(/private-ciphertext|private-password/);
+	});
 });
 
 describe("trip completion alert cleanup", () => {

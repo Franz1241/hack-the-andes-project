@@ -53,12 +53,20 @@ const withLogger = o.middleware(async ({ context, path, next }) => {
 			entry.status = error.status;
 			entry.message = error.message;
 		} else {
-			// Driver errors contain SQL parameters, including encrypted GPS credentials.
+			// Driver errors contain SQL parameters, including encrypted GPS credentials,
+			// so only the error class and the driver's error code are logged.
 			const safeError = new ORPCError("INTERNAL_SERVER_ERROR");
-			entry.code = safeError.code;
+			const errorName = error instanceof Error ? error.name : "Error";
+			const driverCode =
+				error instanceof Error &&
+				error.cause instanceof Error &&
+				"code" in error.cause
+					? String(error.cause.code)
+					: undefined;
+			entry.code = driverCode ? `${errorName}:${driverCode}` : errorName;
 			entry.status = safeError.status;
 			entry.message = safeError.message;
-			context.log.error(new Error(safeError.message));
+			context.log.error(new Error(entry.code));
 			context.log.set({ procedures: [entry] });
 			throw safeError;
 		}
