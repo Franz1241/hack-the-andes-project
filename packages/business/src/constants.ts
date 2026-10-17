@@ -22,6 +22,7 @@ export const POSITION_RETENTION_MS = 30 * 24 * 60 * 60 * 1000;
 export const POSITION_RETENTION_BATCH_SIZE_ROWS = 10_000;
 
 export const ROUTING_REQUEST_TIMEOUT_MS = 15_000;
+export const ROUTING_USER_AGENT = "illapa-fleet/1.0 (+https://illapa.app)";
 export const MIN_ROUTE_COORDINATES_COUNT = 2;
 
 export const DEMO_TRIP_SCENARIOS = ["hazard", "clear"] as const;

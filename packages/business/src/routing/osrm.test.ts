@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
+import { ROUTING_USER_AGENT } from "../constants";
 import { fetchRouteCandidates } from "./osrm";
 
 const origin = { lat: -12.05, lng: -76.88 };
@@ -47,7 +48,10 @@ describe("fetchRouteCandidates", () => {
 		});
 		expect(fetchImpl).toHaveBeenCalledWith(
 			"https://router.example/route/v1/driving/-76.88,-12.05;-75.21,-12.07?alternatives=true&overview=full&geometries=geojson&steps=false",
-			expect.objectContaining({ signal: expect.any(AbortSignal) }),
+			expect.objectContaining({
+				headers: { "User-Agent": ROUTING_USER_AGENT },
+				signal: expect.any(AbortSignal),
+			}),
 		);
 		expect(candidates).toEqual([
 			{
