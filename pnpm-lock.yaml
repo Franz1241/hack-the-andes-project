@@ -114,9 +114,6 @@ importers:
       '@astrojs/react':
         specifier: ^7.1.0
         version: 7.1.0(@types/node@26.6.5)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(babel-plugin-react-compiler@1.0.0)(jiti@2.7.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(terser@5.51.2)(yaml@2.9.1)
-      '@fontsource-variable/bricolage-grotesque':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@hack-the-andes-project/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -2347,9 +2344,6 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
-
-  '@fontsource-variable/bricolage-grotesque@5.3.0':
-    resolution: {integrity: sha512-TLi9Q4hJjS2UvoTMRSS2nHu6c4R56lAw60NR9QYtVRCHn0XtsFpiEhNffZ8Glsoxu6wEEwLKBP8lb94J52PNBA==}
 
   '@fontsource-variable/stack-sans-notch@5.3.0':
     resolution: {integrity: sha512-RDnrc2zMy8WEWgTp9werbgQPbQg86PIdcW6iOV3xV+C9sItFr4oJ2Ta2ir1dpSBXOxjzEFrxRPRm8EncInrVsQ==}
@@ -11711,8 +11705,6 @@ snapshots:
       react-dom: 19.3.1(react@19.3.1)
 
   '@floating-ui/utils@0.2.12': {}
-
-  '@fontsource-variable/bricolage-grotesque@5.3.0': {}
 
   '@fontsource-variable/stack-sans-notch@5.3.0': {}
 

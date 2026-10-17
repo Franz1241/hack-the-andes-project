@@ -10,7 +10,7 @@ const { title, description } = Astro.props;
 ---
 
 <!doctype html>
-<html lang="es-PE">
+<html lang="es-PE" class="dark">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -22,7 +22,7 @@ const { title, description } = Astro.props;
 		<meta property="og:type" content="website" />
 		<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 	</head>
-	<body class="min-h-svh">
+	<body class="min-h-svh bg-background text-foreground">
 		<slot />
 	</body>
 </html>

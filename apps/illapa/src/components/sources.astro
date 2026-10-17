@@ -16,24 +16,20 @@ const sources: Source[] = [
 ];
 ---
 
-<section id="fuentes" class="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:py-32">
-	<div class="grid gap-12 lg:grid-cols-12">
-		<div class="lg:col-span-4">
-			<h2 class="text-3xl font-semibold sm:text-4xl">Las mismas fuentes que ya consultas, en un solo lugar</h2>
-			<p class="mt-5 max-w-sm text-muted-foreground">
-				No inventamos pronósticos. Leemos lo que publican las entidades
-				oficiales, lo georreferenciamos y lo cruzamos con tu red.
-			</p>
-		</div>
-		<ul class="grid gap-x-10 gap-y-5 sm:grid-cols-2 lg:col-span-8 lg:col-start-5">
-			{
-				sources.map((source) => (
-					<li class="border-t border-border pt-3">
-						<span class="font-medium">{source.name}</span>
-						<span class="block text-sm text-muted-foreground">{source.role}</span>
-					</li>
-				))
-			}
-		</ul>
+<section id="fuentes" aria-labelledby="fuentes-title">
+	<div class="mx-auto grid max-w-7xl gap-12 px-5 py-24 sm:px-8 lg:grid-cols-12 lg:py-32">
+		<header class="flex flex-col gap-5 lg:col-span-4">
+			<p class="type-label text-muted-foreground">Fuentes oficiales</p>
+			<h2 id="fuentes-title" class="type-title">Las mismas fuentes que ya consultas, en un solo lugar</h2>
+			<p class="type-lead text-muted-foreground">No inventamos pronósticos. Leemos lo que publican las entidades oficiales, lo georreferenciamos y lo cruzamos con tu red.</p>
+		</header>
+		<dl class="min-w-0 border-b border-border lg:col-span-8">
+			{sources.map((source) => (
+				<div class="grid gap-3 border-t border-border py-5 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-8">
+					<dt class="type-label">{source.name}</dt>
+					<dd class="type-body text-muted-foreground">{source.role}</dd>
+				</div>
+			))}
+		</dl>
 	</div>
 </section>

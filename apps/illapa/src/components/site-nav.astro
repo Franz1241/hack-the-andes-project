@@ -1,23 +1,24 @@
 ---
+import { buttonVariants } from "@hack-the-andes-project/ui/components/button";
 import { ENV } from "@/env.public";
 ---
 
-<header class="absolute inset-x-0 top-0 z-20">
+<header class="absolute inset-x-0 top-0 z-20 border-b border-border bg-background/90 text-foreground">
 	<nav
 		aria-label="Principal"
 		class="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-5 sm:px-8"
 	>
-		<a href="/" class="font-heading text-xl font-semibold tracking-tight">
-			Illapa
+		<a href="/" class="type-heading focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">
+			ILLAPA<span class="text-brand-flame" aria-hidden="true">.</span>
 		</a>
-		<div class="hidden items-center gap-8 text-sm md:flex">
-			<a href="#vigilancia" class="hover:underline underline-offset-4">Qué vigilamos</a>
-			<a href="#como-funciona" class="hover:underline underline-offset-4">Cómo funciona</a>
-			<a href="#fuentes" class="hover:underline underline-offset-4">Fuentes</a>
+		<div class="hidden items-center gap-8 md:flex">
+			<a href="#vigilancia" class="type-label underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Qué vigilamos</a>
+			<a href="#como-funciona" class="type-label underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Cómo funciona</a>
+			<a href="#fuentes" class="type-label underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring">Fuentes</a>
 		</div>
 		<a
 			href={`${ENV.PUBLIC_APP_URL}/login`}
-			class="inline-flex h-9 items-center border border-foreground px-4 text-sm font-medium hover:bg-foreground hover:text-background"
+			class={buttonVariants({ variant: "outline" })}
 		>
 			Entrar
 		</a>
