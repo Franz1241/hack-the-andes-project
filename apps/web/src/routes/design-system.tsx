@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { m } from "@/paraglide/messages";
 import { ColorSection } from "@/showcase/color";
 import { ComponentsSection } from "@/showcase/components";
+import { DataVisualizationSection } from "@/showcase/data-visualization";
 import { DoDontSection } from "@/showcase/do-dont";
 import { ExampleScreenSection } from "@/showcase/example-screen";
 import { HeroSection } from "@/showcase/hero";
@@ -37,6 +38,8 @@ function DesignSystemPage() {
 				<ComponentsSection />
 				<Separator />
 				<RiskStatesSection />
+				<Separator />
+				<DataVisualizationSection />
 				<Separator />
 				<DoDontSection />
 				<Separator />

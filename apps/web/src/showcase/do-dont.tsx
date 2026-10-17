@@ -8,7 +8,7 @@ export function DoDontSection() {
 		<ShowcaseSection
 			kicker={m.ds_section_kicker()}
 			id="criterios"
-			number="06"
+			number="07"
 			title={m.ds_guidelines_title()}
 			description={m.ds_guidelines_description()}
 		>

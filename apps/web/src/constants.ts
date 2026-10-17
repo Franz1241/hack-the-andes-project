@@ -5,6 +5,7 @@ export const SHOWCASE_SECTIONS = [
 	{ id: "espacio", label: m.ds_nav_spacing },
 	{ id: "componentes", label: m.ds_nav_components },
 	{ id: "riesgo", label: m.ds_risk_label },
+	{ id: "datos", label: m.ds_nav_data },
 	{ id: "criterios", label: m.ds_nav_guidelines },
 	{ id: "panel", label: m.ds_panel_title },
 ];

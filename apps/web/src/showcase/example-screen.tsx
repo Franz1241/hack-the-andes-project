@@ -39,7 +39,7 @@ export function ExampleScreenSection() {
 		<ShowcaseSection
 			kicker={m.ds_section_kicker()}
 			id="panel"
-			number="07"
+			number="08"
 			title={m.ds_panel_section_title()}
 			description={m.ds_panel_section_description()}
 		>
