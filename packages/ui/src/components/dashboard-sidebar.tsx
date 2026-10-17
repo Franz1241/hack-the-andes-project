@@ -10,6 +10,7 @@ import {
 	SidebarGroupLabel,
 	SidebarHeader,
 	SidebarMenu,
+	SidebarMenuBadge,
 	SidebarMenuButton,
 	SidebarMenuItem,
 	SidebarSeparator,
@@ -22,6 +23,7 @@ export interface DashboardNavigationItem {
 	icon: ComponentType;
 	link: ReactElement;
 	active: boolean;
+	badgeCount?: number;
 }
 
 export interface DashboardSidebarProps {
@@ -78,6 +80,13 @@ export function DashboardSidebar({
 											<item.icon />
 											<span>{item.label}</span>
 										</SidebarMenuButton>
+										{Boolean(item.badgeCount) && (
+											<SidebarMenuBadge
+												aria-label={`${item.badgeCount} alertas abiertas`}
+											>
+												{item.badgeCount}
+											</SidebarMenuBadge>
+										)}
 									</SidebarMenuItem>
 								))}
 							</SidebarMenu>
