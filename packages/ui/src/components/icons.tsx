@@ -2,7 +2,9 @@ export {
 	ArrowUpIcon,
 	BellIcon,
 	ChevronRightIcon,
+	CircleDashedIcon as SignalForecast,
 	CloudLightningIcon,
+	DiamondIcon as SignalBaseline,
 	ExternalLinkIcon,
 	EyeIcon,
 	EyeOffIcon,
@@ -35,3 +37,16 @@ export {
 	WeatherIcon,
 	WildfireIcon,
 } from "./incident-icons";
+
+export function SignalConfirmed({ className }: { className?: string }) {
+	return (
+		<svg
+			viewBox="0 0 24 24"
+			fill="currentColor"
+			aria-hidden="true"
+			className={className}
+		>
+			<circle cx="12" cy="12" r="8" />
+		</svg>
+	);
+}
