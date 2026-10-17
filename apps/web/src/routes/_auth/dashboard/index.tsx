@@ -10,17 +10,23 @@ import {
 	EmptyHeader,
 	EmptyTitle,
 } from "@hack-the-andes-project/ui/components/empty";
+import { Field, FieldLabel } from "@hack-the-andes-project/ui/components/field";
+import { FleetOverlay } from "@hack-the-andes-project/ui/components/fleet-overlay";
 import { IncidentDetails } from "@hack-the-andes-project/ui/components/incident-details";
 import { IncidentFilters } from "@hack-the-andes-project/ui/components/incident-filters";
 import { IncidentMap } from "@hack-the-andes-project/ui/components/incident-map";
 import { IncidentSummary } from "@hack-the-andes-project/ui/components/incident-summary";
 import { Skeleton } from "@hack-the-andes-project/ui/components/skeleton";
+import { Switch } from "@hack-the-andes-project/ui/components/switch";
+import {
+	EMPTY_FLEET_TRIPS,
+	EMPTY_FLEET_VEHICLES,
+} from "@hack-the-andes-project/ui/lib/fleet-constants";
 import type { Incident } from "@hack-the-andes-project/ui/lib/incident";
 import { INCIDENT_SEVERITY_OPTIONS } from "@hack-the-andes-project/ui/lib/incident-constants";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-
 import {
 	DEFAULT_INCIDENT_LIMIT_ROWS,
 	DEFAULT_SINCE_PRESET,
@@ -28,6 +34,7 @@ import {
 	INCIDENT_REFETCH_INTERVAL_MS,
 	INCIDENT_SINCE_PRESETS,
 } from "@/constants";
+import { useFleetQueries } from "@/lib/fleet-queries";
 import { client, orpc } from "@/utils/orpc";
 
 export const Route = createFileRoute("/_auth/dashboard/")({
@@ -35,6 +42,10 @@ export const Route = createFileRoute("/_auth/dashboard/")({
 });
 
 function IncidentMapPage() {
+	const fleetQueries = useFleetQueries();
+	const [showFleet, setShowFleet] = useState(false);
+	const vehiclesQuery = useQuery(fleetQueries.vehicles);
+	const tripsQuery = useQuery({ ...fleetQueries.trips, enabled: showFleet });
 	const [categories, setCategories] = useState<Incident["category"][]>([]);
 	const [severities, setSeverities] = useState(INCIDENT_SEVERITY_OPTIONS);
 	const [sincePreset, setSincePreset] = useState(DEFAULT_SINCE_PRESET);
@@ -99,6 +110,38 @@ function IncidentMapPage() {
 					setSincePreset(DEFAULT_SINCE_PRESET);
 				}}
 			/>
+			{Boolean(vehiclesQuery.data?.length) && (
+				<Field orientation="horizontal" className="w-auto border-b px-4 py-2">
+					<Switch
+						id="show-fleet"
+						checked={showFleet}
+						onCheckedChange={setShowFleet}
+					/>
+					<FieldLabel htmlFor="show-fleet">Mostrar flota</FieldLabel>
+					{showFleet && tripsQuery.isPending && (
+						<span className="text-muted-foreground text-xs">
+							Cargando rutas…
+						</span>
+					)}
+				</Field>
+			)}
+			{showFleet && (vehiclesQuery.isError || tripsQuery.isError) && (
+				<Alert variant="destructive">
+					<AlertTitle>No se pudo actualizar la flota</AlertTitle>
+					<AlertDescription>
+						Se muestran los últimos datos disponibles.
+						<Button
+							variant="link"
+							onClick={() => {
+								void vehiclesQuery.refetch();
+								void tripsQuery.refetch();
+							}}
+						>
+							Reintentar
+						</Button>
+					</AlertDescription>
+				</Alert>
+			)}
 			<IncidentSummary
 				counts={summaryQuery.data?.bySeverity}
 				isPending={summaryQuery.isPending}
@@ -130,7 +173,14 @@ function IncidentMapPage() {
 				<IncidentMap
 					incidents={incidents}
 					onIncidentSelect={setSelectedIncidentId}
-				/>
+				>
+					{showFleet && (
+						<FleetOverlay
+							vehicles={vehiclesQuery.data ?? EMPTY_FLEET_VEHICLES}
+							trips={tripsQuery.data ?? EMPTY_FLEET_TRIPS}
+						/>
+					)}
+				</IncidentMap>
 				{incidentsQuery.isPending && (
 					<output
 						className="pointer-events-none absolute top-3 left-3 flex w-56 flex-col gap-2 border bg-background/95 p-3"
