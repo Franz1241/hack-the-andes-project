@@ -1,9 +1,11 @@
 import type { Incident } from "@hack-the-andes-project/ui/lib/incident";
 import {
 	INCIDENT_CATEGORY_LABELS,
-	INCIDENT_SEVERITY_COLORS,
+	INCIDENT_SEVERITY_FILL_CLASSES,
 	INCIDENT_SEVERITY_LABELS,
+	INCIDENT_SEVERITY_TEXT_CLASSES,
 } from "@hack-the-andes-project/ui/lib/incident-constants";
+import { cn } from "@hack-the-andes-project/ui/lib/utils";
 import { formatDistanceToNowStrict } from "date-fns";
 import { es } from "date-fns/locale/es";
 
@@ -41,10 +43,10 @@ export function IncidentMarker({ incident, onSelect }: IncidentMarkerProps) {
 						event.stopPropagation();
 						onSelect(incident.id);
 					}}
-					className="flex size-7 items-center justify-center rounded-full border-2 border-white text-white shadow-md transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2"
-					style={{
-						backgroundColor: INCIDENT_SEVERITY_COLORS[incident.severity],
-					}}
+					className={cn(
+						"flex size-7 items-center justify-center rounded-full border-2 border-background transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2 motion-reduce:transition-none motion-reduce:hover:scale-100",
+						INCIDENT_SEVERITY_FILL_CLASSES[incident.severity],
+					)}
 				>
 					<CategoryIcon className="size-4" />
 				</HoverCardTrigger>
@@ -53,26 +55,28 @@ export function IncidentMarker({ incident, onSelect }: IncidentMarkerProps) {
 					sideOffset={INCIDENT_PREVIEW_OFFSET_PX}
 					className="pointer-events-none flex w-72 flex-col gap-1.5"
 				>
-					<div className="flex items-center gap-2 text-muted-foreground">
+					<div className="type-label flex items-center gap-2 text-muted-foreground">
 						<CategoryIcon
-							className="size-3.5 shrink-0"
-							style={{ color: INCIDENT_SEVERITY_COLORS[incident.severity] }}
+							className={cn(
+								"size-3.5 shrink-0",
+								INCIDENT_SEVERITY_TEXT_CLASSES[incident.severity],
+							)}
 						/>
 						<span className="truncate">
 							{INCIDENT_CATEGORY_LABELS[incident.category]}
 						</span>
 						<SeverityBadge severity={incident.severity} className="ml-auto" />
 					</div>
-					<p className="line-clamp-2 break-words font-semibold text-foreground text-sm leading-snug">
+					<p className="type-heading line-clamp-2 break-words text-foreground">
 						{incident.title}
 					</p>
 					{incident.description && (
-						<p className="line-clamp-3 whitespace-pre-line break-words text-muted-foreground">
+						<p className="type-body line-clamp-3 whitespace-pre-line break-words text-muted-foreground">
 							{incident.description}
 						</p>
 					)}
 					{(location || incident.occurredAt) && (
-						<p className="text-[11px] text-muted-foreground">
+						<p className="type-data text-muted-foreground">
 							{location}
 							{location && incident.occurredAt && " · "}
 							{incident.occurredAt && (

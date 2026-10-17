@@ -22,10 +22,16 @@ export const INCIDENT_SEVERITY_LABELS = {
 	info: "Informativa",
 };
 
-export const INCIDENT_SEVERITY_COLORS = {
-	critical: "#e11d48",
-	warning: "#d97706",
-	info: "#0284c7",
+export const INCIDENT_SEVERITY_FILL_CLASSES = {
+	critical: "bg-risk-critical text-risk-critical-foreground",
+	warning: "bg-risk-high text-risk-high-foreground",
+	info: "bg-info text-info-foreground",
+};
+
+export const INCIDENT_SEVERITY_TEXT_CLASSES = {
+	critical: "text-risk-critical",
+	warning: "text-risk-high",
+	info: "text-info",
 };
 
 export const INCIDENT_SEVERITY_TOKENS = {
