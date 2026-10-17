@@ -4,12 +4,19 @@ import {
 	poi,
 	scrapeRun,
 } from "@hack-the-andes-project/db/schema/scraper";
-import { and, eq, inArray, lt, sql } from "drizzle-orm";
+import { and, eq, getTableColumns, inArray, lt, sql } from "drizzle-orm";
 import type { MySqlColumn, MySqlTable } from "drizzle-orm/mysql-core";
 
 import { DB_WRITE_CHUNK_SIZE, MAX_RUN_ERROR_MESSAGE_CHARS } from "./constants";
 import { contentHash } from "./lib/hash";
 import type { ScrapeSource } from "./sources/types";
+
+const UPSERT_PRESERVED_KEYS = new Set([
+	"id",
+	"source",
+	"sourceId",
+	"firstSeenAt",
+]);
 
 interface SyncedTable extends MySqlTable {
 	id: MySqlColumn;
@@ -106,31 +113,35 @@ async function syncTable<TRecord extends { sourceId: string }>(
 		records,
 	);
 
-	for (const chunk of chunked(plan.inserts)) {
-		await db.insert(table).values(
-			chunk.map(({ record, contentHash: hash }) => ({
-				...record,
-				id: crypto.randomUUID(),
-				source,
-				contentHash: hash,
-				active: true,
-				firstSeenAt: runStartedAt,
-				lastSeenAt: runStartedAt,
-				lastChangedAt: runStartedAt,
-			})),
-		);
-	}
-	for (const { id, record, contentHash: hash } of plan.updates) {
+	// New and changed rows go through one chunked upsert on the (source,
+	// sourceId) unique index: per-row UPDATEs cost ~45 ms each over Hyperdrive,
+	// which blew past the request budget on the ~1k-row SERFOR feed.
+	const upserts = [
+		...plan.inserts.map((entry) => ({ ...entry, id: crypto.randomUUID() })),
+		...plan.updates,
+	].map(({ id, record, contentHash: hash }) => ({
+		...record,
+		id,
+		source,
+		contentHash: hash,
+		active: true,
+		firstSeenAt: runStartedAt,
+		lastSeenAt: runStartedAt,
+		lastChangedAt: runStartedAt,
+	}));
+	const columns = getTableColumns(table);
+	const overwrittenKeys = Object.keys(columns).filter(
+		(key) => !UPSERT_PRESERVED_KEYS.has(key),
+	);
+	for (const chunk of chunked(upserts)) {
 		await db
-			.update(table)
-			.set({
-				...record,
-				contentHash: hash,
-				active: true,
-				lastSeenAt: runStartedAt,
-				lastChangedAt: runStartedAt,
-			})
-			.where(eq(table.id, id));
+			.insert(table)
+			.values(chunk)
+			.onDuplicateKeyUpdate({
+				set: Object.fromEntries(
+					overwrittenKeys.map((key) => [key, sql`values(${columns[key]})`]),
+				),
+			});
 	}
 	for (const chunk of chunked(plan.unchangedIds)) {
 		await db
