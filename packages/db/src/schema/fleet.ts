@@ -25,7 +25,7 @@ import {
 } from "./constants";
 import { type IncidentSeverity, incident } from "./scraper";
 
-export const GPS_PROVIDERS = ["geotab", "samsara"] as const;
+export const GPS_PROVIDERS = ["geotab", "samsara", "demo"] as const;
 export type GpsProvider = (typeof GPS_PROVIDERS)[number];
 
 export const CONNECTION_STATUSES = ["active", "error"] as const;

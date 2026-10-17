@@ -13,6 +13,7 @@ export const vehiclesRouter = {
 				where: { organizationId: context.organizationId },
 				orderBy: { name: "asc", id: "asc" },
 				with: {
+					connection: { columns: { provider: true } },
 					trips: {
 						columns: {
 							id: true,
@@ -36,9 +37,13 @@ export const vehiclesRouter = {
 					vehiclesListed: vehicles.length,
 				},
 			});
-			return vehicles.map(({ trips, ...vehicle }) => {
+			return vehicles.map(({ connection, trips, ...vehicle }) => {
 				const [activeTrip] = trips;
-				return { ...vehicle, activeTrip: activeTrip ?? null };
+				return {
+					...vehicle,
+					provider: connection?.provider ?? null,
+					activeTrip: activeTrip ?? null,
+				};
 			});
 		}),
 };

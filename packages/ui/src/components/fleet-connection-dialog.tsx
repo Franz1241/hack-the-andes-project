@@ -1,11 +1,13 @@
-import { gpsCredentialsSchema } from "@hack-the-andes-project/business/providers/index";
+import {
+	DEMO_VEHICLES,
+	GPS_PROVIDER_LABELS,
+	GPS_PROVIDERS,
+	gpsCredentialsSchema,
+} from "@hack-the-andes-project/business/providers/index";
 import { useState } from "react";
 
 import type { FleetConnectionInput } from "../lib/fleet";
-import {
-	GEOTAB_CREDENTIAL_FIELDS,
-	SAMSARA_CREDENTIAL_FIELDS,
-} from "../lib/fleet-constants";
+import { CREDENTIAL_FIELDS_BY_PROVIDER } from "../lib/fleet-constants";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { Button } from "./button";
 import {
@@ -17,7 +19,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "./dialog";
-import { Field, FieldGroup, FieldLabel } from "./field";
+import { Field, FieldDescription, FieldGroup, FieldLabel } from "./field";
 import { Input } from "./input";
 import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
 
@@ -35,10 +37,7 @@ export function FleetConnectionDialog({
 		useState<FleetConnectionInput["credentials"]["provider"]>("geotab");
 	const [error, setError] = useState<string>();
 	const [invalidFields, setInvalidFields] = useState<string[]>([]);
-	const credentialFields =
-		provider === "geotab"
-			? GEOTAB_CREDENTIAL_FIELDS
-			: SAMSARA_CREDENTIAL_FIELDS;
+	const credentialFields = CREDENTIAL_FIELDS_BY_PROVIDER[provider];
 
 	return (
 		<Dialog
@@ -120,24 +119,33 @@ export function FleetConnectionDialog({
 									variant="outline"
 									value={[provider]}
 									onValueChange={(values) => {
-										const [nextProvider] = values;
-										if (
-											nextProvider === "geotab" ||
-											nextProvider === "samsara"
-										) {
+										const nextProvider = GPS_PROVIDERS.find(
+											(kind) => kind === values[0],
+										);
+										if (nextProvider) {
 											setProvider(nextProvider);
 											setError(undefined);
 											setInvalidFields([]);
 										}
 									}}
 								>
-									<ToggleGroupItem value="geotab" disabled={isPending}>
-										Geotab
-									</ToggleGroupItem>
-									<ToggleGroupItem value="samsara" disabled={isPending}>
-										Samsara
-									</ToggleGroupItem>
+									{GPS_PROVIDERS.map((kind) => (
+										<ToggleGroupItem
+											key={kind}
+											value={kind}
+											disabled={isPending}
+										>
+											{GPS_PROVIDER_LABELS[kind]}
+										</ToggleGroupItem>
+									))}
 								</ToggleGroup>
+								{provider === "demo" && (
+									<FieldDescription>
+										Simula {DEMO_VEHICLES.length} camiones en Perú que recorren
+										la ruta de cada viaje que les asignes. No necesita
+										credenciales.
+									</FieldDescription>
+								)}
 							</Field>
 							{credentialFields.map((field) => (
 								<Field

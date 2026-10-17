@@ -1,6 +1,8 @@
 import type { ZodType } from "zod";
 
-export const GPS_PROVIDERS = ["geotab", "samsara"] as const;
+import type { LatLng } from "../hazards/types";
+
+export const GPS_PROVIDERS = ["geotab", "samsara", "demo"] as const;
 
 export type GpsProviderKind = (typeof GPS_PROVIDERS)[number];
 
@@ -8,6 +10,10 @@ export interface ProviderVehicle {
 	externalId: string;
 	name: string;
 	plate: string | null;
+}
+
+export interface DemoVehicle extends ProviderVehicle {
+	depot: LatLng;
 }
 
 export interface ProviderPosition {

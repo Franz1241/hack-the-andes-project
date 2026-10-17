@@ -159,6 +159,7 @@ export const vehicleSummarySchema = z.object({
 	active: z.boolean(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
+	provider: z.enum(GPS_PROVIDERS).nullable(),
 	activeTrip: activeTripSchema.nullable(),
 });
 
