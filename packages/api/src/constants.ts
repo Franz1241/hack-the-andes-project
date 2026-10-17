@@ -1,5 +1,4 @@
 export const MAX_LOGGED_ID_CHARS = 64;
-export const MAX_LOGGED_ERROR_MESSAGE_CHARS = 256;
 
 export const MIN_FLEET_TEXT_LENGTH_CHARS = 1;
 export const SINGLE_RESULT_LIMIT_ROWS = 1;

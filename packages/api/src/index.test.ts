@@ -22,7 +22,7 @@ import {
 	VEHICLE_POSITION_REQUIRED_MESSAGE,
 } from "./constants";
 import type { Context } from "./context";
-import { organizationProcedure } from "./index";
+import { organizationProcedure, protectedProcedure } from "./index";
 import { appRouter } from "./routers/index";
 
 const databaseRequire = createRequire(
@@ -323,4 +323,42 @@ describe("fleet procedure boundaries", () => {
 			expect(query).not.toHaveBeenCalled();
 		},
 	);
+});
+
+describe("credential error isolation", () => {
+	it("does not return provider causes or put secrets in the wide event", async () => {
+		vi.spyOn(samsaraProvider, "validateCredentials").mockRejectedValue(
+			new Error("Bearer private-token"),
+		);
+		const context = contextFor(session);
+		const client = createRouterClient(appRouter, { context });
+		const error = await client.connections
+			.create({
+				label: "GPS",
+				credentials: { provider: "samsara", apiToken: "private-token" },
+			})
+			.catch((error) => error);
+		expect(error.code).toBe("BAD_REQUEST");
+		expect(error.cause).toBeUndefined();
+		expect(JSON.stringify(context.log.getContext())).not.toContain(
+			"private-token",
+		);
+	});
+
+	it("redacts database SQL and nested causes before logging or rethrowing", async () => {
+		const context = contextFor(session);
+		const failingProcedure = protectedProcedure.handler(() => {
+			throw new Error("insert encrypted_credentials private-ciphertext", {
+				cause: new Error("private-password"),
+			});
+		});
+		const error = await call(failingProcedure, undefined, { context }).catch(
+			(error) => error,
+		);
+		expect(error.code).toBe("INTERNAL_SERVER_ERROR");
+		expect(error.cause).toBeUndefined();
+		expect(JSON.stringify(context.log.getContext())).not.toMatch(
+			/private-ciphertext|private-password/,
+		);
+	});
 });
