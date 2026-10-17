@@ -15,7 +15,7 @@ Route planner at a freight carrier or agroexporter. Before a truck leaves: is th
 ## Core flow: Revisar ruta
 
 1. Pick an origin and a destination from a list of cities on the central corridors (Lima to Huancayo is preselected), one of your vehicles, and a departure time within the next 24 h (default: now).
-2. Press **Revisar**. ILLAPA scores every candidate path: the ones our routing finds (for Lima to Huancayo: the Carretera Central, via Canta, and via Cañete and PE-24) and SUTRAN's official detours.
+2. Press **Revisar**. ILLAPA scores every candidate path: the ones our routing finds and SUTRAN's official detours. For Lima to Huancayo that is the Carretera Central plus SUTRAN's Rutas 1 to 5, which include the roads via Canta and via Cañete. A path that matches a SUTRAN detour is listed once, as the detour.
 3. Each path is split into segments of about 5 km. Each segment gets a level (Bajo, Moderado, Alto, Crítico) for Ahora and 24 h (48 and 72 h later). Its signals are labeled confirmed, forecast or baseline.
 4. Each path gets Continuar, Monitorear, Retrasar or Desviar from the rules below. The recommended path comes first, then the rest by risk, then by time.
 5. AI writes a short explanation and preventive plan for each path, citing each source and when it was observed.
