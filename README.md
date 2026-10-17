@@ -2,6 +2,10 @@
 
 pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (`apps/web`), Expo app (`apps/native`), cron scraper Worker for road/emergency feeds (`apps/scraper`, see its README), better-auth, Drizzle + MySQL through Hyperdrive, evlog wide-event logging, deployed with Alchemy v2 (local state in `packages/infra/.alchemy/`).
 
+## Product docs
+
+[Brief](docs/brief.md) · [MVP PRD](docs/prd.md) · [Data sources and risk score](docs/sources.md) · [Traction log](docs/traction.md) · [Predictive risk engine](docs/predictive-model.md) (Spanish) · [NASA data sources](docs/nasa-sources.md) (Spanish)
+
 ## Setup
 
 1. `pnpm install` (generates the typed env files from every `.env.schema`).
