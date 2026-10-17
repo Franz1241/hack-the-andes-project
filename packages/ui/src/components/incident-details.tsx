@@ -1,6 +1,14 @@
 import type { Incident } from "@hack-the-andes-project/ui/lib/incident";
-import { INCIDENT_CATEGORY_LABELS } from "@hack-the-andes-project/ui/lib/incident-constants";
+import {
+	INCIDENT_CATEGORY_LABELS,
+	INCIDENT_SOURCE_LABELS,
+	ROAD_STATUS_LABELS,
+} from "@hack-the-andes-project/ui/lib/incident-constants";
+import { formatDistanceToNowStrict } from "date-fns";
+import { es } from "date-fns/locale/es";
+import { Fragment } from "react";
 
+import { Badge } from "./badge";
 import { DateTime } from "./date-time";
 import { SeverityBadge } from "./severity";
 import {
@@ -17,6 +25,48 @@ export interface IncidentDetailsProps {
 }
 
 export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
+	const details = incident
+		? [
+				{
+					label: "Ocurrió",
+					value: incident.occurredAt && (
+						<DateTime value={incident.occurredAt} />
+					),
+				},
+				{
+					label: "Vigente hasta",
+					value: incident.validUntil && (
+						<DateTime value={incident.validUntil} />
+					),
+				},
+				{
+					label: "Vía",
+					value: [incident.roadCode, incident.roadName]
+						.filter(Boolean)
+						.join(" · "),
+				},
+				{ label: "Kilómetro", value: incident.roadKm },
+				{
+					label: "Ubicación",
+					value: [
+						...new Set(
+							[incident.distrito, incident.provincia, incident.region].filter(
+								Boolean,
+							),
+						),
+					].join(", "),
+				},
+				{
+					label: "Fuente",
+					value: INCIDENT_SOURCE_LABELS[incident.source] ?? incident.source,
+				},
+				{
+					label: "Actualizado",
+					value: <DateTime value={incident.lastChangedAt} />,
+				},
+			].filter((detail) => detail.value)
+		: [];
+
 	return (
 		<Sheet
 			open={Boolean(incident)}
@@ -25,17 +75,49 @@ export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
 			}}
 		>
 			<SheetContent className="overflow-y-auto">
-				<SheetHeader className="gap-3 pr-12">
-					{incident && <SeverityBadge severity={incident.severity} />}
-					<SheetTitle>{incident?.title ?? "Detalle del incidente"}</SheetTitle>
+				<SheetHeader className="gap-2 pr-12">
+					{incident && (
+						<div className="flex flex-wrap gap-1.5">
+							<SeverityBadge severity={incident.severity} />
+							{incident.roadStatus && (
+								<Badge
+									variant={
+										incident.roadStatus === "interrumpido"
+											? "destructive"
+											: "outline"
+									}
+								>
+									{ROAD_STATUS_LABELS[incident.roadStatus]}
+								</Badge>
+							)}
+						</div>
+					)}
+					<SheetTitle className="text-balance break-words font-semibold text-base leading-snug">
+						{incident?.title ?? "Detalle del incidente"}
+					</SheetTitle>
 					<SheetDescription>
-						{incident
-							? INCIDENT_CATEGORY_LABELS[incident.category]
-							: "Información del incidente"}
+						{incident ? (
+							<>
+								{INCIDENT_CATEGORY_LABELS[incident.category]}
+								{incident.occurredAt && (
+									<>
+										{" · "}
+										<time dateTime={incident.occurredAt.toISOString()}>
+											{formatDistanceToNowStrict(incident.occurredAt, {
+												addSuffix: true,
+												locale: es,
+											})}
+										</time>
+									</>
+								)}
+							</>
+						) : (
+							"Información del incidente"
+						)}
 					</SheetDescription>
 				</SheetHeader>
 				{incident && (
-					<div className="flex flex-col gap-5 px-4 pb-6">
+					<div className="flex flex-col gap-4 px-4 pb-6">
 						{incident.imageUrl && (
 							<a
 								href={incident.imageUrl}
@@ -52,33 +134,18 @@ export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
 								<span className="sr-only">(abre la foto en otra pestaña)</span>
 							</a>
 						)}
-						<p className="whitespace-pre-line text-sm leading-relaxed">
-							{incident.description ??
-								"La fuente no proporcionó una descripción adicional."}
-						</p>
-						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-xs">
-							<dt className="text-muted-foreground">Código de vía</dt>
-							<dd>{incident.roadCode ?? "No informado"}</dd>
-							<dt className="text-muted-foreground">Carretera</dt>
-							<dd>{incident.roadName ?? "No informada"}</dd>
-							<dt className="text-muted-foreground">Kilómetro</dt>
-							<dd>{incident.roadKm ?? "No informado"}</dd>
-							<dt className="text-muted-foreground">Tránsito</dt>
-							<dd className="capitalize">
-								{incident.roadStatus ?? "No informado"}
-							</dd>
-							<dt className="text-muted-foreground">Región</dt>
-							<dd>{incident.region ?? "No informada"}</dd>
-							<dt className="text-muted-foreground">Provincia</dt>
-							<dd>{incident.provincia ?? "No informada"}</dd>
-							<dt className="text-muted-foreground">Distrito</dt>
-							<dd>{incident.distrito ?? "No informado"}</dd>
-							<dt className="text-muted-foreground">Fuente</dt>
-							<dd className="break-words">{incident.source}</dd>
-							<dt className="text-muted-foreground">Último cambio</dt>
-							<dd>
-								<DateTime value={incident.lastChangedAt} />
-							</dd>
+						{incident.description && (
+							<p className="whitespace-pre-line text-sm leading-relaxed">
+								{incident.description}
+							</p>
+						)}
+						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 border-t pt-4 text-xs">
+							{details.map((detail) => (
+								<Fragment key={detail.label}>
+									<dt className="text-muted-foreground">{detail.label}</dt>
+									<dd className="break-words">{detail.value}</dd>
+								</Fragment>
+							))}
 						</dl>
 					</div>
 				)}

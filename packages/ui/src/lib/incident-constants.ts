@@ -22,6 +22,23 @@ export const INCIDENT_SEVERITY_LABELS = {
 	info: "Informativa",
 };
 
+export const ROAD_STATUS_LABELS = {
+	interrumpido: "Vía interrumpida",
+	restringido: "Tránsito restringido",
+	normal: "Tránsito normal",
+};
+
+export const INCIDENT_SOURCE_LABELS: Record<string, string> = {
+	sutran_alerts: "SUTRAN · Alertas en carreteras",
+	indeci_coen_emergencies: "INDECI · Emergencias (COEN)",
+	bomberos_emergencies_24h: "Bomberos del Perú · Últimas 24 h",
+	senamhi_warnings: "SENAMHI · Avisos meteorológicos e hidrológicos",
+	igp_last_earthquake: "IGP · Último sismo",
+	serfor_wildfire_alerts: "SERFOR · Alertas de incendios forestales",
+	rpp_latest_news: "RPP Noticias",
+	sratma_accidents: "MTC · Accidentes de tránsito (SRATMA)",
+};
+
 export const INCIDENT_SEVERITY_COLORS = {
 	critical: "#e11d48",
 	warning: "#d97706",
