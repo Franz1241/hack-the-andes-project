@@ -40,7 +40,7 @@ curl --fail-with-body -X POST \
 
 Use the deployed Worker's URL in place of localhost for a production run. `/run` requires POST and the header; a secret in the URL is not accepted. A connection-specific run polls and evaluates only that connection, skips global history pruning, and reconciles obsolete alerts in its organization. Unknown connections return 404; failed runs return 500 with safe per-item results. `/` is a public health check.
 
-A demo connection (Configuración → Demo, or "Usar flota demo" on an empty Flota page) needs no GPS account. Each run moves its trucks along their active trip routes, ten times faster than the planned pace, so ETAs, hazard alerts and arrivals go through the real pipeline. Locally, trigger `/run` to advance them.
+A demo connection (Configuración → Demo, or "Usar flota demo" on an empty Flota page) needs no GPS account. Each run moves its trucks along their active trip routes, ten times faster than the planned pace, so ETAs, hazard alerts and arrivals go through the real pipeline. In the trip planner, a demo truck can take a "Ruta demo" that passes an active incident or avoids all of them, to show an alert or a clean trip on purpose. Locally, trigger `/run` to advance the trucks.
 
 Run `pnpm --filter fleet-sync test` and `pnpm --filter fleet-sync check-types`. Deploy and log commands are `pnpm deploy:fleet-sync` and `pnpm logs:fleet-sync`; follow the [operations notes](../../docs/dashboard-plan.md#operations).
 
