@@ -57,6 +57,7 @@ function FleetPage() {
 			onSettled: () => invalidateFleetQueries(queryClient),
 		}),
 	);
+	const planDemoRoute = useMutation(orpc.trips.planDemo.mutationOptions());
 	const completeTrip = useMutation(
 		orpc.trips.complete.mutationOptions({
 			onSuccess: () => {
@@ -145,7 +146,9 @@ function FleetPage() {
 						<FleetTripPlanner
 							vehicles={vehicles}
 							isPending={createTrip.isPending}
+							isPlanningDemoRoute={planDemoRoute.isPending}
 							onCreate={createTrip.mutateAsync}
+							onPlanDemoRoute={planDemoRoute.mutateAsync}
 							onClose={() => setIsPlanning(false)}
 						/>
 					) : (
