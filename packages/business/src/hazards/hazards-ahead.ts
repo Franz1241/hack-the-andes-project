@@ -1,7 +1,11 @@
+import { nearestPointOnLine } from "@turf/nearest-point-on-line";
 import { HAZARD_BUFFER_M, LOOKAHEAD_M } from "../constants";
 import { isAlertableIncident } from "./alertable";
-import { projectOntoRoute } from "./progress";
-import { incidentGeometry, routeDistanceToHazardM } from "./route-distance";
+import {
+	incidentGeometry,
+	routeDistanceToHazardM,
+	routeHazardBounds,
+} from "./route-distance";
 import { effectiveSpeedMps } from "./speed";
 import type {
 	HazardAhead,
@@ -25,16 +29,32 @@ export function findHazardsAhead({
 	lookaheadM = LOOKAHEAD_M,
 	bufferM = HAZARD_BUFFER_M,
 }: FindHazardsAheadInput): HazardAhead[] {
-	const progress = projectOntoRoute(route.geometry, vehicle.position);
+	const snapped = nearestPointOnLine(
+		route.geometry,
+		[vehicle.position.lng, vehicle.position.lat],
+		{ units: "meters" },
+	);
+	const start = {
+		coordinates: snapped.geometry.coordinates,
+		distanceAlongM: snapped.properties.totalDistance,
+	};
 	const speedMps = effectiveSpeedMps(route, vehicle);
 	const hazards: HazardAhead[] = [];
+	if (incidents.length === 0) return hazards;
+	const bounds = routeHazardBounds(route.geometry, bufferM);
 	for (const incident of incidents) {
 		if (!isAlertableIncident(incident)) continue;
 		const geometry = incidentGeometry(incident);
 		if (!geometry) continue;
-		const alongM = routeDistanceToHazardM(route.geometry, geometry, bufferM);
+		const alongM = routeDistanceToHazardM(
+			route.geometry,
+			geometry,
+			bufferM,
+			start,
+			bounds,
+		);
 		if (alongM === null) continue;
-		const distanceAheadM = alongM - progress.distanceAlongM;
+		const distanceAheadM = alongM - start.distanceAlongM;
 		if (distanceAheadM < 0 || distanceAheadM > lookaheadM) continue;
 		hazards.push({
 			incident,

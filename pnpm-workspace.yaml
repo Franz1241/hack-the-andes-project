@@ -36,6 +36,8 @@ catalog:
   "@turf/helpers": ^7.4.0
   "@turf/boolean-point-in-polygon": ^7.4.0
   "@turf/buffer": ^7.4.0
+  "@turf/bbox": ^7.4.0
+  "@turf/distance": ^7.4.0
   "@turf/length": ^7.4.0
   "@turf/line-intersect": ^7.4.0
   "@turf/nearest-point-on-line": ^7.4.0

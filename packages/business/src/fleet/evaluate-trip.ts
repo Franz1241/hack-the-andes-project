@@ -4,6 +4,7 @@ import {
 	trip as tripTable,
 	type vehicle as vehicleTable,
 } from "@hack-the-andes-project/db/schema/fleet";
+import { distance } from "@turf/distance";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import type { RequestLogger } from "evlog";
 
@@ -94,7 +95,12 @@ export async function evaluateTrip({
 			durationS: trip.routeDurationS,
 		};
 		let progress = projectOntoRoute(route.geometry, vehicleState.position);
-		const decision = decideTripProgress(progress);
+		const destinationDistanceM = distance(
+			[vehicle.lastLng, vehicle.lastLat],
+			[trip.destinationLng, trip.destinationLat],
+			{ units: "meters" },
+		);
+		const decision = decideTripProgress(progress, destinationDistanceM);
 		const unresolvedAlerts = and(
 			eq(alert.tripId, trip.id),
 			eq(alert.organizationId, trip.organizationId),

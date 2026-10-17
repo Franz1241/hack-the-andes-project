@@ -1,6 +1,10 @@
 import { ALTERNATIVE_MAX_DETOUR_RATIO, HAZARD_BUFFER_M } from "../constants";
 import { isAlertableIncident } from "./alertable";
-import { incidentGeometry, routeDistanceToHazardM } from "./route-distance";
+import {
+	incidentGeometry,
+	routeDistanceToHazardM,
+	routeHazardBounds,
+} from "./route-distance";
 import type { HazardIncident, RouteCandidate } from "./types";
 
 export interface ChooseAlternativeRouteInput {
@@ -25,9 +29,18 @@ export function chooseAlternativeRoute({
 	for (const candidate of candidates) {
 		if (candidate.durationS > maxDurationS) continue;
 		if (best && candidate.durationS >= best.durationS) continue;
+		const bounds = hazardGeometries.length
+			? routeHazardBounds(candidate.geometry, bufferM)
+			: undefined;
 		const hazardous = hazardGeometries.some(
 			(geometry) =>
-				routeDistanceToHazardM(candidate.geometry, geometry, bufferM) !== null,
+				routeDistanceToHazardM(
+					candidate.geometry,
+					geometry,
+					bufferM,
+					undefined,
+					bounds,
+				) !== null,
 		);
 		if (!hazardous) best = candidate;
 	}

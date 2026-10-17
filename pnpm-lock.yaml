@@ -33,6 +33,9 @@ catalogs:
     '@tanstack/react-form':
       specifier: ^1.33.5
       version: 1.33.5
+    '@turf/bbox':
+      specifier: ^7.4.0
+      version: 7.4.0
     '@turf/boolean-point-in-polygon':
       specifier: ^7.4.0
       version: 7.4.0
@@ -40,6 +43,9 @@ catalogs:
       specifier: ^7.4.0
       version: 7.4.0
     '@turf/centroid':
+      specifier: ^7.4.0
+      version: 7.4.0
+    '@turf/distance':
       specifier: ^7.4.0
       version: 7.4.0
     '@turf/helpers':
@@ -635,10 +641,16 @@ importers:
       '@hack-the-andes-project/db':
         specifier: workspace:*
         version: link:../db
+      '@turf/bbox':
+        specifier: 'catalog:'
+        version: 7.4.0
       '@turf/boolean-point-in-polygon':
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/buffer':
+        specifier: 'catalog:'
+        version: 7.4.0
+      '@turf/distance':
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/helpers':

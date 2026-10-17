@@ -429,3 +429,36 @@ it("resolves acknowledged alerts after passing the hazard", async () => {
 		]),
 	);
 });
+
+it("does not complete at a snapped route endpoint far from the requested destination", async () => {
+	const result = await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: { ...activeTrip, destinationLat: HUANCAYO[1] + 0.02 },
+		vehicle: { ...storedVehicle, lastLat: HUANCAYO[1], lastLng: HUANCAYO[0] },
+		incidents: [],
+		now,
+		log: createLogger(),
+	});
+	expect(result).toMatchObject({ ok: true, completed: false });
+	expect(
+		query.mock.calls.some(([, parameters]) => parameters.includes("completed")),
+	).toBe(false);
+});
+
+it("completes within the destination radius even when the route doubles back", async () => {
+	const result = await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: {
+			...activeTrip,
+			destinationLat: LIMA[1] + 0.001,
+			destinationLng: LIMA[0],
+		},
+		vehicle: storedVehicle,
+		incidents: [],
+		now,
+		log: createLogger(),
+	});
+	expect(result).toMatchObject({ ok: true, completed: true });
+});

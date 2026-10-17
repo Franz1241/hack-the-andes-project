@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import * as turfBuffer from "@turf/buffer";
+import { describe, expect, it, vi } from "vitest";
 
 import { findHazardsAhead } from "./hazards-ahead";
 import {
@@ -12,6 +13,8 @@ import {
 	TICLIO,
 	vehicleAt,
 } from "./test-fixtures";
+
+vi.mock("@turf/buffer", { spy: true });
 
 describe("findHazardsAhead", () => {
 	it("returns hazards ahead sorted by distance and drops those behind", () => {
@@ -138,11 +141,11 @@ describe("findHazardsAhead", () => {
 		});
 		const hazards = findHazardsAhead({
 			route: LIMA_HUANCAYO_ROUTE,
-			vehicle: vehicleAt(MATUCANA),
+			vehicle: vehicleAt(TICLIO),
 			incidents: [storm],
 		});
 		expect(hazards).toHaveLength(1);
-		expect(hazards[0]?.distanceAheadM).toBeGreaterThan(0);
+		expect(hazards[0]?.distanceAheadM).toBe(0);
 	});
 
 	it("estimates time to hazard from live speed or the route average", () => {
@@ -163,4 +166,33 @@ describe("findHazardsAhead", () => {
 			3,
 		);
 	});
+});
+
+it("filters distant polygon hazards before buffering them", () => {
+	const buffer = vi.mocked(turfBuffer.buffer);
+	buffer.mockClear();
+	const farPolygon = pointIncident("distant", [0, 0], {
+		geometry: {
+			type: "Polygon",
+			coordinates: [
+				[
+					[0, 0],
+					[1, 0],
+					[1, 1],
+					[0, 1],
+					[0, 0],
+				],
+			],
+		},
+	});
+	expect(
+		findHazardsAhead({
+			route: LIMA_HUANCAYO_ROUTE,
+			vehicle: vehicleAt(MATUCANA),
+			incidents: [farPolygon],
+		}),
+	).toEqual([]);
+	expect(buffer).toHaveBeenCalledTimes(1);
+	expect(buffer.mock.calls[0]?.[0]).toEqual(LIMA_HUANCAYO_ROUTE.geometry);
+	buffer.mockClear();
 });
