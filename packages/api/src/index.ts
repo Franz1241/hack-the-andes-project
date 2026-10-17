@@ -89,7 +89,14 @@ export const protectedProcedure = publicProcedure.use(requireAuth);
 
 const requireOrganization = o.middleware(async ({ context, next }) => {
 	const organizationId = context.session?.session.activeOrganizationId;
-	if (!organizationId) {
+	if (!organizationId || !context.session) {
+		throw new ORPCError("FORBIDDEN");
+	}
+	const membership = await context.db.query.member.findFirst({
+		columns: { id: true },
+		where: { organizationId, userId: context.session.user.id },
+	});
+	if (!membership) {
 		throw new ORPCError("FORBIDDEN");
 	}
 	return next({ context: { organizationId } });

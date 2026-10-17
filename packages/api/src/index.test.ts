@@ -7,6 +7,7 @@ import { createRequestLogger } from "evlog";
 import {
 	afterAll,
 	afterEach,
+	beforeEach,
 	describe,
 	expect,
 	expectTypeOf,
@@ -95,6 +96,16 @@ const procedure = organizationProcedure.handler(({ context }) => {
 	return context.organizationId;
 });
 
+beforeEach(() => {
+	vi.spyOn(database.query.member, "findFirst").mockResolvedValue({
+		id: "membership",
+		organizationId: session.session.activeOrganizationId,
+		userId: session.user.id,
+		role: "owner",
+		createdAt,
+	});
+});
+
 afterAll(async () => {
 	await database.$client.end();
 });
@@ -123,6 +134,22 @@ describe("organizationProcedure", () => {
 			).rejects.toMatchObject({ code: "FORBIDDEN" });
 		},
 	);
+
+	it("rejects a removed member even when the cached session still selects the organization", async () => {
+		const findMembership = vi
+			.spyOn(database.query.member, "findFirst")
+			.mockResolvedValue(undefined);
+		await expect(
+			call(procedure, undefined, { context: contextFor(session) }),
+		).rejects.toMatchObject({ code: "FORBIDDEN" });
+		expect(findMembership).toHaveBeenCalledWith({
+			columns: { id: true },
+			where: {
+				organizationId: session.session.activeOrganizationId,
+				userId: session.user.id,
+			},
+		});
+	});
 
 	it("passes the selected organization to downstream handlers", async () => {
 		await expect(
