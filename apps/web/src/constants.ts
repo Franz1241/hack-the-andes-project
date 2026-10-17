@@ -7,6 +7,7 @@ export const INCIDENT_REFETCH_INTERVAL_MS = 60_000;
 export const DEFAULT_INCIDENT_LIMIT_ROWS = 2_000;
 export const DEFAULT_NEWS_LIMIT_ROWS = 50;
 export const NEWS_REFETCH_INTERVAL_MS = 60_000;
+export const NEWS_SKELETON_KEYS = ["lead", "second", "third", "fourth"];
 export const LAST_DAY_DURATION_MS = 86_400_000;
 export const LAST_WEEK_DURATION_MS = 604_800_000;
 export const DEFAULT_SINCE_PRESET = "all";
