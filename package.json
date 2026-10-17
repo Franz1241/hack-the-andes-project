@@ -22,10 +22,12 @@
 		"deploy": "pnpm --filter @hack-the-andes-project/infra deploy",
 		"deploy:server": "pnpm --filter @hack-the-andes-project/infra deploy:server",
 		"deploy:web": "pnpm --filter @hack-the-andes-project/infra deploy:web",
+		"deploy:scraper": "pnpm --filter @hack-the-andes-project/infra deploy:scraper",
 		"deploy:plan": "pnpm --filter @hack-the-andes-project/infra plan",
 		"destroy": "pnpm --filter @hack-the-andes-project/infra destroy",
 		"logs:server": "pnpm --filter @hack-the-andes-project/infra logs:server",
 		"logs:web": "pnpm --filter @hack-the-andes-project/infra logs:web",
+		"logs:scraper": "pnpm --filter @hack-the-andes-project/infra logs:scraper",
 		"infra:login": "pnpm --filter @hack-the-andes-project/infra login",
 		"infra:refresh": "pnpm --filter @hack-the-andes-project/infra refresh",
 		"build:native:android": "pnpm --filter native build:android",
@@ -40,7 +42,7 @@
 		"submit:native:ios": "pnpm --filter native submit:ios",
 		"update:native:preview": "pnpm --filter native update:preview",
 		"update:native:prod": "pnpm --filter native update:prod",
-		"env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./apps/native/ && varlock codegen --path ./packages/db/",
+		"env:generate": "varlock codegen --path ./apps/web/ && varlock codegen --path ./apps/server/ && varlock codegen --path ./apps/native/ && varlock codegen --path ./packages/db/ && varlock codegen --path ./apps/scraper/",
 		"postinstall": "pnpm env:generate"
 	},
 	"dependencies": {

@@ -30,3 +30,14 @@ catalog:
   evlog: ^2.32.0
   hono: ^4.13.7
   vitest: ^5.0.1
+  "@turf/centroid": ^7.4.0
+  "@turf/helpers": ^7.4.0
+  "@types/geojson": ^7946.0.16
+  ai: ^7.0.143
+  "@ai-sdk/typesafe-ai": ^3.0.21
+minimumReleaseAgeExclude:
+  - '@ai-sdk/provider-utils@5.0.62'
+  - '@ai-sdk/provider@4.0.29'
+  - '@ai-sdk/typesafe-ai@3.0.21'
+  - '@ai-sdk/gateway@4.0.116'
+  - ai@7.0.143
