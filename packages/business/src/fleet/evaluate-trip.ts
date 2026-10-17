@@ -28,6 +28,7 @@ export interface EvaluateTripInput {
 	trip: typeof tripTable.$inferSelect;
 	vehicle: typeof vehicleTable.$inferSelect;
 	incidents: HazardIncident[];
+	routeCandidates?: RouteCandidate[];
 	now: Date;
 	log: RequestLogger;
 }
@@ -50,6 +51,7 @@ export async function evaluateTrip({
 	trip,
 	vehicle,
 	incidents,
+	routeCandidates,
 	now,
 	log,
 }: EvaluateTripInput): Promise<EvaluateTripResult> {
@@ -138,7 +140,7 @@ export async function evaluateTrip({
 			origin: vehicleState.position,
 			destination: { lat: trip.destinationLat, lng: trip.destinationLng },
 		};
-		let candidates: RouteCandidate[] | undefined;
+		let candidates = routeCandidates;
 		if (decision.reroute) {
 			failureMessage = "No se pudo recalcular la ruta del viaje.";
 			candidates = await fetchRouteCandidates(routeRequest);

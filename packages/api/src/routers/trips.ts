@@ -2,6 +2,7 @@ import {
 	DEMO_TRIP_SCENARIOS,
 	MS_PER_SECOND,
 } from "@hack-the-andes-project/business/constants";
+import { evaluateTrip } from "@hack-the-andes-project/business/fleet/evaluate-trip";
 import { loadAlertableIncidents } from "@hack-the-andes-project/business/fleet/load-alertable-incidents";
 import { planDemoTrip } from "@hack-the-andes-project/business/fleet/plan-demo-trip";
 import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
@@ -130,7 +131,6 @@ export const tripsRouter = {
 		.output(tripSchema)
 		.handler(async ({ context, input }) => {
 			const selectedVehicle = await context.db.query.vehicle.findFirst({
-				columns: { id: true, lastLat: true, lastLng: true },
 				where: { id: input.vehicleId, organizationId: context.organizationId },
 			});
 			if (
@@ -148,7 +148,7 @@ export const tripsRouter = {
 					vehicleId: input.vehicleId,
 				},
 			});
-			const [primaryRoute] = await fetchRouteCandidates({
+			const routeCandidates = await fetchRouteCandidates({
 				baseUrl: context.osrmBaseUrl,
 				origin: { lat: selectedVehicle.lastLat, lng: selectedVehicle.lastLng },
 				destination: input.destination,
@@ -158,6 +158,7 @@ export const tripsRouter = {
 					cause,
 				});
 			});
+			const [primaryRoute] = routeCandidates;
 			if (!primaryRoute)
 				throw new ORPCError("BAD_REQUEST", { message: ROUTING_FAILED_MESSAGE });
 			const createdAt = new Date();
@@ -208,7 +209,37 @@ export const tripsRouter = {
 					routeDurationS: primaryRoute.durationS,
 				},
 			});
-			return createdTrip;
+			const evaluation = await loadAlertableIncidents(context.db)
+				.then((incidents) =>
+					evaluateTrip({
+						db: context.db,
+						osrmBaseUrl: context.osrmBaseUrl,
+						trip: createdTrip,
+						vehicle: selectedVehicle,
+						incidents,
+						routeCandidates,
+						now: createdAt,
+						log: context.log,
+					}),
+				)
+				.catch((error: unknown) => {
+					// Driver errors carry SQL parameters, so only the error class is logged.
+					context.log.set({
+						fleet: {
+							tripEvaluationError:
+								error instanceof Error ? error.name : "Error",
+						},
+					});
+					return null;
+				});
+			if (!evaluation || evaluation.skipped) return createdTrip;
+			context.log.set({
+				fleet: {
+					alertsCreated: evaluation.alertsCreated,
+					alertsUpdated: evaluation.alertsUpdated,
+				},
+			});
+			return { ...createdTrip, lastEvaluatedAt: createdAt };
 		}),
 	planDemo: organizationProcedure
 		.input(
@@ -251,6 +282,12 @@ export const tripsRouter = {
 				scenario: input.scenario,
 				incidents: await loadAlertableIncidents(context.db),
 			}).catch((cause: unknown) => {
+				context.log.set({
+					fleet: {
+						demoRouteError:
+							cause instanceof Error ? cause.message : String(cause),
+					},
+				});
 				throw new ORPCError("BAD_REQUEST", {
 					message: ROUTING_FAILED_MESSAGE,
 					cause,
