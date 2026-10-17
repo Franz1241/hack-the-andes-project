@@ -16,8 +16,18 @@ import {
 } from "@/constants";
 import { authClient } from "@/lib/auth-client";
 
+interface LoginSearch {
+	mode?: AuthMode;
+}
+
 export const Route = createFileRoute("/login")({
 	head: () => ({ meta: [{ title: "Entrar · Illapa" }] }),
+	validateSearch: (search: Record<string, unknown>): LoginSearch => ({
+		mode:
+			search.mode === "sign-up" || search.mode === "sign-in"
+				? search.mode
+				: undefined,
+	}),
 	beforeLoad: async () => {
 		const session = await authClient.getSession().catch(() => null);
 		if (session?.data) {
@@ -29,7 +39,8 @@ export const Route = createFileRoute("/login")({
 
 function LoginRoute() {
 	const navigate = useNavigate();
-	const [mode, setMode] = useState<AuthMode>("sign-in");
+	const { mode: initialMode } = Route.useSearch();
+	const [mode, setMode] = useState<AuthMode>(initialMode ?? "sign-in");
 
 	return (
 		<AuthShell

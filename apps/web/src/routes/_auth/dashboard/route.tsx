@@ -1,4 +1,6 @@
+import { isDemoAccountEmail } from "@hack-the-andes-project/business/demo-account";
 import { DashboardSidebar } from "@hack-the-andes-project/ui/components/dashboard-sidebar";
+import { DemoBanner } from "@hack-the-andes-project/ui/components/demo-banner";
 import { Separator } from "@hack-the-andes-project/ui/components/separator";
 import {
 	SidebarInset,
@@ -6,7 +8,7 @@ import {
 	SidebarTrigger,
 } from "@hack-the-andes-project/ui/components/sidebar";
 import { useSidebarPreference } from "@hack-the-andes-project/ui/hooks/use-sidebar-preference";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	createFileRoute,
 	Link,
@@ -22,6 +24,7 @@ import {
 	ALERT_REFETCH_INTERVAL_MS,
 	SEEN_ALERTS_STORAGE_PREFIX,
 } from "@/constants";
+import { authClient } from "@/lib/auth-client";
 import { DASHBOARD_NAVIGATION } from "@/lib/dashboard-navigation";
 import { useFleetQueries } from "@/lib/fleet-queries";
 import { m } from "@/paraglide/messages";
@@ -34,7 +37,17 @@ function DashboardLayout() {
 	const { open, setOpen } = useSidebarPreference("illapa-sidebar");
 	const fleetQueries = useFleetQueries();
 	const navigate = useNavigate();
-	const { session } = Route.useRouteContext();
+	const { session, queryClient } = Route.useRouteContext();
+	const leaveDemo = useMutation({
+		retry: false,
+		mutationFn: async () => {
+			const { error } = await authClient.signOut();
+			if (error) throw error;
+			await queryClient.cancelQueries();
+			queryClient.removeQueries();
+			await navigate({ to: "/login", search: { mode: "sign-up" } });
+		},
+	});
 	const alertsQuery = useQuery({
 		...fleetQueries.openAlerts,
 		refetchInterval: ALERT_REFETCH_INTERVAL_MS,
@@ -124,6 +137,18 @@ function DashboardLayout() {
 				preferencesLabel={m.sidebar_preferences()}
 			/>
 			<SidebarInset className="min-w-0 overflow-hidden">
+				{isDemoAccountEmail(session.data?.user.email) ? (
+					<DemoBanner
+						message={m.demo_banner_message()}
+						actionLabel={m.demo_create_account()}
+						pendingLabel={m.demo_leaving()}
+						isPending={leaveDemo.isPending}
+						errorMessage={
+							leaveDemo.isError ? m.demo_sign_out_error() : undefined
+						}
+						onCreateAccount={() => leaveDemo.mutate()}
+					/>
+				) : null}
 				<header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
 					<SidebarTrigger
 						className="md:hidden"
