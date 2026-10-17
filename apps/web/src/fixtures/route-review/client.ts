@@ -23,6 +23,7 @@ import type {
 	VehicleProfileUpdateInput,
 } from "@hack-the-andes-project/api/route-review-schemas";
 import { METERS_PER_KM } from "@hack-the-andes-project/business/constants";
+import { compareRouteCandidates } from "@hack-the-andes-project/business/route-review/ranking";
 import type { RouteRiskLevel } from "@hack-the-andes-project/business/route-review/risk";
 
 import {
@@ -165,10 +166,6 @@ function buildCandidate(
 	};
 }
 
-function peakScore(candidate: RouteReviewCandidate) {
-	return Math.max(...candidate.risk.map((assessment) => assessment.score));
-}
-
 const seededAt = new Date();
 const vehicleDefaults = {
 	organizationId: FIXTURE_ORGANIZATION_ID,
@@ -272,11 +269,7 @@ function evaluate(input: RouteReviewInput): RouteReview {
 	);
 	const [recommendedCandidate] = candidates
 		.filter((candidate) => candidate.eligibility.eligible)
-		.toSorted(
-			(first, second) =>
-				peakScore(first) - peakScore(second) ||
-				first.durationS - second.durationS,
-		);
+		.toSorted(compareRouteCandidates);
 	const review: RouteReview = {
 		id: crypto.randomUUID(),
 		originPlaceId: input.originPlaceId,
