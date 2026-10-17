@@ -38,6 +38,12 @@ export const ROUTE_REVIEW_NOT_FOUND_MESSAGE =
 	"Esta revisión ya no está disponible. Vuelve a revisar la ruta.";
 export const ROUTE_CANDIDATE_NOT_FOUND_MESSAGE =
 	"Esa ruta ya no está entre las alternativas de la revisión.";
+export const TRIP_NOT_PLANNED_MESSAGE =
+	"Solo se pueden iniciar viajes planificados.";
+export const VEHICLE_GPS_REQUIRED_MESSAGE =
+	"Solo puedes iniciar viajes de vehículos conectados por GPS.";
+export const VEHICLE_TRIP_ALREADY_ACTIVE_MESSAGE =
+	"Este vehículo ya tiene un viaje en curso. Complétalo o cancélalo antes de iniciar otro.";
 export const ALERT_NOT_FOUND_MESSAGE = "No encontramos esa alerta.";
 export const ALERT_NOT_OPEN_MESSAGE =
 	"Solo se pueden confirmar alertas abiertas.";
