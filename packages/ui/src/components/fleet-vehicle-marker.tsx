@@ -32,7 +32,7 @@ export function FleetVehicleMarker({
 					onSelect(vehicle.id);
 				}}
 				className={cn(
-					"relative flex size-9 items-center justify-center rounded-full border border-border bg-background text-foreground shadow-md focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
+					"relative flex size-9 items-center justify-center rounded-full border border-border bg-background text-foreground focus-visible:outline-2 focus-visible:outline-ring focus-visible:outline-offset-2",
 					selected && "ring-2 ring-ring",
 				)}
 			>

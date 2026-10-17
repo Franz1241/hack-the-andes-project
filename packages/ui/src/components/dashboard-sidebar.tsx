@@ -51,10 +51,8 @@ export function DashboardSidebar({
 						>
 							<CloudLightningIcon />
 							<span className="flex flex-col gap-0.5">
-								<span className="font-heading text-xl tracking-tight">
-									illapa
-								</span>
-								<span className="text-muted-foreground text-xs">
+								<span className="type-heading">illapa</span>
+								<span className="type-label text-muted-foreground">
 									Inteligencia en ruta
 								</span>
 							</span>
@@ -65,7 +63,9 @@ export function DashboardSidebar({
 			<SidebarSeparator />
 			<SidebarContent>
 				<SidebarGroup>
-					<SidebarGroupLabel>Centro de operaciones · Perú</SidebarGroupLabel>
+					<SidebarGroupLabel className="type-label!">
+						Centro de operaciones · Perú
+					</SidebarGroupLabel>
 					<SidebarGroupContent>
 						<nav aria-label="Navegación principal">
 							<SidebarMenu>
@@ -78,10 +78,11 @@ export function DashboardSidebar({
 											onClick={() => setOpenMobile(false)}
 										>
 											<item.icon />
-											<span>{item.label}</span>
+											<span className="type-label">{item.label}</span>
 										</SidebarMenuButton>
 										{Boolean(item.badgeCount) && (
 											<SidebarMenuBadge
+												className="type-data!"
 												aria-label={`${item.badgeCount} alertas abiertas`}
 											>
 												{item.badgeCount}
@@ -96,7 +97,7 @@ export function DashboardSidebar({
 			</SidebarContent>
 			<SidebarSeparator />
 			<SidebarFooter className="gap-3 p-4">
-				<p className="text-muted-foreground text-xs">
+				<p className="type-label text-muted-foreground">
 					Clima, vías y flota en un solo lugar.
 				</p>
 				<div className="flex min-w-0 items-center justify-between gap-2 [&>button:first-child]:min-w-0 [&>button:first-child]:truncate">

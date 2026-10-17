@@ -119,7 +119,7 @@ function IncidentMapPage() {
 					/>
 					<FieldLabel htmlFor="show-fleet">Mostrar flota</FieldLabel>
 					{showFleet && tripsQuery.isPending && (
-						<span className="text-muted-foreground text-xs">
+						<span className="type-data text-muted-foreground">
 							Cargando rutas…
 						</span>
 					)}
@@ -183,7 +183,7 @@ function IncidentMapPage() {
 				</IncidentMap>
 				{incidentsQuery.isPending && (
 					<output
-						className="pointer-events-none absolute top-3 left-3 flex w-56 flex-col gap-2 border bg-background/95 p-3"
+						className="pointer-events-none absolute top-3 left-3 flex w-56 flex-col gap-2 border border-border bg-popover p-3"
 						aria-label="Cargando incidentes"
 					>
 						<Skeleton className="h-4 w-36" />
@@ -193,7 +193,7 @@ function IncidentMapPage() {
 				)}
 				{incidentsQuery.isSuccess && !incidents.length && (
 					<div className="pointer-events-none absolute inset-x-3 top-3 flex justify-center">
-						<Empty className="max-w-sm border bg-background/95 p-4">
+						<Empty className="max-w-sm border border-border bg-popover p-4">
 							<EmptyHeader>
 								<EmptyTitle>Sin incidentes para estos filtros</EmptyTitle>
 								<EmptyDescription>
@@ -207,7 +207,7 @@ function IncidentMapPage() {
 				)}
 			</div>
 			<footer
-				className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-t bg-card px-4 py-2 text-muted-foreground text-xs"
+				className="type-data flex shrink-0 flex-wrap items-center justify-between gap-2 border-t bg-card px-4 py-2 text-muted-foreground"
 				aria-live="polite"
 			>
 				<span>

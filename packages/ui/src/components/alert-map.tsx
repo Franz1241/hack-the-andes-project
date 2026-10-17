@@ -1,25 +1,24 @@
 import type { Geometry } from "geojson";
+import { useTokenColors } from "../hooks/use-token-colors";
 
 import type { FleetAlert, FleetTrip } from "../lib/fleet";
 import { formatFleetDistance, formatFleetDuration } from "../lib/fleet-format";
-import { INCIDENT_SEVERITY_COLORS } from "../lib/incident-constants";
+import { INCIDENT_SEVERITY_TOKENS } from "../lib/incident-constants";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { FleetMap } from "./fleet-map";
 import { FleetRouteLayer } from "./fleet-route-layer";
 import {
-	FLEET_ALTERNATIVE_ROUTE_COLOR,
 	FLEET_HAZARD_FILL_LAYER_ID,
 	FLEET_HAZARD_LINE_LAYER_ID,
 	FLEET_HAZARD_POINT_LAYER_ID,
 	FLEET_HAZARD_SOURCE_ID,
-	FLEET_ROUTE_COLOR,
 	INCIDENT_FILL_OPACITY_RATIO,
 	INCIDENT_LINE_WIDTH_PX,
 	INCIDENT_POINT_RADIUS_PX,
-	INCIDENT_POINT_STROKE_COLOR,
 	INCIDENT_POINT_STROKE_WIDTH_PX,
 } from "./map-constants";
 import { Layer, Source } from "./map-view";
+import { SeverityBadge } from "./severity";
 
 export interface AlertMapProps {
 	alert: FleetAlert;
@@ -27,6 +26,10 @@ export interface AlertMapProps {
 }
 
 export function AlertMap({ alert, trip }: AlertMapProps) {
+	const tokenColors = useTokenColors([
+		INCIDENT_SEVERITY_TOKENS[alert.severity],
+		"--background",
+	]);
 	const incident = alert.incident;
 	const hazardGeometry: Geometry | null =
 		incident?.geometry ??
@@ -42,14 +45,14 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 		alternative && trip ? alternative.distanceM - trip.routeDistanceM : null;
 	const durationDeltaS =
 		alternative && trip ? alternative.durationS - trip.routeDurationS : null;
-	const hazardColor = INCIDENT_SEVERITY_COLORS[alert.severity];
+	const hazardColor = tokenColors[INCIDENT_SEVERITY_TOKENS[alert.severity]];
 
 	return (
 		<section
 			aria-label={`Detalle de ${alert.title}`}
 			className="flex min-w-0 flex-col gap-3"
 		>
-			<h2 className="font-heading font-medium text-lg">{alert.title}</h2>
+			<h2 className="type-heading">{alert.title}</h2>
 			<FleetMap
 				label="Ruta y riesgo seleccionado"
 				focusKey={`${alert.id}-${trip?.id ?? "no-trip"}`}
@@ -68,7 +71,7 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 						alternative
 					/>
 				)}
-				{hazardGeometry && (
+				{hazardGeometry && hazardColor && tokenColors["--background"] && (
 					<Source
 						id={FLEET_HAZARD_SOURCE_ID}
 						type="geojson"
@@ -105,7 +108,7 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 							paint={{
 								"circle-color": hazardColor,
 								"circle-radius": INCIDENT_POINT_RADIUS_PX,
-								"circle-stroke-color": INCIDENT_POINT_STROKE_COLOR,
+								"circle-stroke-color": tokenColors["--background"],
 								"circle-stroke-width": INCIDENT_POINT_STROKE_WIDTH_PX,
 							}}
 						/>
@@ -113,40 +116,31 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 				)}
 			</FleetMap>
 			<section
-				className="flex flex-wrap gap-4 text-xs"
+				className="type-label flex flex-wrap gap-4"
 				aria-label="Leyenda del mapa"
 			>
 				<span className="flex items-center gap-2">
-					<span
-						className="w-6 border-t-2"
-						style={{ borderColor: FLEET_ROUTE_COLOR }}
-					/>
+					<span className="w-6 border-chart-1 border-t-2" />
 					Ruta del viaje
 				</span>
 				{alternative && (
 					<span className="flex items-center gap-2">
-						<span
-							className="w-6 border-t-2 border-dashed"
-							style={{ borderColor: FLEET_ALTERNATIVE_ROUTE_COLOR }}
-						/>
+						<span className="w-6 border-chart-3 border-t-2 border-dashed" />
 						Ruta alternativa
 					</span>
 				)}
 				<span className="flex items-center gap-2">
-					<span
-						className="size-2 rounded-full"
-						style={{ backgroundColor: hazardColor }}
-					/>
 					Riesgo
+					<SeverityBadge severity={alert.severity} />
 				</span>
 			</section>
 			{!hazardGeometry && (
-				<p className="text-muted-foreground text-sm">
+				<p className="type-body text-muted-foreground">
 					El incidente no tiene una ubicación disponible.
 				</p>
 			)}
 			{!trip && (
-				<p className="text-muted-foreground text-sm">
+				<p className="type-body text-muted-foreground">
 					La ruta original del viaje no está disponible.
 				</p>
 			)}
@@ -154,12 +148,12 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 				<Alert>
 					<AlertTitle>Ruta alternativa disponible</AlertTitle>
 					<AlertDescription>
-						<p>
+						<p className="type-data">
 							{formatFleetDistance(alternative.distanceM)} ·{" "}
 							{formatFleetDuration(alternative.durationS)}
 						</p>
 						{distanceDeltaM !== null && durationDeltaS !== null && (
-							<p>
+							<p className="type-data">
 								Respecto a la ruta del viaje: {distanceDeltaM > 0 ? "+" : ""}
 								{formatFleetDistance(distanceDeltaM)} ·{" "}
 								{durationDeltaS > 0 ? "+" : ""}
@@ -169,7 +163,7 @@ export function AlertMap({ alert, trip }: AlertMapProps) {
 					</AlertDescription>
 				</Alert>
 			) : (
-				<p className="text-muted-foreground text-sm">
+				<p className="type-body text-muted-foreground">
 					No hay una ruta alternativa disponible para esta alerta.
 				</p>
 			)}

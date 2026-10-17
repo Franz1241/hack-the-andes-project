@@ -22,7 +22,7 @@ export function IncidentSummary({
 		<section
 			aria-label="Resumen nacional de incidentes activos"
 			aria-busy={isPending}
-			className="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b bg-muted/30 px-4 py-2 text-xs"
+			className="type-label flex shrink-0 flex-wrap items-center gap-x-5 gap-y-2 border-b bg-muted/30 px-4 py-2"
 		>
 			<span className="text-muted-foreground">
 				Activos en Perú · sin filtros
@@ -34,7 +34,7 @@ export function IncidentSummary({
 					{isPending ? (
 						<Skeleton className="h-4 w-6" />
 					) : (
-						<strong className="font-mono tabular-nums">
+						<strong className="type-data">
 							{isError
 								? "—"
 								: (counts?.find((item) => item.severity === severity)?.count ??

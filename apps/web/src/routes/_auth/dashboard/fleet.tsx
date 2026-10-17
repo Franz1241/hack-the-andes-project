@@ -74,10 +74,8 @@ function FleetPage() {
 		<div className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 md:p-6">
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="flex flex-col gap-2">
-					<h2 className="font-heading font-medium text-xl">
-						Tu flota, en ruta
-					</h2>
-					<p className="text-muted-foreground text-sm">
+					<h2 className="type-title">Tu flota, en ruta</h2>
+					<p className="type-body text-muted-foreground">
 						Posiciones, viajes y llegadas estimadas de tu organización.
 					</p>
 				</div>
@@ -127,7 +125,7 @@ function FleetPage() {
 					{vehicles.some(
 						(vehicle) => vehicle.lastLat === null || vehicle.lastLng === null,
 					) && (
-						<p className="text-muted-foreground text-sm">
+						<p className="type-body text-muted-foreground">
 							Los vehículos sin posición aparecerán en el mapa y podrán iniciar
 							viajes cuando el proveedor envíe su ubicación.
 						</p>
@@ -138,7 +136,7 @@ function FleetPage() {
 				</>
 			)}
 			<section className="flex min-w-0 flex-col gap-3" aria-label="Viajes">
-				<h2 className="font-heading font-medium text-lg">Viajes</h2>
+				<h2 className="type-heading">Viajes</h2>
 				<FleetQueryFeedback
 					isPending={tripsQuery.isPending}
 					isError={tripsQuery.isError}

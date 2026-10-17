@@ -138,7 +138,7 @@ export function IncidentFilters({
 				</Button>
 			</FieldGroup>
 			{Boolean(categories.length) && (
-				<p className="mt-2 text-muted-foreground text-xs">
+				<p className="type-body mt-2 text-muted-foreground">
 					{categories
 						.map((category) => INCIDENT_CATEGORY_LABELS[category])
 						.join(" · ")}

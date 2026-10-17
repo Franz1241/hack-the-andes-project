@@ -5,7 +5,6 @@ export const INCIDENT_FILL_OPACITY_RATIO = 0.22;
 export const INCIDENT_LINE_WIDTH_PX = 3;
 export const INCIDENT_POINT_RADIUS_PX = 6;
 export const INCIDENT_POINT_STROKE_WIDTH_PX = 2;
-export const INCIDENT_POINT_STROKE_COLOR = "#ffffff";
 export const INCIDENT_GEOMETRY_SOURCE_ID = "incidents";
 export const INCIDENT_FILL_LAYER_ID = "incident-areas";
 export const INCIDENT_LINE_LAYER_ID = "incident-lines";
@@ -24,8 +23,6 @@ export const PERU_INITIAL_VIEW_STATE = {
 	zoom: PERU_INITIAL_ZOOM_LEVEL,
 };
 
-export const FLEET_ROUTE_COLOR = "#2563eb";
-export const FLEET_ALTERNATIVE_ROUTE_COLOR = "#7c3aed";
 export const FLEET_ROUTE_WIDTH_PX = 4;
 export const FLEET_ALTERNATIVE_DASH_WIDTH_RATIOS = [2, 2];
 export const FLEET_ROUTE_SOURCE_PREFIX = "fleet-route-";

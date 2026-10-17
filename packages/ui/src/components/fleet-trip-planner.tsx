@@ -158,7 +158,10 @@ export function FleetTripPlanner({
 						}
 						label="Seleccionar destino del viaje"
 					/>
-					<output className="text-muted-foreground text-sm" aria-live="polite">
+					<output
+						className="type-data text-muted-foreground"
+						aria-live="polite"
+					>
 						{destination
 							? `Destino: ${destination.lat.toFixed(FLEET_COORDINATE_FRACTION_DIGITS)}, ${destination.lng.toFixed(FLEET_COORDINATE_FRACTION_DIGITS)}`
 							: "Selecciona un vehículo y marca un punto en el mapa."}

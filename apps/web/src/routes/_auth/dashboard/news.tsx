@@ -51,8 +51,8 @@ function NewsPage() {
 		<div className="mx-auto flex w-full max-w-6xl flex-col gap-6 p-4 md:p-6">
 			<div className="flex flex-wrap items-start justify-between gap-4">
 				<div className="flex flex-col gap-2">
-					<p className="font-heading font-medium text-xl">Actualidad en ruta</p>
-					<p className="max-w-xl text-muted-foreground text-sm">
+					<p className="type-title">Actualidad en ruta</p>
+					<p className="type-body max-w-xl text-muted-foreground">
 						Las últimas noticias sobre clima, emergencias y vías que pueden
 						afectar tu operación en Perú.
 					</p>
@@ -74,7 +74,7 @@ function NewsPage() {
 						? "Todas las noticias"
 						: "Relevantes para tu operación"}
 				</Badge>
-				<span className="text-muted-foreground text-xs">
+				<span className="type-data text-muted-foreground">
 					Hasta {DEFAULT_NEWS_LIMIT_ROWS} noticias recientes
 				</span>
 			</div>

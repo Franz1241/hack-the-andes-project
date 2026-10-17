@@ -2,6 +2,7 @@ import { setWorkerUrl } from "maplibre-gl";
 import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { ComponentProps } from "react";
 import MapLibre from "react-map-gl/maplibre";
+import { cn } from "../lib/utils";
 
 import {
 	MAP_SPANISH_LOCALE,
@@ -38,14 +39,26 @@ export function MapView({
 	...props
 }: MapProps) {
 	return (
-		<MapLibre
-			initialViewState={initialViewState}
-			mapStyle={mapStyle}
-			locale={locale}
-			renderWorldCopies={false}
-			{...props}
+		<div
+			className={cn(
+				"contents",
+				"[&_.maplibregl-ctrl-group]:border! [&_.maplibregl-ctrl-group]:rounded-none! [&_.maplibregl-ctrl-group]:border-border! [&_.maplibregl-ctrl-group]:bg-popover! [&_.maplibregl-ctrl-group]:shadow-none!",
+				"[&_.maplibregl-ctrl-group>button]:rounded-none! [&_.maplibregl-ctrl-group>button]:border-border!",
+				"[&_.maplibregl-ctrl-group>button:focus-visible]:outline-none! [&_.maplibregl-ctrl-group>button:focus-visible]:ring-1! [&_.maplibregl-ctrl-group>button:focus-visible]:ring-inset! [&_.maplibregl-ctrl-group>button:focus-visible]:ring-ring! [&_.maplibregl-ctrl-group>button:hover]:bg-accent!",
+				"[&_.maplibregl-ctrl-icon]:grayscale dark:[&_.maplibregl-ctrl-icon]:invert",
+				"[&_.maplibregl-popup-close-button]:type-label! [&_.maplibregl-popup-close-button]:rounded-none! [&_.maplibregl-popup-close-button]:bg-popover! [&_.maplibregl-popup-close-button]:p-1! [&_.maplibregl-popup-close-button]:text-popover-foreground!",
+				"[&_.maplibregl-popup-close-button:focus-visible]:outline-none! [&_.maplibregl-popup-close-button:focus-visible]:ring-1! [&_.maplibregl-popup-close-button:focus-visible]:ring-inset! [&_.maplibregl-popup-close-button:focus-visible]:ring-ring! [&_.maplibregl-popup-close-button:hover]:bg-accent!",
+			)}
 		>
-			{children}
-		</MapLibre>
+			<MapLibre
+				initialViewState={initialViewState}
+				mapStyle={mapStyle}
+				locale={locale}
+				renderWorldCopies={false}
+				{...props}
+			>
+				{children}
+			</MapLibre>
+		</div>
 	);
 }

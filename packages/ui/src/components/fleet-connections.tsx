@@ -36,8 +36,8 @@ export function FleetConnections({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="flex flex-col gap-2">
-						<p>{connection.vehicleCount} vehículos</p>
-						<p className="text-muted-foreground text-xs">
+						<p className="type-data">{connection.vehicleCount} vehículos</p>
+						<p className="type-body text-muted-foreground">
 							Última sincronización:{" "}
 							{connection.lastSyncAt ? (
 								<DateTime value={connection.lastSyncAt} />
@@ -46,7 +46,10 @@ export function FleetConnections({
 							)}
 						</p>
 						{connection.lastError && (
-							<p role="alert" className="break-words text-destructive text-sm">
+							<p
+								role="alert"
+								className="type-body break-words border border-destructive bg-destructive p-2 text-destructive-foreground"
+							>
 								{connection.lastError}
 							</p>
 						)}

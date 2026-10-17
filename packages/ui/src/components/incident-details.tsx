@@ -36,30 +36,34 @@ export function IncidentDetails({ incident, onClose }: IncidentDetailsProps) {
 				</SheetHeader>
 				{incident && (
 					<div className="flex flex-col gap-5 px-4 pb-6">
-						<p className="whitespace-pre-line text-sm leading-relaxed">
+						<p className="type-body whitespace-pre-line">
 							{incident.description ??
 								"La fuente no proporcionó una descripción adicional."}
 						</p>
-						<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-3 text-xs">
-							<dt className="text-muted-foreground">Código de vía</dt>
+						<dl className="type-data grid grid-cols-[auto_1fr] gap-x-4 gap-y-3">
+							<dt className="type-label text-muted-foreground">
+								Código de vía
+							</dt>
 							<dd>{incident.roadCode ?? "No informado"}</dd>
-							<dt className="text-muted-foreground">Carretera</dt>
+							<dt className="type-label text-muted-foreground">Carretera</dt>
 							<dd>{incident.roadName ?? "No informada"}</dd>
-							<dt className="text-muted-foreground">Kilómetro</dt>
+							<dt className="type-label text-muted-foreground">Kilómetro</dt>
 							<dd>{incident.roadKm ?? "No informado"}</dd>
-							<dt className="text-muted-foreground">Tránsito</dt>
+							<dt className="type-label text-muted-foreground">Tránsito</dt>
 							<dd className="capitalize">
 								{incident.roadStatus ?? "No informado"}
 							</dd>
-							<dt className="text-muted-foreground">Región</dt>
+							<dt className="type-label text-muted-foreground">Región</dt>
 							<dd>{incident.region ?? "No informada"}</dd>
-							<dt className="text-muted-foreground">Provincia</dt>
+							<dt className="type-label text-muted-foreground">Provincia</dt>
 							<dd>{incident.provincia ?? "No informada"}</dd>
-							<dt className="text-muted-foreground">Distrito</dt>
+							<dt className="type-label text-muted-foreground">Distrito</dt>
 							<dd>{incident.distrito ?? "No informado"}</dd>
-							<dt className="text-muted-foreground">Fuente</dt>
+							<dt className="type-label text-muted-foreground">Fuente</dt>
 							<dd className="break-words">{incident.source}</dd>
-							<dt className="text-muted-foreground">Último cambio</dt>
+							<dt className="type-label text-muted-foreground">
+								Último cambio
+							</dt>
 							<dd>
 								<DateTime value={incident.lastChangedAt} />
 							</dd>

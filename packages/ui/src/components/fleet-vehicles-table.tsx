@@ -33,7 +33,7 @@ export function FleetVehiclesTable({ vehicles }: FleetVehiclesTableProps) {
 			<TableBody>
 				{vehicles.map((vehicle) => (
 					<TableRow key={vehicle.id}>
-						<TableCell className="font-medium">{vehicle.name}</TableCell>
+						<TableCell className="type-label">{vehicle.name}</TableCell>
 						<TableCell>{vehicle.plate ?? "Sin placa"}</TableCell>
 						<TableCell>
 							{vehicle.lastSpeedKmh === null

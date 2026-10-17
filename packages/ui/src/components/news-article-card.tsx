@@ -56,17 +56,17 @@ export function NewsArticleCard({ article }: NewsArticleCardProps) {
 				</CardTitle>
 			</CardHeader>
 			<CardContent className="flex-1">
-				<p className="text-muted-foreground leading-relaxed">
+				<p className="type-body text-muted-foreground">
 					{article.excerpt ??
 						"Abre la noticia para leer la información completa en la fuente."}
 				</p>
 			</CardContent>
 			<CardFooter className="flex-wrap justify-between gap-2 text-muted-foreground">
-				<span>{article.region ?? "Perú"}</span>
+				<span className="type-label">{article.region ?? "Perú"}</span>
 				{article.publishedAt ? (
 					<DateTime value={article.publishedAt} />
 				) : (
-					<span>Fecha no disponible</span>
+					<span className="type-data">Fecha no disponible</span>
 				)}
 			</CardFooter>
 		</Card>

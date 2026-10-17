@@ -44,8 +44,8 @@ export function FleetOverlay({ vehicles, trips }: FleetOverlayProps) {
 						closeOnClick={false}
 						onClose={() => setSelectedVehicleId(undefined)}
 					>
-						<div className="flex flex-col gap-1 p-2 text-black text-xs">
-							<strong>{selectedVehicle.name}</strong>
+						<div className="type-data flex flex-col gap-2 border border-border bg-popover p-3 pr-8 text-popover-foreground">
+							<strong className="type-label">{selectedVehicle.name}</strong>
 							<span>
 								{selectedVehicle.plate ?? "Sin placa"} ·{" "}
 								{selectedVehicle.lastSpeedKmh === null

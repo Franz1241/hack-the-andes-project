@@ -22,10 +22,10 @@ export const INCIDENT_SEVERITY_LABELS = {
 	info: "Informativa",
 };
 
-export const INCIDENT_SEVERITY_COLORS = {
-	critical: "#e11d48",
-	warning: "#d97706",
-	info: "#0284c7",
+export const INCIDENT_SEVERITY_TOKENS = {
+	critical: "--risk-critical",
+	warning: "--risk-high",
+	info: "--info",
 } satisfies Record<keyof typeof INCIDENT_SEVERITY_LABELS, string>;
 
 export const INCIDENT_SEVERITY_OPTIONS: (keyof typeof INCIDENT_SEVERITY_LABELS)[] =

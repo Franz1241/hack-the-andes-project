@@ -15,11 +15,11 @@ export function MapLegend({ className }: MapLegendProps) {
 		<section
 			aria-label="Leyenda de severidad"
 			className={cn(
-				"flex flex-wrap items-center gap-3 border bg-background/95 px-3 py-2 text-xs shadow-sm backdrop-blur-sm",
+				"type-label flex flex-wrap items-center gap-3 border border-border bg-popover px-3 py-2 backdrop-blur-sm",
 				className,
 			)}
 		>
-			<span className="font-medium text-muted-foreground">Severidad</span>
+			<span className="text-muted-foreground">Severidad</span>
 			{INCIDENT_SEVERITY_OPTIONS.map((severity) => (
 				<span key={severity} className="flex items-center gap-1.5">
 					<SeverityDot severity={severity} />
