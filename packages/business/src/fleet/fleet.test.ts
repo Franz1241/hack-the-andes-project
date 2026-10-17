@@ -8,6 +8,7 @@ import { createLogger } from "evlog";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+	MS_PER_SECOND,
 	POSITION_RETENTION_BATCH_SIZE_ROWS,
 	POSITION_RETENTION_MS,
 } from "../constants";
@@ -20,6 +21,8 @@ import {
 	MATUCANA,
 	pointIncident,
 } from "../hazards/test-fixtures";
+import { DEMO_VEHICLES } from "../providers/constants";
+import { type DemoTrip, simulateDemoPositions } from "../providers/demo";
 import { evaluateTrip } from "./evaluate-trip";
 import { pruneVehiclePositions } from "./prune-positions";
 import { resolveObsoleteAlerts } from "./resolve-obsolete-alerts";
@@ -94,6 +97,12 @@ const activeTrip: typeof trip.$inferSelect = {
 	updatedAt: recordedAt,
 };
 
+function driverValue(value: unknown) {
+	if (value instanceof Date)
+		return value.toISOString().replace("T", " ").replace("Z", "");
+	return typeof value === "boolean" ? Number(value) : value;
+}
+
 async function testDatabase() {
 	return createDb({
 		host: "test",
@@ -152,18 +161,7 @@ describe("syncConnection with real Drizzle queries", () => {
 		let failCheckpoint = true;
 		query.mockImplementation(async (options) => {
 			if (options.rowsAsArray) {
-				return [
-					[
-						Object.values(storedVehicle).map((value) =>
-							value instanceof Date
-								? value.toISOString().replace("T", " ").replace("Z", "")
-								: typeof value === "boolean"
-									? Number(value)
-									: value,
-						),
-					],
-					[],
-				];
+				return [[Object.values(storedVehicle).map(driverValue)], []];
 			}
 			if (options.sql.includes("if(") && failCheckpoint) {
 				failCheckpoint = false;
@@ -232,6 +230,82 @@ describe("syncConnection with real Drizzle queries", () => {
 			JSON.stringify([result, query.mock.calls, logged.mock.calls]),
 		).not.toContain("private-token");
 		expect(level).toHaveBeenCalledWith("error");
+	});
+
+	it("moves a demo truck along its active trip without contacting a provider", async () => {
+		const encryptionKey = generateEncryptionKeyBase64();
+		const encryptedCredentials = await encryptJson(encryptionKey, {
+			provider: "demo",
+		});
+		const fetchMock = vi.fn<typeof fetch>();
+		vi.stubGlobal("fetch", fetchMock);
+		const demoVehicle = { ...storedVehicle, externalId: "demo-callao" };
+		const demoTrip: DemoTrip = {
+			routeGeometry: CARRETERA_CENTRAL,
+			routeDistanceM: LIMA_HUANCAYO_ROUTE.distanceM,
+			routeDurationS: LIMA_HUANCAYO_ROUTE.durationS,
+			destinationLat: HUANCAYO[1],
+			destinationLng: HUANCAYO[0],
+			createdAt: new Date(now.getTime() - 600 * MS_PER_SECOND),
+		};
+		query.mockImplementation(async (options) => {
+			if (!options.rowsAsArray) return [{ affectedRows: 1 }, []];
+			if (options.sql.includes("left join")) {
+				return [
+					[
+						[
+							demoVehicle.externalId,
+							demoVehicle.lastLat,
+							demoVehicle.lastLng,
+							...Object.values(demoTrip).map(driverValue),
+						],
+					],
+					[],
+				];
+			}
+			return [[Object.values(demoVehicle).map(driverValue)], []];
+		});
+		const result = await syncConnection({
+			db: await testDatabase(),
+			encryptionKey,
+			connection: { ...connection, provider: "demo", encryptedCredentials },
+			now,
+			log: createLogger(),
+		});
+		expect(result).toMatchObject({
+			ok: true,
+			vehiclesSynced: DEMO_VEHICLES.length,
+			positionsInserted: 1,
+		});
+		expect(fetchMock).not.toHaveBeenCalled();
+		const fleetQuery = query.mock.calls.find(([options]) =>
+			options.sql.includes("left join"),
+		);
+		expect(fleetQuery?.[1]).toEqual(
+			expect.arrayContaining(["active", connection.id]),
+		);
+		const [expectedPosition] = simulateDemoPositions(
+			[
+				{
+					externalId: demoVehicle.externalId,
+					lastLat: demoVehicle.lastLat,
+					lastLng: demoVehicle.lastLng,
+					activeTrip: demoTrip,
+				},
+			],
+			now,
+		);
+		const historyWrite = query.mock.calls.find(([options]) =>
+			options.sql.startsWith("insert into `hack_the_andes_vehicle_position`"),
+		);
+		expect(historyWrite?.[1]).toEqual(
+			expect.arrayContaining([
+				expectedPosition?.lat,
+				expectedPosition?.lng,
+				expectedPosition?.speedKmh,
+			]),
+		);
+		expect(expectedPosition?.lat).not.toBe(demoVehicle.lastLat);
 	});
 });
 
