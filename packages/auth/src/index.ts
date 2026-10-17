@@ -1,5 +1,6 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { expo } from "@better-auth/expo";
+import { MIN_PASSWORD_LENGTH_CHARS } from "@hack-the-andes-project/business/constants";
 import type { Database } from "@hack-the-andes-project/db";
 import * as schema from "@hack-the-andes-project/db/schema/auth";
 import { betterAuth } from "better-auth";
@@ -42,6 +43,7 @@ export function createAuth(env: AuthConfig, database: Database) {
 		],
 		emailAndPassword: {
 			enabled: true,
+			minPasswordLength: MIN_PASSWORD_LENGTH_CHARS,
 			password: { hash: hashPassword, verify: verifyPassword },
 		},
 		session: {
