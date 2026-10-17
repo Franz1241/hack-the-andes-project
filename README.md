@@ -4,7 +4,7 @@ pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (
 
 ## Product docs
 
-[Project brief](docs/project_brief.md)
+[Project brief](docs/project_brief.md) · [MVP PRD](docs/prd.md)
 
 ## Setup
 
