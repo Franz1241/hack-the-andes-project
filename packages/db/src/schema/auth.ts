@@ -6,10 +6,17 @@ import {
 	int,
 	text,
 	timestamp,
+	uniqueIndex,
 	varchar,
 } from "drizzle-orm/mysql-core";
 
 import { mysqlTable } from "./_table";
+import {
+	ID_LENGTH_CHARS,
+	STATUS_LENGTH_CHARS,
+	TEXT_LENGTH_CHARS,
+	TIMESTAMP_PRECISION_DIGITS,
+} from "./constants";
 
 // No FOREIGN KEY constraints: the database is shared with other projects, so
 // relationships live in drizzle relations only and join columns get indexes.
@@ -39,8 +46,14 @@ export const session = mysqlTable(
 		ipAddress: text("ip_address"),
 		userAgent: text("user_agent"),
 		userId: varchar("user_id", { length: 36 }).notNull(),
+		activeOrganizationId: varchar("active_organization_id", {
+			length: ID_LENGTH_CHARS,
+		}),
 	},
-	(table) => [index("session_userId_idx").on(table.userId)],
+	(table) => [
+		index("session_userId_idx").on(table.userId),
+		index("session_activeOrganizationId_idx").on(table.activeOrganizationId),
+	],
 );
 
 export const account = mysqlTable(
@@ -91,8 +104,70 @@ export const rateLimit = mysqlTable("rate_limit", {
 	lastRequest: bigint("last_request", { mode: "number" }).notNull(),
 });
 
+export const organization = mysqlTable("organization", {
+	id: varchar("id", { length: ID_LENGTH_CHARS }).primaryKey(),
+	name: varchar("name", { length: TEXT_LENGTH_CHARS }).notNull(),
+	slug: varchar("slug", { length: TEXT_LENGTH_CHARS }).notNull().unique(),
+	logo: text("logo"),
+	metadata: text("metadata"),
+	createdAt: timestamp("created_at", { fsp: TIMESTAMP_PRECISION_DIGITS })
+		.defaultNow()
+		.notNull(),
+});
+
+export const member = mysqlTable(
+	"member",
+	{
+		id: varchar("id", { length: ID_LENGTH_CHARS }).primaryKey(),
+		organizationId: varchar("organization_id", {
+			length: ID_LENGTH_CHARS,
+		}).notNull(),
+		userId: varchar("user_id", { length: ID_LENGTH_CHARS }).notNull(),
+		role: varchar("role", { length: TEXT_LENGTH_CHARS })
+			.default("member")
+			.notNull(),
+		createdAt: timestamp("created_at", { fsp: TIMESTAMP_PRECISION_DIGITS })
+			.defaultNow()
+			.notNull(),
+	},
+	(table) => [
+		uniqueIndex("member_organizationId_userId_idx").on(
+			table.organizationId,
+			table.userId,
+		),
+		index("member_userId_idx").on(table.userId),
+	],
+);
+
+export const invitation = mysqlTable(
+	"invitation",
+	{
+		id: varchar("id", { length: ID_LENGTH_CHARS }).primaryKey(),
+		organizationId: varchar("organization_id", {
+			length: ID_LENGTH_CHARS,
+		}).notNull(),
+		email: varchar("email", { length: TEXT_LENGTH_CHARS }).notNull(),
+		role: varchar("role", { length: TEXT_LENGTH_CHARS }),
+		status: varchar("status", { length: STATUS_LENGTH_CHARS })
+			.default("pending")
+			.notNull(),
+		expiresAt: timestamp("expires_at", {
+			fsp: TIMESTAMP_PRECISION_DIGITS,
+		}).notNull(),
+		createdAt: timestamp("created_at", { fsp: TIMESTAMP_PRECISION_DIGITS })
+			.defaultNow()
+			.notNull(),
+		inviterId: varchar("inviter_id", { length: ID_LENGTH_CHARS }).notNull(),
+	},
+	(table) => [
+		index("invitation_organizationId_idx").on(table.organizationId),
+		index("invitation_email_idx").on(table.email),
+		index("invitation_inviterId_idx").on(table.inviterId),
+	],
+);
+
 export const authRelations = defineRelationsPart(
-	{ user, session, account, verification },
+	{ user, session, account, verification, organization, member, invitation },
 	(r) => ({
 		user: {
 			sessions: r.many.session({
@@ -103,16 +178,58 @@ export const authRelations = defineRelationsPart(
 				from: r.user.id,
 				to: r.account.userId,
 			}),
+			members: r.many.member({
+				from: r.user.id,
+				to: r.member.userId,
+			}),
+			invitations: r.many.invitation({
+				from: r.user.id,
+				to: r.invitation.inviterId,
+			}),
 		},
 		session: {
 			user: r.one.user({
 				from: r.session.userId,
 				to: r.user.id,
 			}),
+			activeOrganization: r.one.organization({
+				from: r.session.activeOrganizationId,
+				to: r.organization.id,
+			}),
 		},
 		account: {
 			user: r.one.user({
 				from: r.account.userId,
+				to: r.user.id,
+			}),
+		},
+		organization: {
+			members: r.many.member({
+				from: r.organization.id,
+				to: r.member.organizationId,
+			}),
+			invitations: r.many.invitation({
+				from: r.organization.id,
+				to: r.invitation.organizationId,
+			}),
+		},
+		member: {
+			organization: r.one.organization({
+				from: r.member.organizationId,
+				to: r.organization.id,
+			}),
+			user: r.one.user({
+				from: r.member.userId,
+				to: r.user.id,
+			}),
+		},
+		invitation: {
+			organization: r.one.organization({
+				from: r.invitation.organizationId,
+				to: r.organization.id,
+			}),
+			inviter: r.one.user({
+				from: r.invitation.inviterId,
 				to: r.user.id,
 			}),
 		},
