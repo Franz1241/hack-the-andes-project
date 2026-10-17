@@ -1,3 +1,5 @@
+import { setWorkerUrl } from "maplibre-gl";
+import workerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url";
 import type { ComponentProps } from "react";
 import MapLibre from "react-map-gl/maplibre";
 
@@ -7,6 +9,9 @@ import {
 } from "./map-constants";
 
 import "maplibre-gl/dist/maplibre-gl.css";
+
+// MapLibre 6 cannot locate its worker after bundling; Vite must emit the worker URL.
+setWorkerUrl(workerUrl);
 
 export type {
 	LayerProps,
