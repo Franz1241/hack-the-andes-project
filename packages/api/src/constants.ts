@@ -5,6 +5,7 @@ export const SINGLE_RESULT_LIMIT_ROWS = 1;
 export const VEHICLE_IMPORT_BATCH_SIZE_ROWS = 250;
 export const CONNECTION_STATUS_ACTIVE = "active";
 export const CONNECTION_STATUS_ERROR = "error";
+export const TRIP_STATUS_PLANNED = "planned";
 export const TRIP_STATUS_ACTIVE = "active";
 export const TRIP_STATUS_CANCELLED = "cancelled";
 export const TRIP_STATUS_COMPLETED = "completed";
@@ -28,6 +29,15 @@ export const DEMO_CLEAR_ROUTE_NOT_FOUND_MESSAGE =
 export const TRIP_NOT_FOUND_MESSAGE = "No encontramos ese viaje.";
 export const TRIP_NOT_ACTIVE_MESSAGE =
 	"Solo se pueden cancelar o completar viajes activos.";
+export const SAME_ORIGIN_AND_DESTINATION_MESSAGE =
+	"Elige un destino distinto del origen.";
+export const VEHICLE_NOT_FOUND_MESSAGE = "No encontramos ese vehículo.";
+export const VEHICLE_PROFILE_REQUIRED_MESSAGE =
+	"Indica el tipo de vehículo y sus ejes antes de revisar la ruta.";
+export const ROUTE_REVIEW_NOT_FOUND_MESSAGE =
+	"Esta revisión ya no está disponible. Vuelve a revisar la ruta.";
+export const ROUTE_CANDIDATE_NOT_FOUND_MESSAGE =
+	"Esa ruta ya no está entre las alternativas de la revisión.";
 export const ALERT_NOT_FOUND_MESSAGE = "No encontramos esa alerta.";
 export const ALERT_NOT_OPEN_MESSAGE =
 	"Solo se pueden confirmar alertas abiertas.";
