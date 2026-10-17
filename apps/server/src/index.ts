@@ -213,6 +213,9 @@ app.use("/*", async (c, next) => {
 });
 
 app.post(DEMO_RESET_PATH, async (context) => {
+	if (!ENV.DEMO_RESET_SECRET) {
+		return context.notFound();
+	}
 	if (
 		!verifyDemoResetSecret(
 			context.req.header(DEMO_RESET_SECRET_HEADER),
