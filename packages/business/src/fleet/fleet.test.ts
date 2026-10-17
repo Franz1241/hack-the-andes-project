@@ -484,3 +484,36 @@ it("prunes expired position history in a bounded batch without deleting vehicle 
 		POSITION_RETENTION_BATCH_SIZE_ROWS,
 	]);
 });
+
+it("batches hazard upserts without changing acknowledged or resolved states", async () => {
+	const hazards = Array.from({ length: 251 }, (_, index) =>
+		pointIncident(`hazard-${index}`, MATUCANA),
+	);
+	query.mockImplementation(async (options) => [
+		options.rowsAsArray
+			? hazards.map((hazard) => [hazard.id])
+			: { affectedRows: 1 },
+		[],
+	]);
+	const result = await evaluateTrip({
+		db: await testDatabase(),
+		osrmBaseUrl: "https://osrm.test",
+		trip: activeTrip,
+		vehicle: storedVehicle,
+		incidents: hazards,
+		now,
+		log: createLogger(),
+	});
+	const writes = query.mock.calls.filter(([options]) =>
+		options.sql.startsWith("insert into `hack_the_andes_alert`"),
+	);
+	expect(writes).toHaveLength(2);
+	expect(result).toMatchObject({
+		ok: true,
+		alertsUpdated: 251,
+		alertsCreated: 0,
+	});
+	expect(writes[0]?.[0].sql.split("on duplicate key update")[1]).not.toMatch(
+		/status|acknowledged_at|resolved_at/,
+	);
+});
