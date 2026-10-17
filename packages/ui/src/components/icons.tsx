@@ -1,6 +1,7 @@
 export {
 	ArrowUpIcon,
 	BellIcon,
+	ChevronRightIcon,
 	CloudLightningIcon,
 	ExternalLinkIcon,
 	EyeIcon,
@@ -9,8 +10,11 @@ export {
 	MapPinIcon,
 	Moon,
 	NewspaperIcon,
+	PlusIcon,
+	RouteIcon,
 	SettingsIcon,
 	Sun,
+	TriangleAlertIcon,
 	TruckIcon,
 } from "lucide-react";
 export {
