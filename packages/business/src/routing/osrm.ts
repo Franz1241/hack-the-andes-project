@@ -4,6 +4,7 @@ import { z } from "zod";
 import {
 	MIN_ROUTE_COORDINATES_COUNT,
 	ROUTING_REQUEST_TIMEOUT_MS,
+	ROUTING_USER_AGENT,
 } from "../constants";
 import type { LatLng, RouteCandidate } from "../hazards/types";
 
@@ -41,7 +42,10 @@ export async function fetchRouteCandidates({
 }: FetchRouteCandidatesInput): Promise<RouteCandidate[]> {
 	const coordinates = `${origin.lng},${origin.lat};${destination.lng},${destination.lat}`;
 	const url = `${baseUrl.replace(/\/$/, "")}/route/v1/driving/${coordinates}?alternatives=true&overview=full&geometries=geojson&steps=false`;
+	// The public OSRM server answers 403 to requests without a User-Agent, and
+	// the Workers fetch sends none by default.
 	const response = await fetchImpl(url, {
+		headers: { "User-Agent": ROUTING_USER_AGENT },
 		signal: AbortSignal.timeout(ROUTING_REQUEST_TIMEOUT_MS),
 	});
 	if (!response.ok) {
