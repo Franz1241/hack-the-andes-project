@@ -92,7 +92,7 @@ export default function DemoRequestDialog({
 				</DialogHeader>
 				{status === "sent" ? (
 					<p
-						className="type-body border border-border bg-muted p-4 text-foreground"
+						className="type-body rounded-lg border border-border bg-muted p-4 text-foreground"
 						role="status"
 					>
 						Recibimos tu solicitud. Pronto nos pondremos en contacto contigo.
@@ -143,7 +143,10 @@ export default function DemoRequestDialog({
 					>
 						<FieldGroup className="gap-4">
 							<Field data-invalid={validationError?.field === "name"}>
-								<FieldLabel className="type-label" htmlFor={`${formId}-name`}>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-name`}
+								>
 									Nombre
 								</FieldLabel>
 								<Input
@@ -164,7 +167,7 @@ export default function DemoRequestDialog({
 							</Field>
 							<Field data-invalid={validationError?.field === "company"}>
 								<FieldLabel
-									className="type-label"
+									className="font-medium font-sans text-sm normal-case tracking-normal"
 									htmlFor={`${formId}-company`}
 								>
 									Empresa (opcional)
@@ -185,7 +188,10 @@ export default function DemoRequestDialog({
 								/>
 							</Field>
 							<Field data-invalid={validationError?.field === "phone"}>
-								<FieldLabel className="type-label" htmlFor={`${formId}-phone`}>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-phone`}
+								>
 									Teléfono
 								</FieldLabel>
 								<Input
@@ -205,7 +211,10 @@ export default function DemoRequestDialog({
 								/>
 							</Field>
 							<Field data-invalid={validationError?.field === "email"}>
-								<FieldLabel className="type-label" htmlFor={`${formId}-email`}>
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor={`${formId}-email`}
+								>
 									Correo
 								</FieldLabel>
 								<Input

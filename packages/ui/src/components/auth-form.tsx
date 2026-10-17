@@ -128,7 +128,10 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 					<FieldGroup>
 						{isSignUp && (
 							<Field data-invalid={Boolean(fieldErrors.name)}>
-								<FieldLabel className="type-label" htmlFor="auth-name">
+								<FieldLabel
+									className="font-medium font-sans text-sm normal-case tracking-normal"
+									htmlFor="auth-name"
+								>
 									Nombre
 								</FieldLabel>
 								<Input
@@ -145,7 +148,10 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 							</Field>
 						)}
 						<Field data-invalid={Boolean(fieldErrors.email)}>
-							<FieldLabel className="type-label" htmlFor="auth-email">
+							<FieldLabel
+								className="font-medium font-sans text-sm normal-case tracking-normal"
+								htmlFor="auth-email"
+							>
 								Correo electrónico
 							</FieldLabel>
 							<Input
@@ -162,7 +168,10 @@ export function AuthForm({ mode, onModeChange, onSubmit }: AuthFormProps) {
 							</FieldError>
 						</Field>
 						<Field data-invalid={Boolean(fieldErrors.password)}>
-							<FieldLabel className="type-label" htmlFor="auth-password">
+							<FieldLabel
+								className="font-medium font-sans text-sm normal-case tracking-normal"
+								htmlFor="auth-password"
+							>
 								Contraseña
 							</FieldLabel>
 							<PasswordInput

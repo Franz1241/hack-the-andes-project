@@ -24,7 +24,7 @@ export function PasswordInput({
 	return (
 		<InputGroup
 			className={cn(
-				"text-foreground has-[[data-slot=input-group-control]:focus-visible]:ring-ring!",
+				"rounded-md text-foreground has-[[data-slot=input-group-control]:focus-visible]:ring-ring!",
 				groupClassName,
 			)}
 		>

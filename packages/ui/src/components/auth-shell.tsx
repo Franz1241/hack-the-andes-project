@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
-
-import { TopoBackground } from "./contour-art";
 import { BellIcon, CloudLightningIcon, MapIcon, TruckIcon } from "./icons";
+import { RainStreaks, StarRiver } from "./mayu-art";
 
 const AUTH_HIGHLIGHTS = [
 	{
@@ -27,7 +26,7 @@ const AUTH_HIGHLIGHTS = [
 function BrandMark() {
 	return (
 		<span className="relative flex items-center gap-3">
-			<span className="flex size-9 items-center justify-center text-brand-flame">
+			<span className="flex size-9 items-center justify-center text-brand-river">
 				<CloudLightningIcon aria-hidden className="size-5" />
 			</span>
 			<span className="type-title">ILLAPA</span>
@@ -44,7 +43,8 @@ export function AuthShell({ children, headerActions }: AuthShellProps) {
 	return (
 		<div className="grid min-h-svh lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)]">
 			<aside className="dark relative hidden overflow-hidden border-border border-r bg-background p-12 text-foreground lg:flex lg:flex-col lg:justify-between lg:gap-12">
-				<TopoBackground className="text-foreground/5" />
+				<StarRiver className="opacity-50" />
+				<RainStreaks className="text-foreground/10" />
 				<BrandMark />
 				<div className="relative max-w-lg">
 					<h1 className="type-title text-balance">
@@ -56,11 +56,11 @@ export function AuthShell({ children, headerActions }: AuthShellProps) {
 					<ul className="mt-12 flex flex-col gap-7">
 						{AUTH_HIGHLIGHTS.map(({ icon: Icon, title, description }) => (
 							<li key={title} className="flex gap-4">
-								<span className="flex size-9 shrink-0 items-center justify-center border border-border text-foreground">
+								<span className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border text-foreground">
 									<Icon aria-hidden className="size-4" />
 								</span>
 								<div>
-									<p className="type-label">{title}</p>
+									<p className="font-medium font-sans text-sm">{title}</p>
 									<p className="type-body mt-2 text-pretty text-muted-foreground">
 										{description}
 									</p>
