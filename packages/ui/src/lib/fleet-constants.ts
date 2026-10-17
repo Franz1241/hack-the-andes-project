@@ -1,4 +1,5 @@
 import { GEOTAB_DEFAULT_SERVER } from "@hack-the-andes-project/business/providers/constants";
+import type { GpsProviderKind } from "@hack-the-andes-project/business/providers/types";
 
 import type { FleetAlert, FleetTrip, FleetVehicle } from "./fleet";
 
@@ -19,38 +20,44 @@ export interface CredentialField {
 	defaultValue?: string;
 }
 
-export const GEOTAB_CREDENTIAL_FIELDS: CredentialField[] = [
-	{
-		name: "server",
-		label: "Servidor",
-		type: "text",
-		autoComplete: "off",
-		defaultValue: GEOTAB_DEFAULT_SERVER,
-	},
-	{
-		name: "database",
-		label: "Base de datos",
-		type: "text",
-		autoComplete: "off",
-	},
-	{
-		name: "userName",
-		label: "Usuario",
-		type: "text",
-		autoComplete: "username",
-	},
-	{
-		name: "password",
-		label: "Contraseña",
-		type: "password",
-		autoComplete: "current-password",
-	},
-];
-export const SAMSARA_CREDENTIAL_FIELDS: CredentialField[] = [
-	{
-		name: "apiToken",
-		label: "Token de API",
-		type: "password",
-		autoComplete: "off",
-	},
-];
+export const CREDENTIAL_FIELDS_BY_PROVIDER: Record<
+	GpsProviderKind,
+	CredentialField[]
+> = {
+	geotab: [
+		{
+			name: "server",
+			label: "Servidor",
+			type: "text",
+			autoComplete: "off",
+			defaultValue: GEOTAB_DEFAULT_SERVER,
+		},
+		{
+			name: "database",
+			label: "Base de datos",
+			type: "text",
+			autoComplete: "off",
+		},
+		{
+			name: "userName",
+			label: "Usuario",
+			type: "text",
+			autoComplete: "username",
+		},
+		{
+			name: "password",
+			label: "Contraseña",
+			type: "password",
+			autoComplete: "current-password",
+		},
+	],
+	samsara: [
+		{
+			name: "apiToken",
+			label: "Token de API",
+			type: "password",
+			autoComplete: "off",
+		},
+	],
+	demo: [],
+};
