@@ -2,6 +2,7 @@ import { createTypeSafeAi } from "@ai-sdk/typesafe-ai";
 import type {
 	IncidentCategory,
 	IncidentSeverity,
+	RoadStatus,
 } from "@hack-the-andes-project/db/schema/scraper";
 import { experimental_decide } from "ai";
 
@@ -220,6 +221,71 @@ export async function classifyNews(
 			: null,
 		status: answers.horizonte.choice,
 		answers,
+		confidence: result.providerMetadata?.typesafe?.confidence ?? null,
+		model: result.response.modelId,
+	};
+}
+
+const ROAD_STATUS_CRITERIA: Record<RoadStatus, string> = {
+	interrumpido:
+		"Vía cerrada o intransitable: vehículos o carga sobre la calzada, espera de grúa pesada, peritaje o levantamiento de cadáver en curso",
+	restringido:
+		"Paso parcial: un carril ocupado, tránsito alternado, demoras o maniobras de grúa todavía en curso",
+	normal:
+		"Tránsito normal: vehículos retirados, escena despejada, hecho menor fuera de la calzada o ya pasó demasiado tiempo para que siga afectando",
+};
+
+const ACCIDENT_QUESTIONS = {
+	estadoVia: {
+		type: "choice",
+		instructions:
+			"Según el reporte del accidente de tránsito y las horas transcurridas desde que ocurrió, ¿cómo está ahora mismo la vía en ese punto para buses y camiones interprovinciales?",
+		criteria: ROAD_STATUS_CRITERIA,
+	},
+} as const;
+
+export interface AccidentRoadStatusInput {
+	accidentClass: string;
+	narrative: string | null;
+	address: string | null;
+	location: string;
+	deaths: number | null;
+	injured: number | null;
+	vehicles: number | null;
+	reportedBy: string | null;
+	hoursSinceAccident: number;
+}
+
+export interface AccidentRoadStatus {
+	roadStatus: RoadStatus;
+	probabilities: Partial<Record<RoadStatus, number>> | null;
+	confidence: unknown;
+	model: string;
+}
+
+export async function classifyAccidentRoadStatus(
+	apiKey: string,
+	input: AccidentRoadStatusInput,
+): Promise<AccidentRoadStatus> {
+	const typeSafe = createTypeSafeAi({ apiKey });
+	const result = await experimental_decide({
+		model: typeSafe.decisionModel(JEV_MODEL),
+		state: {
+			clase: input.accidentClass,
+			narrativa: input.narrative ?? "",
+			direccion: input.address ?? "",
+			ubicacion: input.location,
+			fallecidos: input.deaths,
+			lesionados: input.injured,
+			vehiculos: input.vehicles,
+			reportadoPor: input.reportedBy ?? "",
+			horasDesdeElAccidente: input.hoursSinceAccident,
+		},
+		questions: ACCIDENT_QUESTIONS,
+	});
+	return {
+		roadStatus: result.answers.estadoVia.choice,
+		probabilities: result.answers.estadoVia.probabilities ?? null,
 		confidence: result.providerMetadata?.typesafe?.confidence ?? null,
 		model: result.response.modelId,
 	};

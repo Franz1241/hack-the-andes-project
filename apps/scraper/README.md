@@ -7,7 +7,7 @@ Cloudflare Worker on Cron Triggers that polls public Peruvian road and emergency
 | Cron | Sources |
 | --- | --- |
 | `*/5 * * * *` (`frequent`) | SUTRAN road alerts, INDECI COEN emergencies (24h + 2 days), Bomberos Perú last-24h emergencies, SENAMHI rain / quebrada / hydrological warnings, IGP last earthquake, SERFOR wildfire alerts |
-| `0 * * * *` (`hourly`) | RPP latest news (classified by Jev) |
+| `0 * * * *` (`hourly`) | RPP latest news (classified by Jev), MTC SRATMA road accidents from the last 30 days |
 | `0 9 * * *` (`daily`) | SUTRAN alternative routes (with CDN geometry), fire stations, police stations, health facilities, bus terminals, weighing stations; INDECI national relief warehouses |
 
 Both expressions live in `packages/infra/constants.ts` and are attached in `packages/infra/scraper.ts`.
@@ -25,6 +25,14 @@ Sources declare a `snapshot` mode. `full` sources report everything they know, s
 ## News classification (Jev)
 
 `rpp_latest_news` scrapes the 30 cards on https://rpp.pe/ultimas-noticias, fetches each new article once for its meta description, and asks TypeSafe's Jev model (through `@ai-sdk/typesafe-ai` + `experimental_decide` from the AI SDK) twelve typed questions in one request: relevance to intercity road transport, in Peru, current, mentions a road, road blocked, is a protest, people affected, category, severity rubric, time horizon, scope and region. Every article lands in `news_article` with the full answers and confidences in `classification`; an article is `relevant` when P(relevante) ≥ 0.6, P(enPeru) ≥ 0.5 and the category is not `no_aplica`, and relevant ones are mirrored into `incident` under the same source. Thresholds live in `src/constants.ts`, questions in `src/lib/jev.ts`. The key is `JEV_API_KEY` in `apps/scraper/.env`.
+
+## Road accidents (SRATMA)
+
+`sratma_accidents` reads the MTC accident viewer's internal API (`https://sratma.mtc.gob.pe/wssratma/api/Mapa/`): one `listarAccidenteMapa` call with the viewer's default filters (every reporting entity, last 30 days), then `listarAccidenteMapaInformacion` per accident for date, class, address, coordinates, counts and narrative. Concessionaires and police stations upload reports days after the fact, so most rows are map context with severity `info`. An accident that happened within the last 12 hours (`SRATMA_ROUTE_IMPACT_WINDOW_MS`) is sent to Jev, which picks the current `roadStatus` (`interrumpido`, `restringido`, `normal`) from the class, narrative, counts and hours elapsed; severity follows the same mapping as SUTRAN alerts. If Jev fails the accident stays `warning` and Jev is retried on the next run. Once it leaves the window it drops to `info`, and fleet alerts on it get resolved. The wide event reports `newAccidentLagHours` to keep an eye on the reporting delay.
+
+Photos come from `DescargaArchivo` (a base64 JSON string; about half the accidents answer 404) and are stored once in the public Backblaze B2 bucket `illapa-media` under `sratma/accidents/{id}.{jpg|png}`, exposed as `incident.imageUrl`. Each run lists that prefix to know which photos are already stored, so only accidents without a photo hit `DescargaArchivo` again. A bucket lifecycle rule hides objects under `sratma/` 45 days after upload. The scraper uses a key scoped to that bucket (`B2_MEDIA_KEY_ID`, `B2_MEDIA_APPLICATION_KEY` in `apps/scraper/.env`).
+
+An empty listing makes the run fail instead of deactivating every accident: the API answers an incomplete filter object with an empty 200.
 
 ## Adding a source
 
