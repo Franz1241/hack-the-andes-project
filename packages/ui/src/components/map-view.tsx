@@ -63,11 +63,11 @@ export function MapView({
 		<div
 			className={cn(
 				"contents",
-				"[&_.maplibregl-ctrl-group]:border! [&_.maplibregl-ctrl-group]:rounded-none! [&_.maplibregl-ctrl-group]:border-border! [&_.maplibregl-ctrl-group]:bg-popover! [&_.maplibregl-ctrl-group]:shadow-none!",
-				"[&_.maplibregl-ctrl-group>button]:rounded-none! [&_.maplibregl-ctrl-group>button]:border-border!",
+				"[&_.maplibregl-ctrl-group]:border! [&_.maplibregl-ctrl-group]:overflow-hidden! [&_.maplibregl-ctrl-group]:rounded-lg! [&_.maplibregl-ctrl-group]:border-border! [&_.maplibregl-ctrl-group]:bg-popover! [&_.maplibregl-ctrl-group]:shadow-none!",
+				"[&_.maplibregl-ctrl-group>button:first-child]:rounded-t-lg! [&_.maplibregl-ctrl-group>button:last-child]:rounded-b-lg! [&_.maplibregl-ctrl-group>button]:border-border!",
 				"[&_.maplibregl-ctrl-group>button:focus-visible]:outline-none! [&_.maplibregl-ctrl-group>button:focus-visible]:ring-1! [&_.maplibregl-ctrl-group>button:focus-visible]:ring-inset! [&_.maplibregl-ctrl-group>button:focus-visible]:ring-ring! [&_.maplibregl-ctrl-group>button:hover]:bg-accent!",
 				"[&_.maplibregl-ctrl-icon]:grayscale dark:[&_.maplibregl-ctrl-icon]:invert",
-				"[&_.maplibregl-popup-close-button]:type-label! [&_.maplibregl-popup-close-button]:rounded-none! [&_.maplibregl-popup-close-button]:bg-popover! [&_.maplibregl-popup-close-button]:p-1! [&_.maplibregl-popup-close-button]:text-popover-foreground!",
+				"[&_.maplibregl-popup-close-button]:type-label! [&_.maplibregl-popup-close-button]:rounded-md! [&_.maplibregl-popup-close-button]:bg-popover! [&_.maplibregl-popup-close-button]:p-1! [&_.maplibregl-popup-close-button]:text-popover-foreground!",
 				"[&_.maplibregl-popup-close-button:focus-visible]:outline-none! [&_.maplibregl-popup-close-button:focus-visible]:ring-1! [&_.maplibregl-popup-close-button:focus-visible]:ring-inset! [&_.maplibregl-popup-close-button:focus-visible]:ring-ring! [&_.maplibregl-popup-close-button:hover]:bg-accent!",
 			)}
 		>

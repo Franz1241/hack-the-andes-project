@@ -16,7 +16,7 @@ interface ToastThemeStyle extends CSSProperties {
 }
 
 const toastThemeStyle: ToastThemeStyle = {
-	fontFamily: "var(--font-mono)",
+	fontFamily: "var(--font-sans)",
 	"--normal-bg": "var(--popover)",
 	"--normal-text": "var(--popover-foreground)",
 	"--normal-border": "var(--border)",
@@ -34,7 +34,7 @@ const toastThemeStyle: ToastThemeStyle = {
 	"--error-bg": "var(--risk-critical)",
 	"--error-text": "var(--risk-critical-foreground)",
 	"--error-border": "var(--risk-critical)",
-	"--border-radius": "0",
+	"--border-radius": "var(--radius-lg)",
 };
 
 const Toaster = ({ ...props }: ToasterProps) => {
@@ -56,14 +56,14 @@ const Toaster = ({ ...props }: ToasterProps) => {
 				classNames: {
 					toast:
 						"cn-toast shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
-					title: "type-label!",
+					title: "type-heading!",
 					description: "type-body! text-current!",
 					actionButton:
-						"rounded-none! font-mono! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
+						"rounded-md! font-sans! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
 					cancelButton:
-						"rounded-none! bg-secondary! font-mono! text-secondary-foreground! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
+						"rounded-md! bg-secondary! font-sans! text-secondary-foreground! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
 					closeButton:
-						"rounded-none! border-border! bg-popover! text-popover-foreground! shadow-none! hover:bg-accent! focus-visible:outline-1! focus-visible:outline-ring!",
+						"rounded-md! border-border! bg-popover! text-popover-foreground! shadow-none! hover:bg-accent! focus-visible:outline-1! focus-visible:outline-ring!",
 				},
 			}}
 			{...props}

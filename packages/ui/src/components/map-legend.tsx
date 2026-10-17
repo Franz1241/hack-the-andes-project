@@ -15,7 +15,7 @@ export function MapLegend({ className }: MapLegendProps) {
 		<section
 			aria-label="Leyenda de severidad"
 			className={cn(
-				"type-label flex flex-wrap items-center gap-3 border border-border bg-popover px-3 py-2 backdrop-blur-sm",
+				"type-label flex flex-wrap items-center gap-3 rounded-lg border border-border bg-popover px-3 py-2 backdrop-blur-sm",
 				className,
 			)}
 		>

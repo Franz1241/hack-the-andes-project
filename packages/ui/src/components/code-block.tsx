@@ -7,7 +7,7 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import * as React from "react";
 
 const codeBlockVariants = cva(
-	"group/code-block relative flex w-full min-w-0 flex-col overflow-hidden rounded-none text-sm has-[>[data-slot=code-block-content]:focus-visible]:ring-1 has-[>[data-slot=code-block-content]:focus-visible]:ring-ring data-[size=sm]:text-xs",
+	"group/code-block relative flex w-full min-w-0 flex-col overflow-hidden rounded-lg text-sm has-[>[data-slot=code-block-content]:focus-visible]:ring-1 has-[>[data-slot=code-block-content]:focus-visible]:ring-ring data-[size=sm]:text-xs",
 	{
 		variants: {
 			variant: {

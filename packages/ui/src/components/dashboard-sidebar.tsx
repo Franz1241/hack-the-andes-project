@@ -78,7 +78,9 @@ export function DashboardSidebar({
 											onClick={() => setOpenMobile(false)}
 										>
 											<item.icon />
-											<span className="type-label">{item.label}</span>
+											<span className="font-medium font-sans text-sm">
+												{item.label}
+											</span>
 										</SidebarMenuButton>
 										{Boolean(item.badgeCount) && (
 											<SidebarMenuBadge

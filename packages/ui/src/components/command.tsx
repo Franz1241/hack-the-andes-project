@@ -22,7 +22,7 @@ function Command({
 		<CommandPrimitive
 			data-slot="command"
 			className={cn(
-				"flex size-full flex-col overflow-hidden rounded-none border border-border in-data-[slot=dialog-content]:border-0 bg-popover text-popover-foreground",
+				"flex size-full flex-col overflow-hidden rounded-lg border border-border in-data-[slot=dialog-content]:border-0 bg-popover text-popover-foreground",
 				className,
 			)}
 			{...props}
@@ -52,7 +52,7 @@ function CommandDialog({
 			</DialogHeader>
 			<DialogContent
 				className={cn(
-					"top-1/3 translate-y-0 overflow-hidden rounded-none p-0",
+					"top-1/3 translate-y-0 overflow-hidden rounded-lg p-0",
 					className,
 				)}
 				showCloseButton={showCloseButton}
@@ -153,7 +153,7 @@ function CommandItem({
 		<CommandPrimitive.Item
 			data-slot="command-item"
 			className={cn(
-				"group/command-item relative flex cursor-default select-none items-center gap-2 in-data-[slot=dialog-content]:rounded-none! rounded-none px-2 py-2 text-xs outline-hidden data-[variant=destructive]:data-selected:bg-destructive/90 data-[variant=destructive]:data-selected:text-destructive-foreground data-[disabled=true]:pointer-events-none data-[variant=destructive]:bg-destructive data-selected:bg-muted data-[variant=destructive]:text-destructive-foreground data-selected:text-foreground data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 data-[variant=destructive]:*:[svg]:text-destructive-foreground not-data-[variant=destructive]:data-selected:*:[svg]:text-foreground",
+				"group/command-item relative flex cursor-default select-none items-center gap-2 in-data-[slot=dialog-content]:rounded-sm! rounded-sm px-2 py-2 text-xs outline-hidden data-[variant=destructive]:data-selected:bg-destructive/90 data-[variant=destructive]:data-selected:text-destructive-foreground data-[disabled=true]:pointer-events-none data-[variant=destructive]:bg-destructive data-selected:bg-muted data-[variant=destructive]:text-destructive-foreground data-selected:text-foreground data-[disabled=true]:opacity-50 [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0 data-[variant=destructive]:*:[svg]:text-destructive-foreground not-data-[variant=destructive]:data-selected:*:[svg]:text-foreground",
 				className,
 			)}
 			{...props}

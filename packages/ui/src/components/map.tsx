@@ -617,7 +617,7 @@ function PopupCloseButton({ onClick }: { onClick: () => void }) {
 			type="button"
 			onClick={onClick}
 			aria-label="Close popup"
-			className="absolute top-1 right-1 z-10 inline-flex size-5 cursor-pointer items-center justify-center rounded-none text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+			className="absolute top-1 right-1 z-10 inline-flex size-5 cursor-pointer items-center justify-center rounded-md text-foreground transition-colors hover:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
 		>
 			<X className="size-3.5" />
 		</button>
@@ -681,7 +681,7 @@ function MarkerPopup({
 	return createPortal(
 		<div
 			className={cn(
-				"type-body relative max-w-62 rounded-none border border-border bg-popover p-3 text-popover-foreground shadow-none",
+				"type-body relative max-w-62 rounded-lg bg-popover p-3 text-popover-foreground shadow-none",
 				"fade-in-0 zoom-in-95 animate-in duration-200 ease-out",
 				className,
 			)}
@@ -753,7 +753,7 @@ function MarkerTooltip({
 	return createPortal(
 		<div
 			className={cn(
-				"type-label pointer-events-none text-balance rounded-none border border-border bg-popover px-2 py-1 text-popover-foreground shadow-none",
+				"type-label pointer-events-none text-balance rounded-lg bg-popover px-2 py-1 text-popover-foreground shadow-none",
 				"fade-in-0 zoom-in-95 animate-in duration-200 ease-out",
 				className,
 			)}
@@ -787,7 +787,7 @@ function MarkerLabel({
 		<div
 			className={cn(
 				"absolute left-1/2 -translate-x-1/2 whitespace-nowrap",
-				"type-label border border-border bg-popover px-1 py-0.5 text-popover-foreground",
+				"type-label rounded-md border border-border bg-popover px-1 py-0.5 text-popover-foreground",
 				positionClasses[position],
 				className,
 			)}
@@ -823,7 +823,7 @@ const positionClasses = {
 
 function ControlGroup({ children }: { children: React.ReactNode }) {
 	return (
-		<div className="flex flex-col overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-none [&>button:not(:last-child)]:border-border [&>button:not(:last-child)]:border-b">
+		<div className="flex flex-col overflow-hidden rounded-lg border border-border bg-popover text-popover-foreground shadow-none [&>button:not(:last-child)]:border-border [&>button:not(:last-child)]:border-b">
 			{children}
 		</div>
 	);
@@ -847,7 +847,7 @@ function ControlButton({
 			type="button"
 			className={cn(
 				"flex size-8 items-center justify-center transition-colors",
-				"first:rounded-t-none last:rounded-b-none",
+				"first:rounded-t-lg last:rounded-b-lg",
 				"hover:bg-accent hover:text-accent-foreground",
 				"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
 				"disabled:pointer-events-none disabled:opacity-50",
@@ -1092,7 +1092,7 @@ function MapPopup({
 	return createPortal(
 		<div
 			className={cn(
-				"type-body relative max-w-62 rounded-none border border-border bg-popover p-3 text-popover-foreground shadow-none",
+				"type-body relative max-w-62 rounded-lg bg-popover p-3 text-popover-foreground shadow-none",
 				"fade-in-0 zoom-in-95 animate-in duration-200 ease-out",
 				className,
 			)}

@@ -44,7 +44,7 @@ export function FleetOverlay({ vehicles, trips }: FleetOverlayProps) {
 						closeOnClick={false}
 						onClose={() => setSelectedVehicleId(undefined)}
 					>
-						<div className="type-data flex flex-col gap-2 border border-border bg-popover p-3 pr-8 text-popover-foreground">
+						<div className="type-data flex flex-col gap-2 rounded-lg bg-popover p-3 pr-8 text-popover-foreground">
 							<strong className="type-label">{selectedVehicle.name}</strong>
 							<span>
 								{selectedVehicle.plate ?? "Sin placa"} ·{" "}
