@@ -4,7 +4,7 @@ pnpm monorepo: Hono + oRPC API on Cloudflare Workers (`apps/server`), Vite SPA (
 
 ## Product docs
 
-[Brief](docs/brief.md) · [MVP PRD](docs/prd.md) · [Data sources and risk score](docs/sources.md) · [Traction log](docs/traction.md) · [Predictive risk engine](docs/predictive-model.md) (Spanish) · [NASA data sources](docs/nasa-sources.md) (Spanish)
+[Project brief](docs/project_brief.md)
 
 ## Setup
 
