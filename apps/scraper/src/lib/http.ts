@@ -1,4 +1,4 @@
-import { UPSTREAM_FETCH_TIMEOUT_MS } from "../constants";
+import { UPSTREAM_FETCH_TIMEOUT_MS, UPSTREAM_USER_AGENT } from "../constants";
 
 export class UpstreamError extends Error {
 	constructor(
@@ -13,7 +13,11 @@ export class UpstreamError extends Error {
 async function fetchUpstream(url: string): Promise<Response> {
 	const response = await fetch(url, {
 		signal: AbortSignal.timeout(UPSTREAM_FETCH_TIMEOUT_MS),
-		headers: { accept: "application/json, text/html;q=0.9, */*;q=0.8" },
+		headers: {
+			accept: "application/json, text/html;q=0.9, */*;q=0.8",
+			"accept-language": "es-PE,es;q=0.9",
+			"user-agent": UPSTREAM_USER_AGENT,
+		},
 	});
 	if (!response.ok) {
 		throw new UpstreamError(url, response.status);

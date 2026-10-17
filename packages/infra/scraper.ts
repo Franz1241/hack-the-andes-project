@@ -23,6 +23,7 @@ export const scraper = Cloudflare.Worker("scraper", {
 	crons: [SCRAPER_FREQUENT_CRON, SCRAPER_DAILY_CRON],
 	env: {
 		HYPERDRIVE: hyperdriveRef(),
+		SELF: Cloudflare.Workers.Self,
 		APP_ENV: Config.String("APP_ENV"),
 		SCRAPER_RUN_SECRET: Config.Redacted("SCRAPER_RUN_SECRET"),
 		SERVICE_VERSION: serviceVersion,
