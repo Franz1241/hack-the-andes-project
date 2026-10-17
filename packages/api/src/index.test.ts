@@ -63,6 +63,8 @@ function contextFor(session: Context["session"]): Context {
 		auth,
 		log: createRequestLogger(),
 		session,
+		encryptionKey: "unused-in-middleware-tests",
+		osrmBaseUrl: "https://routing.example.com",
 		waitUntil: (promise) => void promise,
 	};
 }

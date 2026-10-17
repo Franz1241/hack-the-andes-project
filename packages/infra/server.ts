@@ -44,6 +44,8 @@ export const server = Cloudflare.Worker("server", {
 		ALLOWED_ORIGINS: Config.String("ALLOWED_ORIGINS"),
 		BETTER_AUTH_SECRET: Config.Redacted("BETTER_AUTH_SECRET"),
 		BETTER_AUTH_URL: Config.String("BETTER_AUTH_URL"),
+		CREDENTIALS_ENCRYPTION_KEY: Config.Redacted("CREDENTIALS_ENCRYPTION_KEY"),
+		OSRM_BASE_URL: Config.String("OSRM_BASE_URL"),
 		SERVICE_VERSION: serviceVersion,
 	},
 	dev: {
