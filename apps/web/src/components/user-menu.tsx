@@ -12,7 +12,6 @@ import { Skeleton } from "@hack-the-andes-project/ui/components/skeleton";
 import { Link, useNavigate } from "@tanstack/react-router";
 
 import { authClient } from "@/lib/auth-client";
-import { m } from "@/paraglide/messages";
 
 export default function UserMenu() {
 	const navigate = useNavigate();
