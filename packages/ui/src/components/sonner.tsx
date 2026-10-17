@@ -20,20 +20,8 @@ const toastThemeStyle: ToastThemeStyle = {
 	"--normal-bg": "var(--popover)",
 	"--normal-text": "var(--popover-foreground)",
 	"--normal-border": "var(--border)",
-	"--normal-bg-hover": "var(--accent)",
+	"--normal-bg-hover": "var(--popover)",
 	"--normal-border-hover": "var(--border)",
-	"--success-bg": "var(--success)",
-	"--success-text": "var(--success-foreground)",
-	"--success-border": "var(--success)",
-	"--info-bg": "var(--info)",
-	"--info-text": "var(--info-foreground)",
-	"--info-border": "var(--info)",
-	"--warning-bg": "var(--risk-moderate)",
-	"--warning-text": "var(--risk-moderate-foreground)",
-	"--warning-border": "var(--risk-moderate)",
-	"--error-bg": "var(--risk-critical)",
-	"--error-text": "var(--risk-critical-foreground)",
-	"--error-border": "var(--risk-critical)",
 	"--border-radius": "var(--radius-lg)",
 };
 
@@ -45,25 +33,29 @@ const Toaster = ({ ...props }: ToasterProps) => {
 			theme={theme === "light" || theme === "dark" ? theme : "system"}
 			className="toaster group"
 			icons={{
-				success: <CircleCheckIcon className="size-4" />,
-				info: <InfoIcon className="size-4" />,
-				warning: <TriangleAlertIcon className="size-4" />,
-				error: <OctagonXIcon className="size-4" />,
-				loading: <Loader2Icon className="size-4 animate-spin" />,
+				success: <CircleCheckIcon className="size-4 text-success" />,
+				info: <InfoIcon className="size-4 text-info" />,
+				warning: <TriangleAlertIcon className="size-4 text-risk-high" />,
+				error: <OctagonXIcon className="size-4 text-destructive" />,
+				loading: (
+					<Loader2Icon className="size-4 animate-spin text-muted-foreground" />
+				),
 			}}
 			style={toastThemeStyle}
 			toastOptions={{
 				classNames: {
 					toast:
-						"cn-toast shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
-					title: "type-heading!",
-					description: "type-body! text-current!",
+						"cn-toast items-start! gap-3! px-4! py-3! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
+					icon: "mt-0.5! ml-0! size-4! shrink-0!",
+					content: "flex! min-w-0! flex-1! flex-col! gap-0.5!",
+					title: "font-sans! font-semibold! text-sm/5! text-foreground!",
+					description: "font-sans! text-muted-foreground! text-sm/5!",
 					actionButton:
-						"rounded-md! font-sans! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
+						"mt-0.5! h-7! shrink-0! rounded-md! border! border-border! bg-background! px-2.5! font-sans! font-semibold! text-foreground! text-sm! shadow-none! transition-colors! hover:bg-muted! focus-visible:outline-1! focus-visible:outline-ring!",
 					cancelButton:
-						"rounded-md! bg-secondary! font-sans! text-secondary-foreground! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
+						"mt-0.5! h-7! shrink-0! rounded-md! bg-secondary! px-2.5! font-sans! font-semibold! text-secondary-foreground! text-sm! shadow-none! focus-visible:outline-1! focus-visible:outline-ring!",
 					closeButton:
-						"rounded-md! border-border! bg-popover! text-popover-foreground! shadow-none! hover:bg-accent! focus-visible:outline-1! focus-visible:outline-ring!",
+						"rounded-md! border-border! bg-popover! text-muted-foreground! shadow-none! hover:bg-muted! hover:text-foreground! focus-visible:outline-1! focus-visible:outline-ring!",
 				},
 			}}
 			{...props}
