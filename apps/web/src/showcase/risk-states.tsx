@@ -4,7 +4,6 @@ import {
 	AlertTitle,
 } from "@hack-the-andes-project/ui/components/alert";
 import { Badge } from "@hack-the-andes-project/ui/components/badge";
-import { TriangleAlertIcon } from "@hack-the-andes-project/ui/components/showcase/icons";
 import { RouteDiagram } from "@hack-the-andes-project/ui/components/showcase/route-diagram";
 import { ShowcaseSection } from "@hack-the-andes-project/ui/components/showcase/section";
 import { cn } from "@hack-the-andes-project/ui/lib/utils";
@@ -93,14 +92,12 @@ export function RiskStatesSection() {
 			</figure>
 			<div className="mt-8 grid gap-4 md:grid-cols-2">
 				<Alert variant="critical">
-					<TriangleAlertIcon />
 					<AlertTitle>{m.ds_critical_closure()}</AlertTitle>
 					<AlertDescription>
 						{m.ds_critical_alert_description()}
 					</AlertDescription>
 				</Alert>
 				<Alert variant="high">
-					<TriangleAlertIcon />
 					<AlertTitle>{m.ds_high_forecast_title()}</AlertTitle>
 					<AlertDescription>{m.ds_high_alert_description()}</AlertDescription>
 				</Alert>

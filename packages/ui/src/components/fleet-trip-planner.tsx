@@ -217,7 +217,7 @@ export function FleetTripPlanner({
 												: "Elige una ruta de prueba. El destino se selecciona automáticamente."}
 									</FieldDescription>
 									{demoRouteError && (
-										<Alert>
+										<Alert variant="destructive">
 											<AlertTitle>No se pudo preparar la ruta demo</AlertTitle>
 											<AlertDescription>
 												<p>{demoRouteError}</p>
