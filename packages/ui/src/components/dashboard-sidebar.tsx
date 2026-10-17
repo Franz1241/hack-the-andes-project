@@ -1,6 +1,19 @@
-import { CloudLightningIcon } from "lucide-react";
-import type { ComponentType, ReactElement, ReactNode } from "react";
+"use client";
 
+import {
+	CloudLightningIcon,
+	PanelLeftCloseIcon,
+	PanelLeftOpenIcon,
+} from "lucide-react";
+import {
+	type ComponentType,
+	type ReactElement,
+	type ReactNode,
+	useEffect,
+	useId,
+} from "react";
+
+import { SIDEBAR_TOGGLE_SHORTCUT } from "../constants";
 import {
 	Sidebar,
 	SidebarContent,
@@ -13,6 +26,7 @@ import {
 	SidebarMenuBadge,
 	SidebarMenuButton,
 	SidebarMenuItem,
+	SidebarRail,
 	SidebarSeparator,
 	useSidebar,
 } from "./sidebar";
@@ -29,33 +43,85 @@ export interface DashboardNavigationItem {
 export interface DashboardSidebarProps {
 	items: DashboardNavigationItem[];
 	homeLink: ReactElement;
-	footer: ReactNode;
+	preferences: (collapsed: boolean) => ReactNode;
+	account: (collapsed: boolean) => ReactNode;
+	expandLabel: string;
+	collapseLabel: string;
+	preferencesLabel: string;
 }
 
 export function DashboardSidebar({
 	items,
 	homeLink,
-	footer,
+	preferences,
+	account,
+	expandLabel,
+	collapseLabel,
+	preferencesLabel,
 }: DashboardSidebarProps) {
-	const { setOpenMobile } = useSidebar();
+	const { state, isMobile, setOpenMobile, toggleSidebar } = useSidebar();
+	const collapsed = state === "collapsed" && !isMobile;
+	const toggleLabel = collapsed ? expandLabel : collapseLabel;
+	const badgeIdPrefix = useId();
+
+	useEffect(() => {
+		if (isMobile) return;
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (
+				event.key !== SIDEBAR_TOGGLE_SHORTCUT ||
+				event.defaultPrevented ||
+				event.repeat ||
+				event.isComposing ||
+				event.metaKey ||
+				event.ctrlKey ||
+				event.altKey ||
+				(event.target instanceof Element &&
+					event.target.closest(
+						"input, textarea, select, [contenteditable]:not([contenteditable='false']), [role='textbox']",
+					))
+			)
+				return;
+			event.preventDefault();
+			toggleSidebar();
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [isMobile, toggleSidebar]);
 
 	return (
-		<Sidebar>
-			<SidebarHeader className="p-4">
-				<SidebarMenu>
+		<Sidebar collapsible="icon">
+			<SidebarHeader className="flex-row items-center gap-1 p-2 group-data-[collapsible=icon]:flex-col">
+				<SidebarMenu className="min-w-0 flex-1 group-data-[collapsible=icon]:flex-none">
 					<SidebarMenuItem>
 						<SidebarMenuButton
 							size="lg"
 							render={homeLink}
+							tooltip="illapa"
+							aria-label="illapa"
+							className="group-data-[collapsible=icon]:justify-center"
 							onClick={() => setOpenMobile(false)}
 						>
 							<CloudLightningIcon />
-							<span className="flex flex-col gap-0.5">
+							<span className="flex min-w-0 flex-col gap-0.5 transition-opacity duration-200 group-data-[collapsible=icon]:hidden group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
 								<span className="type-heading">illapa</span>
 								<span className="type-label text-muted-foreground">
 									Inteligencia en ruta
 								</span>
 							</span>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+				<SidebarMenu className="w-auto">
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							aria-label={toggleLabel}
+							aria-expanded={!collapsed}
+							aria-keyshortcuts={SIDEBAR_TOGGLE_SHORTCUT}
+							tooltip={toggleLabel}
+							onClick={toggleSidebar}
+							className="size-8 shrink-0 justify-center"
+						>
+							{collapsed ? <PanelLeftOpenIcon /> : <PanelLeftCloseIcon />}
 						</SidebarMenuButton>
 					</SidebarMenuItem>
 				</SidebarMenu>
@@ -74,21 +140,37 @@ export function DashboardSidebar({
 										<SidebarMenuButton
 											render={item.link}
 											isActive={item.active}
+											tooltip={item.label}
+											aria-label={item.label}
+											aria-describedby={
+												item.badgeCount
+													? `${badgeIdPrefix}-${item.id}`
+													: undefined
+											}
 											aria-current={item.active ? "page" : undefined}
 											onClick={() => setOpenMobile(false)}
 										>
 											<item.icon />
-											<span className="font-medium font-sans text-sm">
+											<span className="font-medium font-sans text-sm transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 motion-reduce:transition-none">
 												{item.label}
 											</span>
 										</SidebarMenuButton>
 										{Boolean(item.badgeCount) && (
-											<SidebarMenuBadge
-												className="type-data!"
-												aria-label={`${item.badgeCount} alertas abiertas`}
-											>
-												{item.badgeCount}
-											</SidebarMenuBadge>
+											<>
+												<SidebarMenuBadge className="type-data!">
+													{item.badgeCount}
+												</SidebarMenuBadge>
+												<span
+													id={`${badgeIdPrefix}-${item.id}`}
+													className="sr-only"
+												>
+													{item.badgeCount} alertas abiertas
+												</span>
+												<span
+													aria-hidden="true"
+													className="pointer-events-none absolute top-1 right-1 hidden size-1.5 rounded-full bg-sidebar-foreground ring-2 ring-sidebar group-data-[collapsible=icon]:block"
+												/>
+											</>
 										)}
 									</SidebarMenuItem>
 								))}
@@ -96,16 +178,23 @@ export function DashboardSidebar({
 						</nav>
 					</SidebarGroupContent>
 				</SidebarGroup>
+				<SidebarGroup className="mt-auto">
+					<SidebarGroupLabel className="type-label!">
+						{preferencesLabel}
+					</SidebarGroupLabel>
+					<SidebarGroupContent>{preferences(collapsed)}</SidebarGroupContent>
+				</SidebarGroup>
 			</SidebarContent>
 			<SidebarSeparator />
-			<SidebarFooter className="gap-3 p-4">
-				<p className="type-label text-muted-foreground">
+			<SidebarFooter className="gap-3 p-2">
+				<p className="type-label text-muted-foreground group-data-[collapsible=icon]:hidden">
 					Clima, vías y flota en un solo lugar.
 				</p>
-				<div className="flex min-w-0 items-center justify-between gap-2 [&>button:first-child]:min-w-0 [&>button:first-child]:truncate">
-					{footer}
-				</div>
+				{account(collapsed)}
 			</SidebarFooter>
+			{!isMobile && (
+				<SidebarRail aria-label={toggleLabel} title={toggleLabel} />
+			)}
 		</Sidebar>
 	);
 }
