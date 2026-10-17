@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { demoProvider } from "./demo";
 import { geotabProvider } from "./geotab";
 import { gpsCredentialsSchema, providerFor } from "./index";
 import { samsaraProvider } from "./samsara";
@@ -9,6 +10,7 @@ describe("providerFor", () => {
 	it("returns the adapter for each kind", () => {
 		expect(providerFor("geotab")).toBe(geotabProvider);
 		expect(providerFor("samsara")).toBe(samsaraProvider);
+		expect(providerFor("demo")).toBe(demoProvider);
 	});
 
 	it("throws for an unknown kind", () => {
@@ -30,5 +32,8 @@ describe("gpsCredentialsSchema", () => {
 			}),
 		).toMatchObject({ provider: "geotab", server: "my.geotab.com" });
 		expect(() => gpsCredentialsSchema.parse({ provider: "samsara" })).toThrow();
+		expect(gpsCredentialsSchema.parse({ provider: "demo" })).toEqual({
+			provider: "demo",
+		});
 	});
 });

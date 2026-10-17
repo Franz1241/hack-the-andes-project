@@ -1,6 +1,7 @@
 import { Button } from "@hack-the-andes-project/ui/components/button";
 import {
 	Empty,
+	EmptyContent,
 	EmptyDescription,
 	EmptyHeader,
 	EmptyTitle,
@@ -43,12 +44,20 @@ function FleetPage() {
 	const vehicles = vehiclesQuery.data ?? EMPTY_FLEET_VEHICLES;
 	const trips = tripsQuery.data ?? EMPTY_FLEET_TRIPS;
 	const activeTrips = trips.filter((trip) => trip.status === "active");
+	const createDemoConnection = useMutation(
+		orpc.connections.create.mutationOptions({
+			onSuccess: () => toast.success("Flota demo conectada"),
+			onError: (error) => toast.error(error.message),
+			onSettled: () => invalidateFleetQueries(queryClient),
+		}),
+	);
 	const createTrip = useMutation(
 		orpc.trips.create.mutationOptions({
 			onSuccess: () => toast.success("Viaje creado"),
 			onSettled: () => invalidateFleetQueries(queryClient),
 		}),
 	);
+	const planDemoRoute = useMutation(orpc.trips.planDemo.mutationOptions());
 	const completeTrip = useMutation(
 		orpc.trips.complete.mutationOptions({
 			onSuccess: () => {
@@ -101,13 +110,32 @@ function FleetPage() {
 					<EmptyHeader>
 						<EmptyTitle>Tu flota aún no tiene vehículos</EmptyTitle>
 						<EmptyDescription>
-							Conecta Geotab o Samsara en Configuración. Si ya tienes una
+							Conecta Geotab o Samsara en Configuración, o prueba la plataforma
+							con una flota demo que recorre tus viajes. Si ya tienes una
 							conexión, revisa su estado y espera la próxima sincronización.
 						</EmptyDescription>
 					</EmptyHeader>
-					<Button render={<Link to="/dashboard/settings" />} variant="outline">
-						Ir a conexiones GPS
-					</Button>
+					<EmptyContent className="flex-row flex-wrap justify-center">
+						<Button
+							disabled={createDemoConnection.isPending}
+							onClick={() =>
+								createDemoConnection.mutate({
+									label: "Flota demo",
+									credentials: { provider: "demo" },
+								})
+							}
+						>
+							{createDemoConnection.isPending
+								? "Conectando…"
+								: "Usar flota demo"}
+						</Button>
+						<Button
+							render={<Link to="/dashboard/settings" />}
+							variant="outline"
+						>
+							Ir a conexiones GPS
+						</Button>
+					</EmptyContent>
 				</Empty>
 			)}
 			{Boolean(vehicles.length) && (
@@ -116,7 +144,9 @@ function FleetPage() {
 						<FleetTripPlanner
 							vehicles={vehicles}
 							isPending={createTrip.isPending}
+							isPlanningDemoRoute={planDemoRoute.isPending}
 							onCreate={createTrip.mutateAsync}
+							onPlanDemoRoute={planDemoRoute.mutateAsync}
 							onClose={() => setIsPlanning(false)}
 						/>
 					) : (

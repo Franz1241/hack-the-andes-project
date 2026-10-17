@@ -33,7 +33,13 @@ catalogs:
     '@tanstack/react-form':
       specifier: ^1.33.5
       version: 1.33.5
+    '@turf/along':
+      specifier: ^7.4.0
+      version: 7.4.0
     '@turf/bbox':
+      specifier: ^7.4.0
+      version: 7.4.0
+    '@turf/bearing':
       specifier: ^7.4.0
       version: 7.4.0
     '@turf/boolean-point-in-polygon':
@@ -43,6 +49,9 @@ catalogs:
       specifier: ^7.4.0
       version: 7.4.0
     '@turf/centroid':
+      specifier: ^7.4.0
+      version: 7.4.0
+    '@turf/destination':
       specifier: ^7.4.0
       version: 7.4.0
     '@turf/distance':
@@ -656,13 +665,22 @@ importers:
       '@hack-the-andes-project/db':
         specifier: workspace:*
         version: link:../db
+      '@turf/along':
+        specifier: 'catalog:'
+        version: 7.4.0
       '@turf/bbox':
+        specifier: 'catalog:'
+        version: 7.4.0
+      '@turf/bearing':
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/boolean-point-in-polygon':
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/buffer':
+        specifier: 'catalog:'
+        version: 7.4.0
+      '@turf/destination':
         specifier: 'catalog:'
         version: 7.4.0
       '@turf/distance':
@@ -4255,8 +4273,14 @@ packages:
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
 
+  '@turf/along@7.4.0':
+    resolution: {integrity: sha512-uWh26sph1bJm3eO1toaoq9fbPRNxtbQlW/u0m04n7m6uFyGrUu4qE+8DTDQeF+cHGWbMQft4zshHZy0rz4Nyog==}
+
   '@turf/bbox@7.4.0':
     resolution: {integrity: sha512-yOX9lALc2GmjYUIE99+nRj7eZA7eDtx7Ixu/hrgIo+YqHvL1reaPVTC9rQWMHMm0pH0/WHjzk8uOpAHjptrudQ==}
+
+  '@turf/bearing@7.4.0':
+    resolution: {integrity: sha512-utMyjTU5U3QfHWLRIKUAvJerCMmC6NLI7X6cmL6PA5+KYdzul/ymxL6CQrwJugrf9zt4Hnzvipwz0j5H1Yo87w==}
 
   '@turf/boolean-point-in-polygon@7.4.0':
     resolution: {integrity: sha512-GQrHc6WSDHhf32GB/b9AGyOeC05AQ3nGN7ooWTrlCYefKn7X9/2wG9BNexF47AuyDq5jPdOvITVR26BLFWV+mA==}
@@ -4272,6 +4296,9 @@ packages:
 
   '@turf/clone@7.4.0':
     resolution: {integrity: sha512-IfYnuil7XYJauy3crzIYEr26QkmBiTgFdGfYwUUe3S6dawX+lyb3vhuaYyssEPcCJq83g0G7hwxZy7141Mmzjg==}
+
+  '@turf/destination@7.4.0':
+    resolution: {integrity: sha512-+jFpOUtzCiN8l9ZOvr66rxi/UxizphXaBDldaw9NfxlX/HcMn3ZDzC8IiCHiNXAilVh4WpCH0qqmH9ykOgdBKA==}
 
   '@turf/distance@7.4.0':
     resolution: {integrity: sha512-ODkopQDG1m/U6Mx7OMmShncaCvneomwX3lZY1CDA7x40bhDdTTRYP/n/6LicZVyIO4/oK+aXkov4NOtWYthA2g==}
@@ -14066,10 +14093,27 @@ snapshots:
 
   '@tsconfig/node16@1.0.4': {}
 
+  '@turf/along@7.4.0':
+    dependencies:
+      '@turf/bearing': 7.4.0
+      '@turf/destination': 7.4.0
+      '@turf/distance': 7.4.0
+      '@turf/helpers': 7.4.0
+      '@turf/invariant': 7.4.0
+      '@types/geojson': 7946.0.16
+      tslib: 2.8.1
+
   '@turf/bbox@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
       '@turf/meta': 7.4.0
+      '@types/geojson': 7946.0.16
+      tslib: 2.8.1
+
+  '@turf/bearing@7.4.0':
+    dependencies:
+      '@turf/helpers': 7.4.0
+      '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
       tslib: 2.8.1
 
@@ -14110,6 +14154,13 @@ snapshots:
   '@turf/clone@7.4.0':
     dependencies:
       '@turf/helpers': 7.4.0
+      '@types/geojson': 7946.0.16
+      tslib: 2.8.1
+
+  '@turf/destination@7.4.0':
+    dependencies:
+      '@turf/helpers': 7.4.0
+      '@turf/invariant': 7.4.0
       '@types/geojson': 7946.0.16
       tslib: 2.8.1
 

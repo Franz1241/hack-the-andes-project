@@ -46,3 +46,6 @@ export const MAP_SPANISH_LOCALE = {
 	"AttributionControl.ToggleAttribution": "Mostrar créditos del mapa",
 	"Popup.Close": "Cerrar detalle",
 };
+export const INCIDENT_PREVIEW_OPEN_DELAY_MS = 150;
+export const INCIDENT_PREVIEW_CLOSE_DELAY_MS = 100;
+export const INCIDENT_PREVIEW_OFFSET_PX = 8;

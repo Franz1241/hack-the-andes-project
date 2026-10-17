@@ -77,9 +77,10 @@ function SettingsPage() {
 					<EmptyHeader>
 						<EmptyTitle>Conecta tu primer proveedor</EmptyTitle>
 						<EmptyDescription>
-							Agrega tus credenciales de Geotab o Samsara. Importaremos tus
-							vehículos y actualizaremos sus posiciones cada dos minutos. Luego
-							podrás crear un viaje desde Flota.
+							Agrega tus credenciales de Geotab o Samsara, o elige Demo para
+							probar con una flota simulada. Importaremos tus vehículos y
+							actualizaremos sus posiciones cada dos minutos. Luego podrás crear
+							un viaje desde Flota.
 						</EmptyDescription>
 					</EmptyHeader>
 				</Empty>

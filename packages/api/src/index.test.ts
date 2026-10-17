@@ -1,5 +1,13 @@
 import { createRequire } from "node:module";
-import { samsaraProvider } from "@hack-the-andes-project/business/providers/index";
+import { generateEncryptionKeyBase64 } from "@hack-the-andes-project/business/crypto/index";
+import * as incidentLoading from "@hack-the-andes-project/business/fleet/load-alertable-incidents";
+import * as demoTripPlanning from "@hack-the-andes-project/business/fleet/plan-demo-trip";
+import * as fleetSync from "@hack-the-andes-project/business/fleet/sync-connection";
+import type { HazardIncident } from "@hack-the-andes-project/business/hazards/types";
+import {
+	DEMO_VEHICLES,
+	samsaraProvider,
+} from "@hack-the-andes-project/business/providers/index";
 import * as routing from "@hack-the-andes-project/business/routing/osrm";
 import type { vehicle } from "@hack-the-andes-project/db/schema/fleet";
 import { call, createRouterClient } from "@orpc/server";
@@ -18,6 +26,7 @@ import {
 import {
 	ALERT_STATUS_OPEN,
 	CREDENTIALS_VALIDATION_FAILED_MESSAGE,
+	DEMO_VEHICLE_REQUIRED_MESSAGE,
 	ROUTING_FAILED_MESSAGE,
 	VEHICLE_POSITION_REQUIRED_MESSAGE,
 } from "./constants";
@@ -248,6 +257,62 @@ describe("fleet procedure boundaries", () => {
 		expect(query).not.toHaveBeenCalled();
 	});
 
+	it("places a new demo fleet right away instead of waiting for fleet-sync", async () => {
+		const sync = vi.spyOn(fleetSync, "syncConnection").mockResolvedValue({
+			connectionId: "demo-connection",
+			ok: true,
+			vehiclesSynced: DEMO_VEHICLES.length,
+			positionsInserted: DEMO_VEHICLES.length,
+		});
+		const query = vi.spyOn(database.$client, "query").mockResolvedValue([
+			[
+				{
+					constructor: { name: "RowDataPacket" },
+					...[
+						"demo-connection",
+						"demo",
+						"Flota demo",
+						"active",
+						null,
+						null,
+						"2026-10-17 00:00:00.000",
+						DEMO_VEHICLES.length,
+					],
+				},
+			],
+			[],
+		]);
+		const client = createRouterClient(appRouter, {
+			context: {
+				...contextFor(session),
+				encryptionKey: generateEncryptionKeyBase64(),
+			},
+		});
+		await expect(
+			client.connections.create({
+				label: "Flota demo",
+				credentials: { provider: "demo" },
+			}),
+		).resolves.toMatchObject({
+			provider: "demo",
+			vehicleCount: DEMO_VEHICLES.length,
+		});
+		expect(sync).toHaveBeenCalledWith(
+			expect.objectContaining({
+				connection: expect.objectContaining({
+					provider: "demo",
+					organizationId: session.session.activeOrganizationId,
+				}),
+			}),
+		);
+		expect(query).toHaveBeenCalledWith(
+			expect.objectContaining({
+				sql: expect.stringContaining("insert into `hack_the_andes_vehicle`"),
+			}),
+			expect.arrayContaining(DEMO_VEHICLES.map(({ plate }) => plate)),
+		);
+	});
+
 	it("rejects another organization's vehicle without routing or cancelling trips", async () => {
 		const query = vi
 			.spyOn(database.$client, "query")
@@ -293,6 +358,75 @@ describe("fleet procedure boundaries", () => {
 			message: VEHICLE_POSITION_REQUIRED_MESSAGE,
 		});
 		expect(fetchRoutes).not.toHaveBeenCalled();
+	});
+
+	it("only plans demo routes for trucks in a demo fleet", async () => {
+		const samsaraVehicle = {
+			...positionedVehicle,
+			connection: { provider: "samsara" },
+		};
+		vi.spyOn(database.query.vehicle, "findFirst").mockResolvedValue(
+			samsaraVehicle,
+		);
+		const planDemoTrip = vi.spyOn(demoTripPlanning, "planDemoTrip");
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+		await expect(
+			client.trips.planDemo({
+				vehicleId: positionedVehicle.id,
+				scenario: "hazard",
+			}),
+		).rejects.toMatchObject({
+			code: "BAD_REQUEST",
+			message: DEMO_VEHICLE_REQUIRED_MESSAGE,
+		});
+		expect(planDemoTrip).not.toHaveBeenCalled();
+	});
+
+	it("plans a demo route from the truck's position past an active incident", async () => {
+		const demoVehicle = {
+			...positionedVehicle,
+			connection: { provider: "demo" },
+		};
+		vi.spyOn(database.query.vehicle, "findFirst").mockResolvedValue(
+			demoVehicle,
+		);
+		const incident: HazardIncident = {
+			id: "huaico",
+			category: "landslide",
+			severity: "critical",
+			title: "Huaico en la Carretera Central",
+			geometry: null,
+			lat: 1,
+			lng: 1,
+		};
+		vi.spyOn(incidentLoading, "loadAlertableIncidents").mockResolvedValue([
+			incident,
+		]);
+		const planDemoTrip = vi
+			.spyOn(demoTripPlanning, "planDemoTrip")
+			.mockResolvedValue({ destination: { lat: 2, lng: 2 }, incident });
+		const context = contextFor(session);
+		const client = createRouterClient(appRouter, { context });
+		await expect(
+			client.trips.planDemo({
+				vehicleId: positionedVehicle.id,
+				scenario: "hazard",
+			}),
+		).resolves.toEqual({
+			destination: { lat: 2, lng: 2 },
+			incidentTitle: incident.title,
+		});
+		expect(planDemoTrip).toHaveBeenCalledWith({
+			osrmBaseUrl: context.osrmBaseUrl,
+			origin: {
+				lat: positionedVehicle.lastLat,
+				lng: positionedVehicle.lastLng,
+			},
+			scenario: "hazard",
+			incidents: [incident],
+		});
 	});
 
 	it.each([true, false])(

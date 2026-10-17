@@ -1,3 +1,4 @@
+import type { DemoTripScenario } from "@hack-the-andes-project/business/fleet/plan-demo-trip";
 import type { GpsCredentialsInput } from "@hack-the-andes-project/business/providers/index";
 import type { Geometry, LineString } from "geojson";
 
@@ -22,6 +23,7 @@ export interface FleetVehicle {
 	lastHeading: number | null;
 	lastSpeedKmh: number | null;
 	lastPositionAt: Date | null;
+	provider: FleetConnection["provider"] | null;
 	activeTrip: {
 		id: string;
 		name: string;
@@ -54,6 +56,16 @@ export interface FleetTripInput {
 	name: string;
 	destination: FleetDestination;
 	destinationName?: string;
+}
+
+export interface FleetDemoRouteInput {
+	vehicleId: string;
+	scenario: DemoTripScenario;
+}
+
+export interface FleetDemoRoute {
+	destination: FleetDestination;
+	incidentTitle: string | null;
 }
 
 export interface FleetConnectionInput {

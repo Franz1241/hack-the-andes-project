@@ -1,7 +1,7 @@
 import {
 	type EvaluateTripResult,
 	evaluateTrip,
-	isAlertableIncident,
+	loadAlertableIncidents,
 	pruneVehiclePositions,
 	resolveObsoleteAlerts,
 	type SyncConnectionResult,
@@ -13,7 +13,6 @@ import {
 	trip,
 	vehicle,
 } from "@hack-the-andes-project/db/schema/fleet";
-import { incident } from "@hack-the-andes-project/db/schema/scraper";
 import { and, eq } from "drizzle-orm";
 import { createLogger } from "evlog";
 import { initWorkersLogger } from "evlog/workers";
@@ -85,7 +84,7 @@ async function syncAll(
 					});
 				}
 			}
-			const [activeTrips, activeIncidents] = await Promise.all([
+			const [activeTrips, incidents] = await Promise.all([
 				db
 					.select({ trip, vehicle })
 					.from(trip)
@@ -102,20 +101,8 @@ async function syncAll(
 							connectionId ? eq(vehicle.connectionId, connectionId) : undefined,
 						),
 					),
-				db
-					.select({
-						id: incident.id,
-						category: incident.category,
-						severity: incident.severity,
-						title: incident.title,
-						geometry: incident.geometry,
-						lat: incident.lat,
-						lng: incident.lng,
-					})
-					.from(incident)
-					.where(eq(incident.active, true)),
+				loadAlertableIncidents(db),
 			]);
-			const incidents = activeIncidents.filter(isAlertableIncident);
 			for (const entry of activeTrips) {
 				try {
 					summary.trips.push(

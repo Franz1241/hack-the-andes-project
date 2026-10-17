@@ -19,6 +19,12 @@ export const VEHICLE_POSITION_REQUIRED_MESSAGE =
 	"Elige un vehículo de tu organización que ya tenga una posición GPS antes de crear el viaje.";
 export const ROUTING_FAILED_MESSAGE =
 	"No pudimos calcular una ruta por carretera hasta este destino. Revisa el destino e inténtalo de nuevo.";
+export const DEMO_VEHICLE_REQUIRED_MESSAGE =
+	"Las rutas demo solo están disponibles para camiones de una flota demo con posición GPS.";
+export const DEMO_HAZARD_ROUTE_NOT_FOUND_MESSAGE =
+	"No encontramos un incidente activo en carretera cerca de este camión. Prueba con otro camión o marca el destino en el mapa.";
+export const DEMO_CLEAR_ROUTE_NOT_FOUND_MESSAGE =
+	"No encontramos una ruta sin incidentes cerca de este camión. Prueba con otro camión o marca el destino en el mapa.";
 export const TRIP_NOT_FOUND_MESSAGE = "No encontramos ese viaje.";
 export const TRIP_NOT_ACTIVE_MESSAGE =
 	"Solo se pueden cancelar o completar viajes activos.";

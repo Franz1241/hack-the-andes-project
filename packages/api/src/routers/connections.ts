@@ -1,5 +1,6 @@
 import { encryptJson } from "@hack-the-andes-project/business/crypto/index";
 import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
+import { syncConnection } from "@hack-the-andes-project/business/fleet/sync-connection";
 import {
 	gpsCredentialsSchema,
 	providerFor,
@@ -107,14 +108,20 @@ export const connectionsRouter = {
 				input.credentials,
 			);
 			const connectionId = crypto.randomUUID();
-			await context.db.insert(gpsConnection).values({
+			const createdAt = new Date();
+			const createdConnection: typeof gpsConnection.$inferSelect = {
 				id: connectionId,
 				organizationId: context.organizationId,
 				provider: provider.kind,
 				label: input.label,
 				encryptedCredentials,
 				status: CONNECTION_STATUS_ACTIVE,
-			});
+				lastSyncAt: null,
+				lastError: null,
+				createdAt,
+				updatedAt: createdAt,
+			};
+			await context.db.insert(gpsConnection).values(createdConnection);
 			context.log.set({ fleet: { connectionId } });
 			const providerVehicles = await provider
 				.listVehicles(input.credentials)
@@ -162,6 +169,17 @@ export const connectionsRouter = {
 							active: true,
 						},
 					});
+			}
+			// The simulated fleet answers instantly, so place it on the map now
+			// instead of leaving the demo idle until the next fleet-sync tick.
+			if (input.credentials.provider === "demo") {
+				await syncConnection({
+					db: context.db,
+					encryptionKey: context.encryptionKey,
+					connection: createdConnection,
+					now: createdAt,
+					log: context.log,
+				});
 			}
 			const [connection] = await connectionSummaries(
 				context.db,

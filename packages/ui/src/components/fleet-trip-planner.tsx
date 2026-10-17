@@ -2,12 +2,15 @@ import { useState } from "react";
 
 import { FLEET_COORDINATE_FRACTION_DIGITS } from "../constants";
 import type {
+	FleetDemoRoute,
+	FleetDemoRouteInput,
 	FleetDestination,
 	FleetTripInput,
 	FleetVehicle,
 } from "../lib/fleet";
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import { Button } from "./button";
+import { ButtonGroup } from "./button-group";
 import {
 	Card,
 	CardContent,
@@ -30,23 +33,54 @@ import {
 export interface FleetTripPlannerProps {
 	vehicles: FleetVehicle[];
 	isPending: boolean;
+	isPlanningDemoRoute: boolean;
 	onCreate: (input: FleetTripInput) => Promise<unknown>;
+	onPlanDemoRoute: (input: FleetDemoRouteInput) => Promise<FleetDemoRoute>;
 	onClose: () => void;
 }
 
 export function FleetTripPlanner({
 	vehicles,
 	isPending,
+	isPlanningDemoRoute,
 	onCreate,
+	onPlanDemoRoute,
 	onClose,
 }: FleetTripPlannerProps) {
 	const [vehicleId, setVehicleId] = useState<string>();
 	const [destination, setDestination] = useState<FleetDestination>();
+	const [demoRoute, setDemoRoute] = useState<FleetDemoRoute>();
+	const [tripName, setTripName] = useState("");
+	const [destinationName, setDestinationName] = useState("");
 	const [error, setError] = useState<string>();
 	const selectedVehicle = vehicles.find((vehicle) => vehicle.id === vehicleId);
 	const locatedVehicles = vehicles.filter(
 		(vehicle) => vehicle.lastLat !== null && vehicle.lastLng !== null,
 	);
+	async function planDemoRoute(scenario: FleetDemoRouteInput["scenario"]) {
+		if (!selectedVehicle) return;
+		setError(undefined);
+		try {
+			const plannedRoute = await onPlanDemoRoute({
+				vehicleId: selectedVehicle.id,
+				scenario,
+			});
+			setDemoRoute(plannedRoute);
+			setDestination(plannedRoute.destination);
+			setTripName(
+				plannedRoute.incidentTitle
+					? "Demo con incidente en ruta"
+					: "Demo sin incidentes",
+			);
+			setDestinationName("Destino demo");
+		} catch (cause) {
+			setError(
+				cause instanceof Error
+					? cause.message
+					: "No se pudo preparar la ruta demo.",
+			);
+		}
+	}
 	return (
 		<Card>
 			<CardHeader>
@@ -95,6 +129,7 @@ export function FleetTripPlanner({
 									onValueChange={(value) => {
 										setVehicleId(value ?? undefined);
 										setDestination(undefined);
+										setDemoRoute(undefined);
 									}}
 									disabled={isPending}
 									items={locatedVehicles.map((vehicle) => ({
@@ -125,6 +160,8 @@ export function FleetTripPlanner({
 									id="trip-name"
 									name="name"
 									placeholder="Entrega a Arequipa"
+									value={tripName}
+									onChange={(event) => setTripName(event.target.value)}
 									required
 								/>
 							</Field>
@@ -136,8 +173,42 @@ export function FleetTripPlanner({
 									id="trip-destination-name"
 									name="destinationName"
 									placeholder="Almacén de destino"
+									value={destinationName}
+									onChange={(event) => setDestinationName(event.target.value)}
 								/>
 							</Field>
+							{selectedVehicle?.provider === "demo" && (
+								<Field>
+									<FieldLabel id="trip-demo-route-label">Ruta demo</FieldLabel>
+									<ButtonGroup aria-labelledby="trip-demo-route-label">
+										<Button
+											type="button"
+											variant="outline"
+											disabled={isPlanningDemoRoute}
+											onClick={() => planDemoRoute("hazard")}
+										>
+											Pasa por un incidente
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											disabled={isPlanningDemoRoute}
+											onClick={() => planDemoRoute("clear")}
+										>
+											Sin incidentes
+										</Button>
+									</ButtonGroup>
+									<FieldDescription aria-live="polite">
+										{isPlanningDemoRoute
+											? "Buscando una ruta…"
+											: demoRoute
+												? demoRoute.incidentTitle
+													? `La ruta pasa por «${demoRoute.incidentTitle}».`
+													: "La ruta no pasa por ningún incidente activo."
+												: "Marca un destino de prueba con o sin un incidente activo en el camino."}
+									</FieldDescription>
+								</Field>
+							)}
 						</FieldGroup>
 					</fieldset>
 					{selectedVehicle?.activeTrip && (
@@ -151,10 +222,30 @@ export function FleetTripPlanner({
 					)}
 					<FleetMap
 						vehicles={selectedVehicle ? [selectedVehicle] : locatedVehicles}
-						focusKey={selectedVehicle?.id ?? "planner"}
+						focusKey={
+							demoRoute
+								? `${selectedVehicle?.id}:${demoRoute.destination.lat},${demoRoute.destination.lng}`
+								: (selectedVehicle?.id ?? "planner")
+						}
+						focusGeometry={
+							demoRoute
+								? {
+										type: "Point",
+										coordinates: [
+											demoRoute.destination.lng,
+											demoRoute.destination.lat,
+										],
+									}
+								: null
+						}
 						destination={destination}
 						onDestinationChange={
-							selectedVehicle && !isPending ? setDestination : undefined
+							selectedVehicle && !isPending
+								? (nextDestination) => {
+										setDestination(nextDestination);
+										setDemoRoute(undefined);
+									}
+								: undefined
 						}
 						label="Seleccionar destino del viaje"
 					/>

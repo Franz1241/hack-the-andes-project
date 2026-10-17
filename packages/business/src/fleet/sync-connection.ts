@@ -2,6 +2,7 @@ import type { Database } from "@hack-the-andes-project/db";
 import { ID_LENGTH_CHARS } from "@hack-the-andes-project/db/schema/constants";
 import {
 	gpsConnection,
+	trip,
 	vehicle,
 	vehiclePosition,
 } from "@hack-the-andes-project/db/schema/fleet";
@@ -14,7 +15,11 @@ import {
 	HEX_RADIX,
 } from "../constants";
 import { decryptJson } from "../crypto/index";
-import { gpsCredentialsSchema, providerFor } from "../providers/index";
+import {
+	gpsCredentialsSchema,
+	providerFor,
+	simulateDemoPositions,
+} from "../providers/index";
 import { planPositionUpdates } from "./decisions";
 import { incomingValue } from "./sql";
 
@@ -61,7 +66,38 @@ export async function syncConnection({
 		const provider = providerFor(connection.provider);
 		const [providerVehicles, positions] = await Promise.all([
 			provider.listVehicles(credentials),
-			provider.fetchLatestPositions(credentials),
+			credentials.provider === "demo"
+				? db
+						.select({
+							externalId: vehicle.externalId,
+							lastLat: vehicle.lastLat,
+							lastLng: vehicle.lastLng,
+							activeTrip: {
+								routeGeometry: trip.routeGeometry,
+								routeDistanceM: trip.routeDistanceM,
+								routeDurationS: trip.routeDurationS,
+								destinationLat: trip.destinationLat,
+								destinationLng: trip.destinationLng,
+								createdAt: trip.createdAt,
+							},
+						})
+						.from(vehicle)
+						.leftJoin(
+							trip,
+							and(
+								eq(trip.vehicleId, vehicle.id),
+								eq(trip.organizationId, vehicle.organizationId),
+								eq(trip.status, "active"),
+							),
+						)
+						.where(
+							and(
+								eq(vehicle.connectionId, connection.id),
+								eq(vehicle.organizationId, connection.organizationId),
+							),
+						)
+						.then((fleet) => simulateDemoPositions(fleet, now))
+				: provider.fetchLatestPositions(credentials),
 		]);
 		failureMessage = "No se pudieron guardar los vehículos y posiciones GPS.";
 		const vehicles = [

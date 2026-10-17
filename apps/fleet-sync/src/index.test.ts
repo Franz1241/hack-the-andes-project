@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
 	evaluateTrip: vi.fn(),
 	pruneVehiclePositions: vi.fn(),
 	resolveObsoleteAlerts: vi.fn(),
+	loadAlertableIncidents: vi.fn(async () => []),
 }));
 vi.mock("./env.server", () => ({
 	ENV: {
@@ -16,10 +17,7 @@ vi.mock("./env.server", () => ({
 	},
 }));
 vi.mock("@hack-the-andes-project/db", () => ({ createDb: mocks.createDb }));
-vi.mock("@hack-the-andes-project/business", () => ({
-	...mocks,
-	isAlertableIncident: () => true,
-}));
+vi.mock("@hack-the-andes-project/business", () => mocks);
 vi.mock("evlog/workers", () => ({ initWorkersLogger: vi.fn() }));
 vi.mock("evlog", () => ({
 	createLogger: () => ({ set: vi.fn(), setLevel: vi.fn(), emit: vi.fn() }),
@@ -65,8 +63,7 @@ describe("fleet-sync run endpoint", () => {
 				.mockResolvedValueOnce([
 					{ trip: { id: "trip-1" }, vehicle: {} },
 					{ trip: { id: "trip-2" }, vehicle: {} },
-				])
-				.mockResolvedValueOnce([]),
+				]),
 		};
 		mocks.createDb.mockResolvedValue({ select: () => query, $client: { end } });
 		let inFlight = 0;
