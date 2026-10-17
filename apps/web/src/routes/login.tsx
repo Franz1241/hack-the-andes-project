@@ -6,6 +6,8 @@ import { AuthShell } from "@hack-the-andes-project/ui/components/auth-shell";
 import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 
+import { LanguageToggle } from "@/components/language-toggle";
+import { ModeToggle } from "@/components/mode-toggle";
 import {
 	AUTH_ERROR_MESSAGES,
 	DEFAULT_AUTH_ERROR_MESSAGE,
@@ -30,7 +32,14 @@ function LoginRoute() {
 	const [mode, setMode] = useState<AuthMode>("sign-in");
 
 	return (
-		<AuthShell>
+		<AuthShell
+			headerActions={
+				<>
+					<LanguageToggle />
+					<ModeToggle />
+				</>
+			}
+		>
 			<AuthForm
 				key={mode}
 				mode={mode}

@@ -17,6 +17,7 @@ import {
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 
+import { LanguageToggle } from "@/components/language-toggle";
 import { ModeToggle } from "@/components/mode-toggle";
 import UserMenu from "@/components/user-menu";
 import {
@@ -110,24 +111,21 @@ function DashboardLayout() {
 			<DashboardSidebar
 				items={navigationItems}
 				homeLink={<Link to="/dashboard" />}
-				footer={
-					<>
-						<UserMenu />
-						<ModeToggle />
-					</>
-				}
+				footer={<UserMenu />}
 			/>
 			<SidebarInset className="min-w-0 overflow-hidden">
 				<header className="flex h-14 shrink-0 items-center gap-3 border-b px-4">
 					<SidebarTrigger aria-label="Abrir o cerrar navegación" />
 					<Separator orientation="vertical" className="h-4" />
-					<h1 className="font-heading font-medium text-sm">
+					<h1 className="type-heading min-w-0 truncate">
 						{navigationItems.find((item) => item.active)?.label ??
 							"Centro de operaciones"}
 					</h1>
-					<Badge variant="outline" className="ml-auto">
-						Perú
-					</Badge>
+					<div className="ml-auto flex shrink-0 items-center gap-2">
+						<Badge variant="outline">Perú</Badge>
+						<LanguageToggle />
+						<ModeToggle />
+					</div>
 				</header>
 				<div className="flex min-h-0 flex-1 flex-col overflow-auto">
 					<Outlet />
