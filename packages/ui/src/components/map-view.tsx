@@ -4,6 +4,7 @@ import type { ComponentProps } from "react";
 import MapLibre from "react-map-gl/maplibre";
 
 import {
+	MAP_SPANISH_LOCALE,
 	OPENFREEMAP_STYLE_URL,
 	PERU_INITIAL_VIEW_STATE,
 } from "./map-constants";
@@ -32,6 +33,7 @@ export interface MapProps extends ComponentProps<typeof MapLibre> {}
 export function MapView({
 	initialViewState = PERU_INITIAL_VIEW_STATE,
 	mapStyle = OPENFREEMAP_STYLE_URL,
+	locale = MAP_SPANISH_LOCALE,
 	children,
 	...props
 }: MapProps) {
@@ -39,6 +41,7 @@ export function MapView({
 		<MapLibre
 			initialViewState={initialViewState}
 			mapStyle={mapStyle}
+			locale={locale}
 			renderWorldCopies={false}
 			{...props}
 		>

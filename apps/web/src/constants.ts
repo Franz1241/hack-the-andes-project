@@ -23,3 +23,7 @@ export const INCIDENT_SINCE_PRESETS: SincePreset[] = [
 ];
 
 export const EMPTY_INCIDENTS: Incident[] = [];
+
+export const ALERT_REFETCH_INTERVAL_MS = 30_000;
+export const FLEET_REFETCH_INTERVAL_MS = 120_000;
+export const SEEN_ALERTS_STORAGE_PREFIX = "illapa-seen-alerts-v1";
