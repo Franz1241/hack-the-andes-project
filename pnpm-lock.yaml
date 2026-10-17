@@ -463,6 +463,9 @@ importers:
       '@orpc/zod':
         specifier: 'catalog:'
         version: 1.15.7(@opentelemetry/api@1.9.1)(@orpc/contract@1.15.7(@opentelemetry/api@1.9.1))(@orpc/server@1.15.7(@opentelemetry/api@1.9.1)(ws@8.22.0))(ws@8.22.0)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 1.0.0-rc.4(@cloudflare/workers-types@5.20261016.1)(@effect/sql-d1@4.0.5(effect@4.0.5))(@effect/sql-sqlite-do@4.0.5(effect@4.0.5))(@electric-sql/pglite@0.3.15)(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)(@planetscale/database@1.20.2)(effect@4.0.5)(mysql2@3.24.6(@types/node@26.6.5))(valibot@1.2.0(typescript@6.0.3))(zod@4.6.7)
       evlog:
         specifier: 'catalog:'
         version: 2.32.0(@orpc/server@1.15.7(@opentelemetry/api@1.9.1)(ws@8.22.0))(ai@7.0.143(zod@4.6.7))(express@5.3.0(supports-color@8.1.1))(hono@4.13.13)(react@19.3.1)(vite@8.3.4(@types/node@26.6.5)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
@@ -473,6 +476,9 @@ importers:
       '@hack-the-andes-project/config':
         specifier: workspace:*
         version: link:../config
+      '@types/geojson':
+        specifier: 'catalog:'
+        version: 7946.0.16
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
