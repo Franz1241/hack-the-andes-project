@@ -1,0 +1,90 @@
+---
+import DemoRequestDialog from "@hack-the-andes-project/ui/components/demo-request-dialog";
+import {
+	CONTACT_PHONE_DISPLAY,
+	CONTACT_PHONE_E164,
+	DEMO_REQUESTS_PATH,
+} from "@/constants";
+import { ENV } from "@/env.public";
+import { HERO_FEED } from "@/hero-data";
+import HeroMap from "./hero-map";
+
+const stateDot = {
+	active: "bg-ember",
+	watch: "bg-lightning",
+	social: "bg-puna",
+};
+---
+
+<section class="relative min-h-svh overflow-hidden bg-secondary">
+	<div class="absolute inset-0 lg:left-[28%]" aria-hidden="true">
+		<HeroMap client:only="react" />
+	</div>
+	<div
+		class="pointer-events-none absolute inset-y-0 left-0 w-full bg-gradient-to-r from-background via-background/85 to-transparent sm:w-3/5 lg:w-[55%]"
+		aria-hidden="true"
+	>
+	</div>
+
+	<div
+		class="relative mx-auto grid min-h-svh max-w-7xl grid-rows-[1fr_auto] gap-10 px-5 pt-28 pb-10 sm:px-8 lg:grid-cols-12 lg:grid-rows-1 lg:items-end lg:pb-16"
+	>
+		<div class="max-w-xl self-center lg:col-span-6">
+			<h1 class="text-5xl leading-[0.95] font-semibold sm:text-6xl lg:text-7xl">
+				Despacha sabiendo qué pasa en la ruta.
+			</h1>
+			<p class="mt-6 max-w-md text-lg text-muted-foreground">
+				Illapa reúne las alertas de lluvias, huaicos, heladas, incendios y
+				bloqueos del Perú, las cruza con tu red de corredores y te avisa qué
+				tramos se ven afectados y por cuánto tiempo.
+			</p>
+			<div class="mt-8 flex flex-wrap items-center gap-3">
+				<DemoRequestDialog
+					client:load
+					endpoint={DEMO_REQUESTS_PATH}
+					contactPhone={CONTACT_PHONE_E164}
+					contactPhoneDisplay={CONTACT_PHONE_DISPLAY}
+					triggerClassName="h-11 px-5 text-base"
+				/>
+				<a
+					href={`${ENV.PUBLIC_APP_URL}/login`}
+					class="inline-flex h-11 items-center px-3 font-medium underline-offset-4 hover:underline"
+				>
+					Ya tengo cuenta
+				</a>
+			</div>
+			<p class="mt-10 text-sm text-muted-foreground">
+				Hecho para operaciones de carga en el Perú, con datos del SENAMHI,
+				ENFEN, INDECI, Provías y la NASA.
+			</p>
+		</div>
+
+		<aside
+			aria-label="Alertas recientes de ejemplo"
+			class="w-full max-w-sm justify-self-start bg-puna text-puna-foreground shadow-xl lg:col-span-5 lg:col-start-8 lg:justify-self-end"
+		>
+			<div class="flex items-baseline justify-between border-b border-puna-foreground/15 px-5 py-3">
+				<h2 class="text-sm font-medium">Tu red, hoy</h2>
+				<span class="font-mono text-xs text-puna-foreground/60">8 corredores</span>
+			</div>
+			<ol class="divide-y divide-puna-foreground/15">
+				{
+					HERO_FEED.map((entry) => (
+						<li class="grid grid-cols-[auto_1fr] gap-x-3 px-5 py-3">
+							<span class="mt-1.5 flex items-start">
+								<span class:list={["size-2 rounded-full", stateDot[entry.state]]} />
+							</span>
+							<div>
+								<div class="flex items-baseline justify-between gap-3">
+									<span class="text-sm font-medium">{entry.corridor}</span>
+									<time class="font-mono text-xs text-puna-foreground/60">{entry.time}</time>
+								</div>
+								<p class="mt-0.5 text-sm text-puna-foreground/80">{entry.message}</p>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+		</aside>
+	</div>
+</section>

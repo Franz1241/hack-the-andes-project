@@ -28,7 +28,8 @@
 			"!**/.source",
 			"!**/convex/_generated",
 			"!.agents",
-			"!.claude"
+			"!.claude",
+			"!**/.astro"
 		]
 	},
 	"formatter": {
@@ -71,6 +72,28 @@
 			"quoteStyle": "double"
 		}
 	},
+	"overrides": [
+		{
+			"includes": ["**/*.astro"],
+			"linter": {
+				"rules": {
+					"correctness": {
+						"noUnusedImports": "off",
+						"noUnusedVariables": "off"
+					}
+				}
+			}
+		},
+		{
+			"includes": ["packages/ui/src/components/map.tsx"],
+			"linter": {
+				"rules": {
+					"suspicious": { "noShadowRestrictedNames": "off" },
+					"a11y": { "noSvgWithoutTitle": "off" }
+				}
+			}
+		}
+	],
 	"css": {
 		"parser": {
 			"tailwindDirectives": true

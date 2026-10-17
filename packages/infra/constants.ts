@@ -12,6 +12,10 @@ export const SERVER_WORKER_NAME = "hack-the-andes-server";
 export const WEB_WORKER_NAME = "hack-the-andes-web";
 export const API_DOMAIN = "api.illapa.app";
 export const WEB_DOMAIN = "dash.illapa.app";
+export const ILLAPA_WORKER_NAME = "hack-the-andes-illapa";
+export const ILLAPA_DOMAIN = "illapa.app";
+export const ILLAPA_DEMO_REQUESTS_KV_TITLE =
+	"hack-the-andes-illapa-demo-requests";
 
 export const SCRAPER_DEV_PORT = 3002;
 export const SCRAPER_WORKER_NAME = "hack-the-andes-scraper";

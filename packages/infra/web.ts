@@ -15,9 +15,11 @@ import {
 // `deploy:web` ships the SPA without touching the API Worker.
 export const web = Cloudflare.Website.Vite("web", {
 	name: WEB_WORKER_NAME,
-	domain: WEB_DOMAIN,
 	workersDev: true,
 	rootDir: "../../apps/web",
+	domain: {
+		name: WEB_DOMAIN,
+	},
 	assets: {
 		htmlHandling: "auto-trailing-slash",
 		notFoundHandling: "single-page-application",

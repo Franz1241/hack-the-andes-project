@@ -1,0 +1,23 @@
+---
+import { ENV } from "@/env.public";
+---
+
+<section id="demo" class="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:py-32">
+	<div class="max-w-2xl">
+		<h2 class="text-4xl font-semibold sm:text-5xl">
+			Mira tu red sobre el mapa esta semana
+		</h2>
+		<p class="mt-5 text-lg text-muted-foreground">
+			Crea una cuenta, carga tus corredores y te mostramos qué alertas los
+			habrían tocado en la última temporada de lluvias.
+		</p>
+		<div class="mt-8 flex flex-wrap items-center gap-3">
+			<a
+				href={`${ENV.PUBLIC_APP_URL}/login`}
+				class="inline-flex h-11 items-center bg-foreground px-5 font-medium text-background hover:bg-puna"
+			>
+				Crear cuenta
+			</a>
+		</div>
+	</div>
+</section>

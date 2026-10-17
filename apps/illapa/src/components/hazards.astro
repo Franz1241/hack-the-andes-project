@@ -1,0 +1,83 @@
+---
+interface Hazard {
+	name: string;
+	description: string;
+	regions: string;
+	season: string;
+}
+
+const hazards: Hazard[] = [
+	{
+		name: "Lluvias intensas y El Niño costero",
+		description:
+			"Avisos meteorológicos por nivel, caudal de ríos y el comunicado quincenal del ENFEN, para que el cambio de fase no te tome con la flota en la costa norte.",
+		regions: "Tumbes, Piura, Lambayeque, La Libertad, Áncash",
+		season: "Diciembre a abril",
+	},
+	{
+		name: "Huaicos y deslizamientos",
+		description:
+			"Quebradas activadas, cierres y restricciones de Provías y Sutran en las vías de penetración a la sierra.",
+		regions: "Carretera Central, Lima este, Arequipa, Cusco",
+		season: "Enero a marzo",
+	},
+	{
+		name: "Heladas y friaje",
+		description:
+			"Descensos de temperatura por debajo del umbral en los pasos de altura y el ingreso de frentes fríos a la selva.",
+		regions: "Puno, Cusco, Arequipa alta, Madre de Dios, Ucayali",
+		season: "Mayo a septiembre",
+	},
+	{
+		name: "Incendios forestales",
+		description:
+			"Focos de calor detectados por satélite, agrupados por distrito, con la dirección del viento prevista.",
+		regions: "Cusco, Madre de Dios, Ucayali, Cajamarca, Amazonas",
+		season: "Agosto a octubre",
+	},
+	{
+		name: "Bloqueos, paros y protestas",
+		description:
+			"Convocatorias anunciadas y bloqueos confirmados en carretera, con el punto exacto y la ventana horaria.",
+		regions: "Corredor minero sur, Panamericana Sur, Puno y Juliaca",
+		season: "Todo el año",
+	},
+	{
+		name: "Oleaje anómalo y cierre de puertos",
+		description:
+			"Avisos de la Dirección de Hidrografía y los cierres de puerto que retrasan la carga de exportación.",
+		regions: "Paita, Callao, Pisco, Matarani, Ilo",
+		season: "Todo el año, más frecuente de mayo a septiembre",
+	},
+];
+---
+
+<section id="vigilancia" class="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:py-32">
+	<div class="grid gap-12 lg:grid-cols-12">
+		<div class="lg:col-span-4">
+			<h2 class="text-3xl font-semibold sm:text-4xl">
+				Seis cosas que cortan una ruta en el Perú
+			</h2>
+			<p class="mt-5 max-w-sm text-muted-foreground">
+				Cada una tiene su temporada, sus regiones y su fuente oficial. Illapa
+				las sigue a todas y te muestra solo las que tocan tu operación.
+			</p>
+		</div>
+		<dl class="lg:col-span-8 lg:col-start-5">
+			{
+				hazards.map((hazard) => (
+					<div class="grid gap-3 border-t border-border py-7 sm:grid-cols-[1fr_12rem] sm:gap-10">
+						<div>
+							<dt class="text-xl font-medium">{hazard.name}</dt>
+							<dd class="mt-2 max-w-prose text-muted-foreground">{hazard.description}</dd>
+						</div>
+						<dd class="text-sm text-muted-foreground">
+							<p>{hazard.regions}</p>
+							<p class="mt-1 text-foreground">{hazard.season}</p>
+						</dd>
+					</div>
+				))
+			}
+		</dl>
+	</div>
+</section>

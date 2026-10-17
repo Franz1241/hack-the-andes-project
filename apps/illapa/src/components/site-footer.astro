@@ -1,0 +1,21 @@
+---
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_E164 } from "@/constants";
+
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="border-t border-border">
+	<div
+		class="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between sm:px-8"
+	>
+		<p>
+			<span class="font-heading font-semibold text-foreground">Illapa</span>, inteligencia climática para la logística del Perú.
+		</p>
+		<p>
+			<a href={`tel:${CONTACT_PHONE_E164}`} class="hover:underline underline-offset-4">
+				{CONTACT_PHONE_DISPLAY}
+			</a>
+			. Lima, Perú. {currentYear}.
+		</p>
+	</div>
+</footer>

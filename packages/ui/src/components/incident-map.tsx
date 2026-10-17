@@ -9,14 +9,6 @@ import { useMemo, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "./alert";
 import {
-	Map as BaseMap,
-	Layer,
-	type MapProps,
-	Marker,
-	NavigationControl,
-	Source,
-} from "./map";
-import {
 	INCIDENT_FILL_LAYER_ID,
 	INCIDENT_FILL_OPACITY_RATIO,
 	INCIDENT_GEOMETRY_SOURCE_ID,
@@ -29,6 +21,14 @@ import {
 	INCIDENT_POINT_STROKE_WIDTH_PX,
 } from "./map-constants";
 import { MapLegend } from "./map-legend";
+import {
+	Layer,
+	type MapProps,
+	MapView,
+	Marker,
+	NavigationControl,
+	Source,
+} from "./map-view";
 import { SeverityDot } from "./severity";
 import { Skeleton } from "./skeleton";
 
@@ -93,7 +93,7 @@ export function IncidentMap({
 			className="relative size-full overflow-hidden bg-muted"
 			aria-label="Mapa de incidentes en Perú"
 		>
-			<BaseMap
+			<MapView
 				{...props}
 				interactiveLayerIds={[
 					...INCIDENT_INTERACTIVE_LAYER_IDS,
@@ -182,7 +182,7 @@ export function IncidentMap({
 					) : null,
 				)}
 				{children}
-			</BaseMap>
+			</MapView>
 			{isMapLoading && (
 				<output
 					className="pointer-events-none absolute inset-0 block p-4"
