@@ -20,21 +20,11 @@
 	--border: oklch(0.83 0.012 200);
 	--input: oklch(0.83 0.012 200);
 	--ring: oklch(0.52 0.13 252);
-	--puna: oklch(0.3 0.04 250);
-	--puna-foreground: oklch(0.93 0.01 170);
-	--lightning: oklch(0.83 0.17 86);
-	--ember: oklch(0.58 0.2 36);
-	--river: oklch(0.52 0.13 252);
 }
 
 @theme inline {
 	--font-sans: "Bricolage Grotesque Variable", system-ui, sans-serif;
 	--font-heading: "Bricolage Grotesque Variable", system-ui, sans-serif;
-	--color-puna: var(--puna);
-	--color-puna-foreground: var(--puna-foreground);
-	--color-lightning: var(--lightning);
-	--color-ember: var(--ember);
-	--color-river: var(--river);
 }
 
 @layer base {
