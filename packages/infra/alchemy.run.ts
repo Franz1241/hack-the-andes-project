@@ -2,6 +2,7 @@ import * as Alchemy from "alchemy";
 import * as Cloudflare from "alchemy/Cloudflare";
 import * as Effect from "effect/Effect";
 
+import { illapa } from "./illapa.ts";
 import { server } from "./server.ts";
 import { web } from "./web.ts";
 
@@ -14,13 +15,17 @@ export default Alchemy.Stack(
 		state: Alchemy.localState(),
 	},
 	Effect.gen(function* () {
-		const [serverWorker, webWorker] = yield* Effect.all([server, web], {
-			concurrency: "unbounded",
-		});
+		const [serverWorker, webWorker, illapaWorker] = yield* Effect.all(
+			[server, web, illapa],
+			{
+				concurrency: "unbounded",
+			},
+		);
 
 		return {
 			server: serverWorker.url,
 			web: webWorker.url,
+			illapa: illapaWorker.url,
 		};
 	}),
 );
