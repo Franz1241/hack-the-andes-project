@@ -461,6 +461,17 @@ async function respond<Result>(produce: () => Result): Promise<Result> {
 export const routeReviewFixtureClient = {
 	routeReview: {
 		evaluate: (input: RouteReviewInput) => respond(() => evaluate(input)),
+		// A server evaluation needs this client-side vehicle's axles, and is kept
+		// here so Planificar viaje can reference it like a fixture review.
+		vehicleAxleCount: (vehicleId: string) => {
+			const profile = findVehicle(vehicleId).profile;
+			if (!profile) throw new Error(VEHICLE_PROFILE_REQUIRED_MESSAGE);
+			return profile.axleCount;
+		},
+		register: (review: RouteReview) => {
+			reviews.set(review.id, review);
+			return review;
+		},
 	},
 	vehicles: {
 		list: () =>
