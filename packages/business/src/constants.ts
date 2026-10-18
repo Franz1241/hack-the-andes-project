@@ -35,3 +35,15 @@ export const DEMO_CLEAR_TRIP_BEARINGS_DEG = [
 ];
 export const DEMO_TRIP_MIN_ROUTE_DISTANCE_M = 20_000;
 export const DEMO_TRIP_MAX_ATTEMPTS_COUNT = 8;
+
+export const MIN_ROUTE_RISK_SCORE = 0;
+export const MAX_ROUTE_RISK_SCORE = 100;
+export const MIN_VEHICLE_AXLE_COUNT = 2;
+export const MAX_VEHICLE_AXLE_COUNT = 9;
+export const MINUTES_PER_HOUR = 60;
+export const HOURS_PER_DAY = 24;
+export const MS_PER_MINUTE = SECONDS_PER_MINUTE * MS_PER_SECOND;
+export const MS_PER_HOUR = MINUTES_PER_HOUR * MS_PER_MINUTE;
+export const KG_PER_TONNE = 1_000;
+export const ROUTE_REVIEW_DEPARTURE_WINDOW_MS = HOURS_PER_DAY * MS_PER_HOUR;
+export { VEHICLE_PLATE_LENGTH_CHARS } from "@hack-the-andes-project/db/schema/constants";

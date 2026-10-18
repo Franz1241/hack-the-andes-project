@@ -1,4 +1,8 @@
-import { MIN_PASSWORD_LENGTH_CHARS } from "@hack-the-andes-project/business/constants";
+import {
+	MIN_PASSWORD_LENGTH_CHARS,
+	MS_PER_HOUR,
+	MS_PER_MINUTE,
+} from "@hack-the-andes-project/business/constants";
 import type {
 	Incident,
 	IncidentTimePreset,
@@ -182,6 +186,7 @@ export const EMPTY_INCIDENTS: Incident[] = [];
 
 export const ALERT_REFETCH_INTERVAL_MS = 30_000;
 export const FLEET_REFETCH_INTERVAL_MS = 120_000;
+export const STALE_TRIP_EVALUATION_MS = MS_PER_HOUR;
 export const SEEN_ALERTS_STORAGE_PREFIX = "illapa-seen-alerts-v1";
 
 export const TOO_MANY_REQUESTS_STATUS = 429;
@@ -211,3 +216,16 @@ export const SHOWCASE_RADIUS_SCALE = [
 ];
 
 export const USER_INITIALS_CHARACTER_COUNT = 2;
+
+export const ROUTE_REVIEW_TIME_ZONE = "America/Lima";
+export const ROUTE_REVIEW_TIME_OFFSET = "-05:00";
+export const ROUTE_REVIEW_LAST_VEHICLE_KEY = "route-review:last-vehicle:v1";
+export const ROUTE_REVIEW_MAP_LINE_WIDTH_PX = 3;
+export const ROUTE_REVIEW_MAP_SELECTED_WIDTH_PX = 6;
+export const ROUTE_REVIEW_MAP_CASING_WIDTH_PX = 8;
+
+export const ROUTE_REVIEW_DEPARTURE_STEP_MS = 15 * MS_PER_MINUTE;
+export const ROUTE_REVIEW_MAP_FIT_PADDING_PX = 32;
+export const ROUTE_REVIEW_MAP_LEGEND_PADDING_PX = 144;
+export const ROUTE_REVIEW_MAP_COMPACT_LEGEND_PADDING_PX = 72;
+export const ROUTE_REVIEW_MAP_COMPACT_HEIGHT_PX = 240;

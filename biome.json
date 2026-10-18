@@ -19,6 +19,7 @@
 			"!**/routeTree.gen.ts",
 			"!**/src/paraglide",
 			"!**/*.inlang",
+			"!**/fixtures/**/*.json",
 			"!**/src-tauri",
 			"!**/.nuxt",
 			"!bts.jsonc",

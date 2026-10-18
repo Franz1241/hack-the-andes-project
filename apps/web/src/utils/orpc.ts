@@ -14,6 +14,7 @@ export function createQueryClient() {
 	return new QueryClient({
 		queryCache: new QueryCache({
 			onError: (error, query) => {
+				if (query.meta?.silentError) return;
 				toast.error(m.query_error({ message: error.message }), {
 					action: {
 						label: m.query_retry(),
