@@ -29,11 +29,15 @@ import {
 	MS_PER_HOUR,
 	OFFICIAL_ALERT_CATEGORIES,
 	OFFICIAL_ALERT_RADIUS_M,
+	OFFICIAL_ALERT_WEIGHT,
+	RISK_SCORE_MAX,
 	WEATHER_GRID_DEG,
 	WEATHER_REQUEST_BATCH_POINTS,
 } from "./constants";
 import { countEventsNearby, strongestOfficialAlert } from "./exposure";
-import { scoreSegmentRisk } from "./score";
+import { modelFeatureVector, relativeModelScore } from "./model";
+import { GENERATED_RISK_MODEL } from "./model.generated";
+import { riskLevelForScore, scoreSegmentRisk } from "./score";
 import {
 	fetchHourlyPrecipitation,
 	type PrecipitationSeries,
@@ -193,22 +197,42 @@ export async function assessRoadRisk({
 			const precipitation = series
 				? summarizePrecipitation(series, now.getTime(), horizonHours)
 				: { antecedentMm: null, forecastMm: null };
-			const assessment = scoreSegmentRisk(
-				{ ...segment, historicalEventCount: historyCounts[index] ?? 0 },
-				{
-					forecastPrecipitationMm: precipitation.forecastMm,
-					antecedentPrecipitationMm: precipitation.antecedentMm,
-					officialAlertSeverity,
-				},
-			);
+			const features = {
+				...segment,
+				historicalEventCount: historyCounts[index] ?? 0,
+			};
+			const conditions = {
+				forecastPrecipitationMm: precipitation.forecastMm,
+				antecedentPrecipitationMm: precipitation.antecedentMm,
+				officialAlertSeverity,
+			};
+			const assessment = scoreSegmentRisk(features, conditions);
+			// The model is trained on environmental variables only, so official
+			// alerts are added on top exactly as the heuristic does.
+			const score = GENERATED_RISK_MODEL
+				? Math.min(
+						RISK_SCORE_MAX,
+						relativeModelScore(
+							GENERATED_RISK_MODEL,
+							GENERATED_RISK_MODEL.predictProbability(
+								modelFeatureVector(features, conditions, now),
+							),
+						) +
+							RISK_SCORE_MAX *
+								OFFICIAL_ALERT_WEIGHT *
+								assessment.components.officialAlert,
+					)
+				: assessment.score;
 			return {
 				id: crypto.randomUUID(),
 				segmentId: segment.id,
 				horizonHours,
-				score: assessment.score,
-				level: assessment.level,
-				method: "heuristic" as const,
-				modelVersion: HEURISTIC_MODEL_VERSION,
+				score,
+				level: riskLevelForScore(score),
+				method: GENERATED_RISK_MODEL
+					? ("model" as const)
+					: ("heuristic" as const),
+				modelVersion: GENERATED_RISK_MODEL?.version ?? HEURISTIC_MODEL_VERSION,
 				components: assessment.components,
 				forecastPrecipitationMm: precipitation.forecastMm,
 				antecedentPrecipitationMm: precipitation.antecedentMm,
