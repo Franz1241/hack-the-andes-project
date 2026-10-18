@@ -38,6 +38,8 @@ catalog:
   "@turf/buffer": ^7.4.0
   "@turf/bbox": ^7.4.0
   "@turf/distance": ^7.4.0
+  ngraph.graph: 20.1.2
+  ngraph.path: 1.6.1
   "@turf/length": ^7.4.0
   "@turf/line-intersect": ^7.4.0
   "@turf/nearest-point-on-line": ^7.4.0
