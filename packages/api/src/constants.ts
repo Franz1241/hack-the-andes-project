@@ -83,3 +83,8 @@ export const DEMO_CONNECTION_REMOVE_FORBIDDEN_MESSAGE =
 	"La cuenta demo no permite eliminar conexiones.";
 export const DEMO_PREPARE_FORBIDDEN_MESSAGE =
 	"Esta acción solo está disponible para la cuenta demo.";
+export const DEFAULT_RISK_HORIZON_HOURS = 24;
+export const DEFAULT_RISK_SEGMENT_LIMIT_ROWS = 2000;
+export const MAX_RISK_SEGMENT_LIMIT_ROWS = 10_000;
+export const RISK_DISCLAIMER_MESSAGE =
+	"Índice heurístico relativo de apoyo a decisiones, no una probabilidad calibrada. Contrasta siempre con las alertas oficiales de SENAMHI, INDECI y SUTRAN y revisa la fecha de cada evaluación.";
