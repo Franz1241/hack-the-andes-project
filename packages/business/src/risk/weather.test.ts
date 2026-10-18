@@ -90,6 +90,41 @@ describe("fetchHourlyPrecipitation", () => {
 		expect(result).toHaveLength(1);
 	});
 
+	it("retries once after a rate limit response", async () => {
+		const fetchImpl = vi
+			.fn<typeof fetch>()
+			.mockResolvedValueOnce(
+				Response.json({ error: true, reason: "limit" }, { status: 429 }),
+			)
+			.mockResolvedValueOnce(
+				Response.json({ hourly: { time: [NOW_S], precipitation: [2] } }),
+			);
+
+		const result = await fetchHourlyPrecipitation({
+			points: [{ lat: -11.8, lng: -76.4 }],
+			fetchImpl,
+			rateLimitRetryDelayMs: 0,
+		});
+
+		expect(fetchImpl).toHaveBeenCalledTimes(2);
+		expect(result).toEqual([{ timesS: [NOW_S], precipitationMm: [2] }]);
+	});
+
+	it("rejects when the rate limit persists after the retry", async () => {
+		const fetchImpl = vi.fn<typeof fetch>(async () =>
+			Response.json({ error: true, reason: "limit" }, { status: 429 }),
+		);
+
+		await expect(
+			fetchHourlyPrecipitation({
+				points: [{ lat: -11.8, lng: -76.4 }],
+				fetchImpl,
+				rateLimitRetryDelayMs: 0,
+			}),
+		).rejects.toThrow("HTTP 429");
+		expect(fetchImpl).toHaveBeenCalledTimes(2);
+	});
+
 	it("rejects when Open-Meteo answers with an error", async () => {
 		const fetchImpl = vi.fn<typeof fetch>(async () =>
 			Response.json({ error: true, reason: "bad" }, { status: 400 }),

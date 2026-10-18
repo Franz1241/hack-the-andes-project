@@ -8,7 +8,7 @@ import {
 } from "@hack-the-andes-project/db/schema/risk";
 import { incident, poi } from "@hack-the-andes-project/db/schema/scraper";
 import { nearestPointOnLine } from "@turf/nearest-point-on-line";
-import { and, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lte } from "drizzle-orm";
 import type { MySqlColumn } from "drizzle-orm/mysql-core";
 import type { Geometry, LineString, Position } from "geojson";
 
@@ -18,6 +18,7 @@ import {
 	CLOSURE_MATCH_RADIUS_M,
 	GEOMETRY_FETCH_BATCH_ROWS,
 	ROUTING_BOUNDS_MARGIN_DEG,
+	ROUTING_BOUNDS_SPAN_RATIO,
 } from "./constants";
 import { findRiskAwareRoutes, type RouteEvaluation } from "./route";
 
@@ -26,6 +27,13 @@ export interface CompareRiskAwareRoutesInput {
 	origin: LatLng;
 	destination: LatLng;
 	horizonHours: RiskHorizonHours;
+	now: Date;
+}
+
+export interface ClosureCandidateEdge {
+	id: string;
+	roadCode: string | null;
+	geometry: LineString;
 }
 
 export interface EvaluatedRoute extends Omit<RouteEvaluation, "edgeIds"> {
@@ -55,7 +63,7 @@ export interface RiskAwareRouteComparison {
 	assessedUntil: Date | null;
 }
 
-interface Bounds {
+export interface Bounds {
 	west: number;
 	south: number;
 	east: number;
@@ -114,18 +122,59 @@ async function withGeometry(
 	return { ...evaluation, geometry: { type: "LineString", coordinates } };
 }
 
+// Mountain roads detour far from the straight line between endpoints (Lima and
+// Huancayo share a latitude while the Carretera Central climbs ~0.5° north to
+// Ticlio), so the margin grows with the trip instead of staying fixed.
+export function routingBounds(origin: LatLng, destination: LatLng): Bounds {
+	const margin = Math.max(
+		ROUTING_BOUNDS_MARGIN_DEG,
+		ROUTING_BOUNDS_SPAN_RATIO *
+			Math.max(
+				Math.abs(origin.lat - destination.lat),
+				Math.abs(origin.lng - destination.lng),
+			),
+	);
+	return {
+		west: Math.min(origin.lng, destination.lng) - margin,
+		east: Math.max(origin.lng, destination.lng) + margin,
+		south: Math.min(origin.lat, destination.lat) - margin,
+		north: Math.max(origin.lat, destination.lat) + margin,
+	};
+}
+
+// A closure on a coded road (SUTRAN reports PE-xx) must not close a nearby
+// street or bridge with another code. Edges without a code stay blockable:
+// OSM sometimes lacks the ref on the very road that is closed, and routing
+// through an official closure is the worse mistake.
+export function closedEdgeIds(
+	edges: ClosureCandidateEdge[],
+	closures: RouteClosure[],
+): Set<string> {
+	return new Set(
+		edges
+			.filter((edge) =>
+				closures.some(
+					(closure) =>
+						(closure.roadCode === null ||
+							edge.roadCode === null ||
+							closure.roadCode === edge.roadCode) &&
+						nearestPointOnLine(edge.geometry, [closure.lng, closure.lat], {
+							units: "meters",
+						}).properties.pointDistance <= CLOSURE_MATCH_RADIUS_M,
+				),
+			)
+			.map((edge) => edge.id),
+	);
+}
+
 export async function compareRiskAwareRoutes({
 	db,
 	origin,
 	destination,
 	horizonHours,
+	now,
 }: CompareRiskAwareRoutesInput): Promise<RiskAwareRouteComparison> {
-	const bounds: Bounds = {
-		west: Math.min(origin.lng, destination.lng) - ROUTING_BOUNDS_MARGIN_DEG,
-		east: Math.max(origin.lng, destination.lng) + ROUTING_BOUNDS_MARGIN_DEG,
-		south: Math.min(origin.lat, destination.lat) - ROUTING_BOUNDS_MARGIN_DEG,
-		north: Math.max(origin.lat, destination.lat) + ROUTING_BOUNDS_MARGIN_DEG,
-	};
+	const bounds = routingBounds(origin, destination);
 
 	// Geometry stays out of the bulk load: only the chosen routes' edges and
 	// closure candidates need it.
@@ -138,6 +187,7 @@ export async function compareRiskAwareRoutes({
 				lengthM: roadEdge.lengthM,
 				travelTimeS: roadEdge.travelTimeS,
 				segmentId: roadEdge.segmentId,
+				roadCode: roadEdge.roadCode,
 				lat: roadEdge.lat,
 				lng: roadEdge.lng,
 			})
@@ -161,6 +211,9 @@ export async function compareRiskAwareRoutes({
 			.where(
 				and(
 					eq(segmentRiskAssessment.horizonHours, horizonHours),
+					// Expired assessments would route on yesterday's rain; they
+					// count as unassessed instead.
+					gt(segmentRiskAssessment.validUntil, now),
 					withinBounds(roadSegment, bounds),
 				),
 			),
@@ -187,29 +240,23 @@ export async function compareRiskAwareRoutes({
 			? []
 			: [{ ...closure, lat: closure.lat, lng: closure.lng }],
 	);
-	const candidateEdgeIds = edges
-		.filter((edge) =>
-			closures.some(
-				(closure) =>
-					Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
-					Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
-			),
-		)
-		.map((edge) => edge.id);
-	const candidateGeometries = await fetchEdgeGeometries(db, candidateEdgeIds);
-	const blockedEdgeIds = new Set(
-		candidateEdgeIds.filter((edgeId) => {
-			const geometry = candidateGeometries.get(edgeId);
-			return (
-				geometry &&
-				closures.some(
-					(closure) =>
-						nearestPointOnLine(geometry, [closure.lng, closure.lat], {
-							units: "meters",
-						}).properties.pointDistance <= CLOSURE_MATCH_RADIUS_M,
-				)
-			);
+	const candidateEdges = edges.filter((edge) =>
+		closures.some(
+			(closure) =>
+				Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
+				Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
+		),
+	);
+	const candidateGeometries = await fetchEdgeGeometries(
+		db,
+		candidateEdges.map((edge) => edge.id),
+	);
+	const blockedEdgeIds = closedEdgeIds(
+		candidateEdges.flatMap((edge) => {
+			const geometry = candidateGeometries.get(edge.id);
+			return geometry ? [{ ...edge, geometry }] : [];
 		}),
+		closures,
 	);
 
 	const routes = findRiskAwareRoutes({

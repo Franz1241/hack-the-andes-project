@@ -49,6 +49,7 @@ ARCHIVE_GRID_DEG = 0.25
 ARCHIVE_MODEL = "era5"
 OPEN_METEO_ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 ARCHIVE_BATCH_LOCATIONS = 10
+ARCHIVE_BILLING_DAYS = 14
 # Rain-triggered events concentrate in the austral wet season, so training
 # covers November–April only; that also keeps the archive inside the quota.
 WET_SEASON_FIRST_MONTH = 11
@@ -78,6 +79,7 @@ IMPUTED_FEATURES = {
 
 GENERATED_MODEL_FILE = REPOSITORY_ROOT / "packages" / "business" / "src" / "risk" / "model.generated.ts"
 LABELS_FILE = OUTPUT_DIR / "labels.parquet"
+TRAINING_SEGMENTS_FILE = OUTPUT_DIR / "training-segments.parquet"
 REPORT_FILE = OUTPUT_DIR / "training-report.json"
 
 
@@ -308,11 +310,20 @@ def main() -> None:
     if not LABELS_FILE.exists():
         raise SystemExit(f"{LABELS_FILE} is missing: run `python -m illapa_risk.labels` first")
     labels = pd.read_parquet(LABELS_FILE)
-    segments = route_segments(peru_extract())
+    # Route segments cost a full pass over the extract plus DEM and INGEMMET
+    # sampling, so they are kept between runs; delete the file to rebuild.
+    if TRAINING_SEGMENTS_FILE.exists():
+        segments = gpd.read_parquet(TRAINING_SEGMENTS_FILE)
+    else:
+        segments = route_segments(peru_extract())
+        segments.to_parquet(TRAINING_SEGMENTS_FILE)
 
     start = pd.to_datetime(labels["date"]).min().date() - timedelta(days=WINDOW_DAYS)
     end = date.today() - timedelta(days=ARCHIVE_DELAY_DAYS)
     cells = sorted({weather_cell(lat, lng) for lat, lng in zip(segments["lat"], segments["lng"], strict=True)})
+    seasons = wet_seasons(start, end)
+    billed_calls = len(cells) * sum(-(-((last - first).days + 1) // ARCHIVE_BILLING_DAYS) for first, last in seasons)
+    print(f"{len(segments)} segments, {len(labels)} labels, {len(cells)} rain cells, ~{billed_calls} billed archive calls", flush=True)
     rain = daily_rain(cells, start, end)
     events = segment_events(segments, labels)
     dataset = build_dataset(segments, events, rain)

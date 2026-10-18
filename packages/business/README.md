@@ -1,6 +1,6 @@
 # Business logic
 
-`@hack-the-andes-project/business` contains the shared fleet rules used by the API and fleet-sync Worker. Import from the package root or a module path such as `@hack-the-andes-project/business/fleet/evaluate-trip`.
+`@hack-the-andes-project/business` contains the shared fleet and road-risk rules used by the API, the fleet-sync Worker and the scraper Worker. Import from the package root or a module path such as `@hack-the-andes-project/business/fleet/evaluate-trip`.
 
 ## Modules and entry points
 
@@ -12,6 +12,22 @@
 - `fleet/prune-positions.ts`: `pruneVehiclePositions` removes up to 10,000 history rows older than 30 days. Vehicle checkpoints remain available.
 - `hazards/`: `projectOntoRoute`, `findHazardsAhead`, `chooseAlternativeRoute`, `estimateEta`, and `isAlertableIncident`. A buffered route bounding box rejects distant geometry before buffering individual hazards. Polygon alerts remain active while the vehicle is inside the hazard.
 - `routing/osrm.ts`: `fetchRouteCandidates` requests driving alternatives with full GeoJSON geometry. Requests time out after 15 seconds; HTTP failures and unusable routes are rejected.
+- `risk/score.ts`: `scoreSegmentRisk` is the heuristic index.
+  - Static susceptibility: mass movement 40 %, terrain slope 20 %, fluvial flood × river proximity 25 %, nearby historical landslides and floods 15 %.
+  - Rain trigger: the wettest forecast day inside the horizon, saturating at 25 mm, plus half-weighted 72 h antecedent rain, saturating at 60 mm. Dry days keep a 20 % floor.
+  - Official alerts are added on top, and the result is scaled to 0–100.
+  - Levels: `low` < 25, `moderate` < 50, `high` < 75, otherwise `very_high`. Missing static features use a 0.5 prior instead of 0.
+- `risk/assess.ts`: `assessRoadRisk` scores every segment for 24, 48 and 72 h and upserts one row per segment and horizon.
+  - Weather comes from Open-Meteo on a 0.1° grid, at most 100 cells per request, with one retry after a 429.
+  - Polygon alerts apply by containment and point alerts within 2 km.
+  - Segments whose weather cell failed keep their previous assessment.
+  - When `model.generated.ts` holds a model, its probability is mapped to 0–100 through the training quantiles and official alerts are still added.
+- `risk/compare-routes.ts` and `risk/route.ts`: `compareRiskAwareRoutes` loads the graph inside a box that grows with the trip (half its span, at least 0.3°).
+  - Edges within 300 m of an active SUTRAN `interrumpido` incident are removed from the graph (`closedEdgeIds`). An edge whose road code differs from the closure's is kept. Edges with no code are still removed, because OSM sometimes lacks the `ref` on the closed road itself.
+  - Only assessments whose `validUntil` is after `now` are used. Expired ones count as unassessed distance.
+  - It runs ngraph.path A* for the fastest route and for a risk-penalized cost: travel time × (1 + 3 × score / 100).
+  - Each route reports distance, duration, length-weighted mean risk, max risk, distance in `high` or worse, and unassessed distance. SUTRAN `alt_route` POIs are returned only when no route exists.
+- `risk/weather.ts`, `risk/exposure.ts`, `risk/model.ts`: Open-Meteo parsing and windows, the spatial alert and history matching, and the model feature vector and quantile mapping, in the order `tools/risk-pipeline/illapa_risk/train.py` expects.
 - `providers/`: `providerFor`, `gpsCredentialsSchema`, `geotabProvider`, and `samsaraProvider`. Geotab uses HTTPS MyGeotab hosts, follows validated federation hosts, and retries an expired session once. Samsara requires Read Vehicles and Read Vehicle Statistics permissions, uses Bearer authentication, and follows cursors with a 100-page cap per collection. `demoProvider` needs no credentials and imports the six trucks in `DEMO_VEHICLES`. For demo connections `syncConnection` uses `simulateDemoPositions` instead of a provider request. A truck with an active trip follows the trip route at the planned OSRM pace times `DEMO_TIME_ACCELERATION_FACTOR`, reports the unaccelerated speed and stops at the requested destination. An idle truck stays where it last stopped, or at its depot. The API runs the first demo sync when the connection is created.
 - `crypto/`: `encryptJson`, `decryptJson`, and `generateEncryptionKeyBase64` use AES-256-GCM with a fresh IV. The key is 32 bytes encoded as base64; ciphertext is `base64(iv).base64(payload)`.
 - `demo-request.ts`: validation for the public demo request form.

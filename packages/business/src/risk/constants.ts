@@ -48,6 +48,8 @@ export const RISK_LEVEL_MIN_SCORES = {
 
 export const OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 export const OPEN_METEO_REQUEST_TIMEOUT_MS = 20_000;
+export const OPEN_METEO_RATE_LIMIT_RETRY_DELAY_MS = 61_000;
+export const HTTP_TOO_MANY_REQUESTS = 429;
 // One extra forecast day so a 72 h horizon starting mid-day is fully covered.
 export const OPEN_METEO_FORECAST_DAYS = 4;
 // Weather models resolve ~9–13 km, so segments sharing a 0.1° cell share one
@@ -80,6 +82,7 @@ export const MAX_SNAP_DISTANCE_M = 5_000;
 // Upper bound on road speed keeps the A* heuristic admissible.
 export const MAX_ROAD_SPEED_MPS = 120 / 3.6;
 export const ROUTING_BOUNDS_MARGIN_DEG = 0.3;
+export const ROUTING_BOUNDS_SPAN_RATIO = 0.5;
 // Simplified OSMnx edges in the Andes can run several km, so closures look for
 // candidate edges by midpoint well beyond the match radius.
 export const CLOSURE_CANDIDATE_RADIUS_DEG = 0.05;
