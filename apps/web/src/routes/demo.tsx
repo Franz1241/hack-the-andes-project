@@ -88,6 +88,7 @@ function DemoRoute() {
 						<Button
 							className="min-h-11"
 							variant="link"
+							nativeButton={false}
 							render={<Link to="/login" />}
 						>
 							{m.account_sign_in()}
