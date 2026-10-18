@@ -119,6 +119,27 @@ export const routeReviewSchema = z.object({
 	evaluatedAt: z.date(),
 });
 
+// The server evaluates a route review for an axle count; vehicles still live
+// on the client until their profiles are stored.
+export const routeReviewEvaluateInputSchema = z
+	.object({
+		originPlaceId: placeIdSchema,
+		destinationPlaceId: placeIdSchema,
+		departureAt: z.date(),
+		vehicleAxleCount: z
+			.number()
+			.int()
+			.min(MIN_VEHICLE_AXLE_COUNT)
+			.max(MAX_VEHICLE_AXLE_COUNT),
+	})
+	.refine((input) => input.originPlaceId !== input.destinationPlaceId, {
+		message: SAME_ORIGIN_AND_DESTINATION_MESSAGE,
+	});
+
+export const evaluatedRouteReviewSchema = routeReviewSchema.omit({
+	vehicleId: true,
+});
+
 export const vehicleProfileSchema = z.object({
 	vehicleTypeId: z.enum(VEHICLE_TYPE_IDS),
 	axleCount: z
@@ -195,6 +216,10 @@ export interface RouteReviewCandidate
 export interface RouteReviewInput
 	extends z.infer<typeof routeReviewInputSchema> {}
 export interface RouteReview extends z.infer<typeof routeReviewSchema> {}
+export interface RouteReviewEvaluateInput
+	extends z.infer<typeof routeReviewEvaluateInputSchema> {}
+export interface EvaluatedRouteReview
+	extends z.infer<typeof evaluatedRouteReviewSchema> {}
 export interface VehicleProfile extends z.infer<typeof vehicleProfileSchema> {}
 export interface VehicleCreateInput
 	extends z.infer<typeof vehicleCreateInputSchema> {}
