@@ -1,4 +1,7 @@
-import type { RiskLevel } from "@hack-the-andes-project/db/schema/risk";
+import type {
+	RiskComponents,
+	RiskLevel,
+} from "@hack-the-andes-project/db/schema/risk";
 
 import {
 	ANTECEDENT_RAIN_SATURATION_MM,
@@ -54,6 +57,22 @@ export function riskLevelForScore(score: number): RiskLevel {
 	return "low";
 }
 
+function combineRiskScore(
+	staticSusceptibility: number,
+	trigger: number,
+	officialAlert: number,
+): number {
+	return (
+		RISK_SCORE_MAX *
+		clampUnit(
+			ENVIRONMENTAL_WEIGHT *
+				staticSusceptibility *
+				(DRY_TRIGGER_FLOOR + (1 - DRY_TRIGGER_FLOOR) * trigger) +
+				OFFICIAL_ALERT_WEIGHT * officialAlert,
+		)
+	);
+}
+
 // Relative heuristic index in [0, 100]: static susceptibility scaled by a
 // rain trigger, plus official alerts. It is not a calibrated probability.
 export function scoreSegmentRisk(
@@ -103,14 +122,7 @@ export function scoreSegmentRisk(
 		? OFFICIAL_ALERT_FACTOR[conditions.officialAlertSeverity]
 		: 0;
 
-	const score =
-		RISK_SCORE_MAX *
-		clampUnit(
-			ENVIRONMENTAL_WEIGHT *
-				staticSusceptibility *
-				(DRY_TRIGGER_FLOOR + (1 - DRY_TRIGGER_FLOOR) * trigger) +
-				OFFICIAL_ALERT_WEIGHT * officialAlert,
-		);
+	const score = combineRiskScore(staticSusceptibility, trigger, officialAlert);
 
 	return {
 		score,
@@ -127,4 +139,14 @@ export function scoreSegmentRisk(
 			officialAlert,
 		},
 	};
+}
+
+// The "now" horizon of a stored assessment: what is already on the ground
+// (antecedent rain and active alerts) without the forecast it was scored with.
+export function scoreCurrentRisk(components: RiskComponents): number {
+	return combineRiskScore(
+		components.staticSusceptibility,
+		ANTECEDENT_RAIN_TRIGGER_WEIGHT * components.antecedentRain,
+		components.officialAlert,
+	);
 }
