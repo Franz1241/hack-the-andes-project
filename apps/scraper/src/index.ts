@@ -1,3 +1,7 @@
+import {
+	type AssessRoadRiskResult,
+	assessRoadRisk,
+} from "@hack-the-andes-project/business/risk/assess";
 import { createDb } from "@hack-the-andes-project/db";
 import {
 	SCRAPER_DAILY_CRON,
@@ -21,6 +25,10 @@ initWorkersLogger({
 		version: ENV.SERVICE_VERSION,
 	},
 });
+
+type RiskRunSummary =
+	| ({ ok: true } & AssessRoadRiskResult)
+	| { ok: false; error: string };
 
 interface RunSummary {
 	ok: boolean;
@@ -94,6 +102,25 @@ async function fanOut(
 	return { ok, results };
 }
 
+async function runRiskAssessment(trigger: string): Promise<RiskRunSummary> {
+	const log = createLogger({ job: "risk_assessment", trigger });
+	try {
+		const db = await createDb(ENV.HYPERDRIVE);
+		const result = await assessRoadRisk({ db, now: new Date(), log });
+		log.set({ risk: result });
+		if (result.weatherCellsFailed > 0) {
+			log.setLevel("warn");
+		}
+		return { ok: true, ...result };
+	} catch (error) {
+		log.set({ riskError: String(error) });
+		log.setLevel("error");
+		return { ok: false, error: String(error) };
+	} finally {
+		log.emit();
+	}
+}
+
 const SCHEDULE_BY_CRON: Record<string, Schedule> = {
 	[SCRAPER_FREQUENT_CRON]: "frequent",
 	[SCRAPER_HOURLY_CRON]: "hourly",
@@ -117,21 +144,41 @@ export default {
 		ctx.waitUntil(
 			fanOut(`cron:${controller.cron}`, sourcesForSchedule(schedule)),
 		);
+		// Its own invocation through the self binding, like each source, so
+		// scoring every segment gets a full CPU budget.
+		if (schedule === "hourly") {
+			ctx.waitUntil(
+				ENV.SELF.fetch(`${SELF_RUN_ORIGIN}/risk`, {
+					method: "POST",
+					headers: { [RUN_SECRET_HEADER]: ENV.SCRAPER_RUN_SECRET },
+				}),
+			);
+		}
 	},
 
 	// Manual trigger for local runs and backfills:
 	//   POST /run?schedule=frequent  (fans out)  or  POST /run?source=sutran_alerts
+	//   POST /risk  (road segment risk assessment)
 	// guarded by the shared SCRAPER_RUN_SECRET header.
 	async fetch(request: Request): Promise<Response> {
 		const url = new URL(request.url);
 		if (url.pathname === "/") {
 			return new Response("OK");
 		}
-		if (url.pathname !== "/run" || request.method !== "POST") {
+		if (
+			(url.pathname !== "/run" && url.pathname !== "/risk") ||
+			request.method !== "POST"
+		) {
 			return Response.json({ error: "not_found" }, { status: 404 });
 		}
 		if (request.headers.get(RUN_SECRET_HEADER) !== ENV.SCRAPER_RUN_SECRET) {
 			return Response.json({ error: "unauthorized" }, { status: 401 });
+		}
+		if (url.pathname === "/risk") {
+			const riskSummary = await runRiskAssessment("manual");
+			return Response.json(riskSummary, {
+				status: riskSummary.ok ? 200 : 500,
+			});
 		}
 		const sourceId = url.searchParams.get("source");
 		const schedule = url.searchParams.get("schedule");
