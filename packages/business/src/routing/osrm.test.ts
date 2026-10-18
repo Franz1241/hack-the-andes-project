@@ -80,6 +80,24 @@ describe("fetchRouteCandidates", () => {
 		]);
 	});
 
+	it("routes through waypoints in order and allows U-turns at them", async () => {
+		const fetchImpl = fetchReturning({ code: "Ok", routes: [] });
+		await fetchRouteCandidates({
+			baseUrl: "https://router.example",
+			origin,
+			destination,
+			waypoints: [
+				{ lat: -11.5, lng: -76.6 },
+				{ lat: -11.2, lng: -76.1 },
+			],
+			fetchImpl,
+		});
+		expect(fetchImpl).toHaveBeenCalledWith(
+			"https://router.example/route/v1/driving/-76.88,-12.05;-76.6,-11.5;-76.1,-11.2;-75.21,-12.07?alternatives=true&overview=full&geometries=geojson&steps=false&continue_straight=false",
+			expect.anything(),
+		);
+	});
+
 	it("throws a descriptive error when OSRM does not return Ok", async () => {
 		const fetchImpl = fetchReturning({
 			code: "NoRoute",
