@@ -7,7 +7,7 @@ Cloudflare Worker on Cron Triggers that polls public Peruvian road and emergency
 | Cron | Sources |
 | --- | --- |
 | `*/5 * * * *` (`frequent`) | SUTRAN road alerts, INDECI COEN emergencies (24h + 2 days), Bomberos Perú last-24h emergencies, SENAMHI rain / quebrada / hydrological warnings, IGP last earthquake, SERFOR wildfire alerts |
-| `0 * * * *` (`hourly`) | RPP latest news (classified by Jev), MTC SRATMA road accidents from the last 30 days |
+| `0 * * * *` (`hourly`) | RPP latest news (classified by Jev), MTC SRATMA road accidents from the last 30 days, plus the road segment risk assessment (`POST /risk`, its own invocation) |
 | `0 9 * * *` (`daily`) | SUTRAN alternative routes (with CDN geometry), fire stations, police stations, health facilities, bus terminals, weighing stations; INDECI national relief warehouses |
 
 Both expressions live in `packages/infra/constants.ts` and are attached in `packages/infra/scraper.ts`.
@@ -63,7 +63,10 @@ Add the token the usual way (`.env.schema`, `.env`, and the `env` map in `packag
 ```sh
 curl -X POST -H "x-scraper-secret: $SCRAPER_RUN_SECRET" 'http://localhost:3002/run?schedule=frequent'
 curl -X POST -H "x-scraper-secret: $SCRAPER_RUN_SECRET" 'http://localhost:3002/run?source=sutran_alerts'
+curl -X POST -H "x-scraper-secret: $SCRAPER_RUN_SECRET" 'http://localhost:3002/risk'
 ```
+
+`/risk` needs the road segments loaded by `tools/risk-pipeline`. It returns the segment, weather-cell and assessment counts. Open-Meteo bills each weather cell as one call against 600 calls per minute, so two runs back to back can hit a 429. The client retries once after a minute.
 
 The response is the same summary that goes to the wide event. `pnpm --filter scraper test` runs the parser and sync unit tests.
 

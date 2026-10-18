@@ -58,3 +58,21 @@ The reset endpoint is off unless the server has `DEMO_RESET_SECRET` set (add it 
 The dashboard at `dash.illapa.app` combines incident feeds with organization-scoped Geotab and Samsara vehicles, trips, ETAs, and hazard alerts. The fleet-sync Worker polls GPS providers every two minutes; shared rules live in `packages/business`.
 
 See the [dashboard plan and operations notes](docs/dashboard-plan.md), [fleet-sync runbook](apps/fleet-sync/README.md), and [business module map](packages/business/README.md).
+
+## Predictive risk engine
+
+Illapa scores road segments for the risk of rain-triggered hazards (huaicos, landslides, floods) and compares routes by exposure. The pilot is the Carretera Central, Lima–Huancayo (PE-22).
+
+- **Offline pipeline** ([`tools/risk-pipeline`](tools/risk-pipeline/README.md), Python):
+  - It builds the road graph from the Geofabrik OpenStreetMap extract and cuts it into segments of about 1 km.
+  - It adds static features to each segment: Copernicus DEM slope, INGEMMET mass-movement and fluvial-flood susceptibility, and distance to rivers.
+  - It loads everything into the `hack_the_andes_road_*` tables.
+- **Hourly scoring:** the scraper's hourly cron calls `POST /risk`. It combines Open-Meteo rain (last 72 h plus the 24/48/72 h forecast), nearby historical landslides and floods, and active SENAMHI, INDECI and SUTRAN alerts into a 0–100 score per segment and horizon (`hack_the_andes_segment_risk_assessment`).
+- **API:**
+  - `risk.segments` lists segments with their latest assessment.
+  - `risk.compareRoutes` runs A* over the graph twice: once for the fastest route and once with a risk penalty. SUTRAN `interrumpido` closures are hard constraints, and when no route exists it returns the official SUTRAN detours.
+- **Optional model:** `train.py` trains a LightGBM model on INDECI COEN events and exports it to the Worker only if it beats the heuristic on every held-out route. The last run did not (28 positive segment-days), so the heuristic is active.
+
+Scores are relative indices that support decisions, not calibrated probabilities. Every response carries a disclaimer and the assessment timestamps. When the weather fetch fails, the previous assessment is kept rather than scored as dry.
+
+To load the pipeline locally: `pnpm db:push`, then `uv run python -m illapa_risk.build` and `uv run python -m illapa_risk.load` in `tools/risk-pipeline`. After that, trigger a scoring run with `POST http://localhost:3002/risk` (header `x-scraper-secret`).
