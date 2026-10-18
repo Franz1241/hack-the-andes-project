@@ -18,6 +18,7 @@ import {
 	CLOSURE_MATCH_RADIUS_M,
 	GEOMETRY_FETCH_BATCH_ROWS,
 	ROUTING_BOUNDS_MARGIN_DEG,
+	ROUTING_BOUNDS_SPAN_RATIO,
 } from "./constants";
 import { findRiskAwareRoutes, type RouteEvaluation } from "./route";
 
@@ -55,7 +56,7 @@ export interface RiskAwareRouteComparison {
 	assessedUntil: Date | null;
 }
 
-interface Bounds {
+export interface Bounds {
 	west: number;
 	south: number;
 	east: number;
@@ -114,18 +115,33 @@ async function withGeometry(
 	return { ...evaluation, geometry: { type: "LineString", coordinates } };
 }
 
+// Mountain roads detour far from the straight line between endpoints (Lima and
+// Huancayo share a latitude while the Carretera Central climbs ~0.5° north to
+// Ticlio), so the margin grows with the trip instead of staying fixed.
+export function routingBounds(origin: LatLng, destination: LatLng): Bounds {
+	const margin = Math.max(
+		ROUTING_BOUNDS_MARGIN_DEG,
+		ROUTING_BOUNDS_SPAN_RATIO *
+			Math.max(
+				Math.abs(origin.lat - destination.lat),
+				Math.abs(origin.lng - destination.lng),
+			),
+	);
+	return {
+		west: Math.min(origin.lng, destination.lng) - margin,
+		east: Math.max(origin.lng, destination.lng) + margin,
+		south: Math.min(origin.lat, destination.lat) - margin,
+		north: Math.max(origin.lat, destination.lat) + margin,
+	};
+}
+
 export async function compareRiskAwareRoutes({
 	db,
 	origin,
 	destination,
 	horizonHours,
 }: CompareRiskAwareRoutesInput): Promise<RiskAwareRouteComparison> {
-	const bounds: Bounds = {
-		west: Math.min(origin.lng, destination.lng) - ROUTING_BOUNDS_MARGIN_DEG,
-		east: Math.max(origin.lng, destination.lng) + ROUTING_BOUNDS_MARGIN_DEG,
-		south: Math.min(origin.lat, destination.lat) - ROUTING_BOUNDS_MARGIN_DEG,
-		north: Math.max(origin.lat, destination.lat) + ROUTING_BOUNDS_MARGIN_DEG,
-	};
+	const bounds = routingBounds(origin, destination);
 
 	// Geometry stays out of the bulk load: only the chosen routes' edges and
 	// closure candidates need it.

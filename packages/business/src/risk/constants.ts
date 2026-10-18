@@ -82,6 +82,7 @@ export const MAX_ROAD_SPEED_MPS = 120 / 3.6;
 export const ROUTING_BOUNDS_MARGIN_DEG = 0.3;
 // Simplified OSMnx edges in the Andes can run several km, so closures look for
 // candidate edges by midpoint well beyond the match radius.
+export const ROUTING_BOUNDS_SPAN_RATIO = 0.5;
 export const CLOSURE_CANDIDATE_RADIUS_DEG = 0.05;
 export const CLOSURE_MATCH_RADIUS_M = 300;
 export const GEOMETRY_FETCH_BATCH_ROWS = 1_000;
