@@ -23,6 +23,7 @@
 			"!**/src-tauri",
 			"!**/.nuxt",
 			"!bts.jsonc",
+			"!references",
 			"!**/.expo",
 			"!**/.wrangler",
 			"!**/.alchemy",
