@@ -924,7 +924,12 @@ describe("risk procedures", () => {
 		const result = await client.risk.compareRoutes({ origin, destination });
 
 		expect(compare).toHaveBeenCalledWith(
-			expect.objectContaining({ origin, destination, horizonHours: 24 }),
+			expect.objectContaining({
+				origin,
+				destination,
+				horizonHours: 24,
+				now: expect.any(Date),
+			}),
 		);
 		expect(result).toEqual({
 			...comparison,

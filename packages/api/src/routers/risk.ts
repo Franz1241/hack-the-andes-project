@@ -216,6 +216,7 @@ export const riskRouter = {
 				origin: input.origin,
 				destination: input.destination,
 				horizonHours: input.horizonHours,
+				now: new Date(),
 			});
 
 			context.log.set({

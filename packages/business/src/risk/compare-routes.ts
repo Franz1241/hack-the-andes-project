@@ -8,7 +8,7 @@ import {
 } from "@hack-the-andes-project/db/schema/risk";
 import { incident, poi } from "@hack-the-andes-project/db/schema/scraper";
 import { nearestPointOnLine } from "@turf/nearest-point-on-line";
-import { and, eq, gte, inArray, lte } from "drizzle-orm";
+import { and, eq, gt, gte, inArray, lte } from "drizzle-orm";
 import type { MySqlColumn } from "drizzle-orm/mysql-core";
 import type { Geometry, LineString, Position } from "geojson";
 
@@ -27,6 +27,7 @@ export interface CompareRiskAwareRoutesInput {
 	origin: LatLng;
 	destination: LatLng;
 	horizonHours: RiskHorizonHours;
+	now: Date;
 }
 
 export interface ClosureCandidateEdge {
@@ -171,6 +172,7 @@ export async function compareRiskAwareRoutes({
 	origin,
 	destination,
 	horizonHours,
+	now,
 }: CompareRiskAwareRoutesInput): Promise<RiskAwareRouteComparison> {
 	const bounds = routingBounds(origin, destination);
 
@@ -209,6 +211,9 @@ export async function compareRiskAwareRoutes({
 			.where(
 				and(
 					eq(segmentRiskAssessment.horizonHours, horizonHours),
+					// Expired assessments would route on yesterday's rain; they
+					// count as unassessed instead.
+					gt(segmentRiskAssessment.validUntil, now),
 					withinBounds(roadSegment, bounds),
 				),
 			),

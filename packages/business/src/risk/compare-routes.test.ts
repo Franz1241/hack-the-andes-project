@@ -1,12 +1,41 @@
+import { createDb } from "@hack-the-andes-project/db";
 import type { LineString } from "geojson";
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { HUANCAYO, LA_OROYA, LIMA, TICLIO } from "../hazards/test-fixtures";
-import { closedEdgeIds, routingBounds } from "./compare-routes";
+import {
+	closedEdgeIds,
+	compareRiskAwareRoutes,
+	routingBounds,
+} from "./compare-routes";
+
+interface QueryOptions {
+	sql: string;
+	rowsAsArray: boolean;
+}
+
+const query = vi.hoisted(() =>
+	vi.fn<
+		(
+			options: QueryOptions,
+			parameters: unknown[],
+		) => Promise<[unknown, unknown[]]>
+	>(),
+);
+
+vi.mock("mysql2/promise", async (importOriginal) => ({
+	...(await importOriginal<object>()),
+	default: { createConnection: async () => ({ config: {}, query }) },
+}));
 
 function point([lng, lat]: [number, number]) {
 	return { lat, lng };
 }
+
+beforeEach(() => {
+	query.mockReset();
+	query.mockImplementation(async () => [[], []]);
+});
 
 describe("routingBounds", () => {
 	it("keeps Ticlio and La Oroya when Lima and Huancayo share a latitude", () => {
@@ -95,5 +124,33 @@ describe("closedEdgeIds", () => {
 				[{ ...closure, lat: -11.86 }],
 			),
 		).toEqual(new Set());
+	});
+});
+
+describe("compareRiskAwareRoutes", () => {
+	it("only reads assessments that are still valid", async () => {
+		const db = await createDb({
+			host: "test",
+			port: 0,
+			user: "test",
+			password: "test",
+			database: "test",
+		});
+		const now = new Date("2026-10-18T12:00:00Z");
+
+		await compareRiskAwareRoutes({
+			db,
+			origin: point(LIMA),
+			destination: point(HUANCAYO),
+			horizonHours: 24,
+			now,
+		});
+
+		const assessmentQuery = query.mock.calls.find(([options]) =>
+			options.sql.includes("segment_risk_assessment"),
+		);
+		expect(assessmentQuery?.[0].sql).toMatch(/`valid_until` > \?/);
+		// The mysql dialect binds timestamps as UTC "YYYY-MM-DD HH:MM:SS.mmm".
+		expect(assessmentQuery?.[1]).toContain("2026-10-18 12:00:00.000");
 	});
 });
