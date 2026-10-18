@@ -70,7 +70,7 @@ export interface Bounds {
 	north: number;
 }
 
-function withinBounds(
+export function withinBounds(
 	columns: { lat: MySqlColumn; lng: MySqlColumn },
 	bounds: Bounds,
 ) {
@@ -82,7 +82,7 @@ function withinBounds(
 	);
 }
 
-async function fetchEdgeGeometries(
+export async function fetchEdgeGeometries(
 	db: Database,
 	edgeIds: string[],
 ): Promise<Map<string, LineString>> {
@@ -167,18 +167,10 @@ export function closedEdgeIds(
 	);
 }
 
-export async function compareRiskAwareRoutes({
-	db,
-	origin,
-	destination,
-	horizonHours,
-	now,
-}: CompareRiskAwareRoutesInput): Promise<RiskAwareRouteComparison> {
-	const bounds = routingBounds(origin, destination);
-
-	// Geometry stays out of the bulk load: only the chosen routes' edges and
-	// closure candidates need it.
-	const [edges, nodes, risks, closureIncidents] = await Promise.all([
+// Geometry stays out of the bulk load: only the chosen routes' edges and
+// closure candidates need it.
+export async function loadRoadGraph(db: Database, bounds: Bounds) {
+	const [edges, nodes] = await Promise.all([
 		db
 			.select({
 				id: roadEdge.id,
@@ -188,6 +180,7 @@ export async function compareRiskAwareRoutes({
 				travelTimeS: roadEdge.travelTimeS,
 				segmentId: roadEdge.segmentId,
 				roadCode: roadEdge.roadCode,
+				roadName: roadEdge.roadName,
 				lat: roadEdge.lat,
 				lng: roadEdge.lng,
 			})
@@ -197,6 +190,46 @@ export async function compareRiskAwareRoutes({
 			.select({ id: roadNode.id, lat: roadNode.lat, lng: roadNode.lng })
 			.from(roadNode)
 			.where(withinBounds(roadNode, bounds)),
+	]);
+	return { edges, nodes };
+}
+
+export async function blockClosedEdges(
+	db: Database,
+	edges: (LatLng & { id: string; roadCode: string | null })[],
+	closures: RouteClosure[],
+): Promise<Set<string>> {
+	const candidateEdges = edges.filter((edge) =>
+		closures.some(
+			(closure) =>
+				Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
+				Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
+		),
+	);
+	const candidateGeometries = await fetchEdgeGeometries(
+		db,
+		candidateEdges.map((edge) => edge.id),
+	);
+	return closedEdgeIds(
+		candidateEdges.flatMap((edge) => {
+			const geometry = candidateGeometries.get(edge.id);
+			return geometry ? [{ ...edge, geometry }] : [];
+		}),
+		closures,
+	);
+}
+
+export async function compareRiskAwareRoutes({
+	db,
+	origin,
+	destination,
+	horizonHours,
+	now,
+}: CompareRiskAwareRoutesInput): Promise<RiskAwareRouteComparison> {
+	const bounds = routingBounds(origin, destination);
+
+	const [{ edges, nodes }, risks, closureIncidents] = await Promise.all([
+		loadRoadGraph(db, bounds),
 		db
 			.select({
 				segmentId: segmentRiskAssessment.segmentId,
@@ -240,24 +273,7 @@ export async function compareRiskAwareRoutes({
 			? []
 			: [{ ...closure, lat: closure.lat, lng: closure.lng }],
 	);
-	const candidateEdges = edges.filter((edge) =>
-		closures.some(
-			(closure) =>
-				Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
-				Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
-		),
-	);
-	const candidateGeometries = await fetchEdgeGeometries(
-		db,
-		candidateEdges.map((edge) => edge.id),
-	);
-	const blockedEdgeIds = closedEdgeIds(
-		candidateEdges.flatMap((edge) => {
-			const geometry = candidateGeometries.get(edge.id);
-			return geometry ? [{ ...edge, geometry }] : [];
-		}),
-		closures,
-	);
+	const blockedEdgeIds = await blockClosedEdges(db, edges, closures);
 
 	const routes = findRiskAwareRoutes({
 		nodes,

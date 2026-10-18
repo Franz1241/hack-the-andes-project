@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { riskLevelForScore, scoreSegmentRisk } from "./score";
+import { riskLevelForScore, scoreCurrentRisk, scoreSegmentRisk } from "./score";
 import type { SegmentConditions, SegmentStaticFeatures } from "./types";
 
 // Matucana-like PE-22 segment: very high mass-movement class, steep valley
@@ -119,5 +119,28 @@ describe("riskLevelForScore", () => {
 		expect(riskLevelForScore(25)).toBe("moderate");
 		expect(riskLevelForScore(50)).toBe("high");
 		expect(riskLevelForScore(75)).toBe("very_high");
+	});
+});
+
+describe("scoreCurrentRisk", () => {
+	it("scores current conditions as the same segment without forecast rain", () => {
+		const forecastAssessment = scoreSegmentRisk(susceptibleSegment, heavyRain);
+		const withoutForecast = scoreSegmentRisk(susceptibleSegment, {
+			...heavyRain,
+			forecastPrecipitationMm: 0,
+		});
+
+		expect(scoreCurrentRisk(forecastAssessment.components)).toBeCloseTo(
+			withoutForecast.score,
+		);
+	});
+
+	it("keeps official alerts in the current score", () => {
+		const alerted = scoreSegmentRisk(flatSegment, {
+			...dry,
+			officialAlertSeverity: "critical",
+		});
+
+		expect(scoreCurrentRisk(alerted.components)).toBeCloseTo(alerted.score);
 	});
 });
