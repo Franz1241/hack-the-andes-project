@@ -41,7 +41,7 @@ function DemoRoute() {
 		mutationFn: async () => {
 			const { error: signInError } = await authClient.$fetch(
 				DEMO_SIGN_IN_AUTH_PATH,
-				{ method: "POST", credentials: "include" },
+				{ method: "POST", body: {}, credentials: "include" },
 			);
 			if (signInError) throw signInError;
 
