@@ -29,6 +29,12 @@ export interface CompareRiskAwareRoutesInput {
 	horizonHours: RiskHorizonHours;
 }
 
+export interface ClosureCandidateEdge {
+	id: string;
+	roadCode: string | null;
+	geometry: LineString;
+}
+
 export interface EvaluatedRoute extends Omit<RouteEvaluation, "edgeIds"> {
 	geometry: LineString;
 }
@@ -135,6 +141,31 @@ export function routingBounds(origin: LatLng, destination: LatLng): Bounds {
 	};
 }
 
+// A closure on a coded road (SUTRAN reports PE-xx) must not close a nearby
+// street or bridge with another code. Edges without a code stay blockable:
+// OSM sometimes lacks the ref on the very road that is closed, and routing
+// through an official closure is the worse mistake.
+export function closedEdgeIds(
+	edges: ClosureCandidateEdge[],
+	closures: RouteClosure[],
+): Set<string> {
+	return new Set(
+		edges
+			.filter((edge) =>
+				closures.some(
+					(closure) =>
+						(closure.roadCode === null ||
+							edge.roadCode === null ||
+							closure.roadCode === edge.roadCode) &&
+						nearestPointOnLine(edge.geometry, [closure.lng, closure.lat], {
+							units: "meters",
+						}).properties.pointDistance <= CLOSURE_MATCH_RADIUS_M,
+				),
+			)
+			.map((edge) => edge.id),
+	);
+}
+
 export async function compareRiskAwareRoutes({
 	db,
 	origin,
@@ -154,6 +185,7 @@ export async function compareRiskAwareRoutes({
 				lengthM: roadEdge.lengthM,
 				travelTimeS: roadEdge.travelTimeS,
 				segmentId: roadEdge.segmentId,
+				roadCode: roadEdge.roadCode,
 				lat: roadEdge.lat,
 				lng: roadEdge.lng,
 			})
@@ -203,29 +235,23 @@ export async function compareRiskAwareRoutes({
 			? []
 			: [{ ...closure, lat: closure.lat, lng: closure.lng }],
 	);
-	const candidateEdgeIds = edges
-		.filter((edge) =>
-			closures.some(
-				(closure) =>
-					Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
-					Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
-			),
-		)
-		.map((edge) => edge.id);
-	const candidateGeometries = await fetchEdgeGeometries(db, candidateEdgeIds);
-	const blockedEdgeIds = new Set(
-		candidateEdgeIds.filter((edgeId) => {
-			const geometry = candidateGeometries.get(edgeId);
-			return (
-				geometry &&
-				closures.some(
-					(closure) =>
-						nearestPointOnLine(geometry, [closure.lng, closure.lat], {
-							units: "meters",
-						}).properties.pointDistance <= CLOSURE_MATCH_RADIUS_M,
-				)
-			);
+	const candidateEdges = edges.filter((edge) =>
+		closures.some(
+			(closure) =>
+				Math.abs(edge.lat - closure.lat) <= CLOSURE_CANDIDATE_RADIUS_DEG &&
+				Math.abs(edge.lng - closure.lng) <= CLOSURE_CANDIDATE_RADIUS_DEG,
+		),
+	);
+	const candidateGeometries = await fetchEdgeGeometries(
+		db,
+		candidateEdges.map((edge) => edge.id),
+	);
+	const blockedEdgeIds = closedEdgeIds(
+		candidateEdges.flatMap((edge) => {
+			const geometry = candidateGeometries.get(edge.id);
+			return geometry ? [{ ...edge, geometry }] : [];
 		}),
+		closures,
 	);
 
 	const routes = findRiskAwareRoutes({

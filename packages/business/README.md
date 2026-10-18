@@ -23,7 +23,7 @@
   - Segments whose weather cell failed keep their previous assessment.
   - When `model.generated.ts` holds a model, its probability is mapped to 0–100 through the training quantiles and official alerts are still added.
 - `risk/compare-routes.ts` and `risk/route.ts`: `compareRiskAwareRoutes` loads the graph inside a box that grows with the trip (half its span, at least 0.3°).
-  - Edges within 300 m of an active SUTRAN `interrumpido` incident are removed from the graph.
+  - Edges within 300 m of an active SUTRAN `interrumpido` incident are removed from the graph (`closedEdgeIds`). An edge whose road code differs from the closure's is kept. Edges with no code are still removed, because OSM sometimes lacks the `ref` on the closed road itself.
   - It runs ngraph.path A* for the fastest route and for a risk-penalized cost: travel time × (1 + 3 × score / 100).
   - Each route reports distance, duration, length-weighted mean risk, max risk, distance in `high` or worse, and unassessed distance. SUTRAN `alt_route` POIs are returned only when no route exists.
 - `risk/weather.ts`, `risk/exposure.ts`, `risk/model.ts`: Open-Meteo parsing and windows, the spatial alert and history matching, and the model feature vector and quantile mapping, in the order `tools/risk-pipeline/illapa_risk/train.py` expects.
