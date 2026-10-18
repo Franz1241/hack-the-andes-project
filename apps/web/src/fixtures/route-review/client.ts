@@ -335,6 +335,17 @@ function summarizeCandidate({
 	return { id, source, name, distanceM, durationS, risk, recommendation };
 }
 
+function relinkTrip(trip: PlannedTripSummary, review: RouteReview) {
+	const chosenCandidate =
+		review.candidates.find(
+			(candidate) => candidate.id === trip.chosenCandidate.id,
+		) ?? findCandidate(review, review.recommendedCandidateId ?? "");
+	trip.chosenCandidate = summarizeCandidate(chosenCandidate);
+	trip.lastEvaluatedAt = review.evaluatedAt;
+	tripReviewIds.set(trip.id, review.id);
+	return tripDetail(trip);
+}
+
 function plan(input: TripPlanInput): PlannedTripSummary {
 	const review = reviews.get(input.reviewId);
 	if (!review) throw new Error(ROUTE_REVIEW_NOT_FOUND_MESSAGE);
@@ -531,14 +542,14 @@ export const routeReviewFixtureClient = {
 					vehicleId: trip.vehicleId,
 					departureAt: trip.departureAt,
 				});
-				const chosenCandidate =
-					review.candidates.find(
-						(candidate) => candidate.id === trip.chosenCandidate.id,
-					) ?? findCandidate(review, review.recommendedCandidateId ?? "");
-				trip.chosenCandidate = summarizeCandidate(chosenCandidate);
-				trip.lastEvaluatedAt = review.evaluatedAt;
-				tripReviewIds.set(trip.id, review.id);
-				return tripDetail(trip);
+				return relinkTrip(trip, review);
+			}),
+		// Re-evaluations from the API replace a trip's review here, as the
+		// fixture re-evaluation above does.
+		adoptReview: (input: { id: string; review: RouteReview }) =>
+			respond(() => {
+				reviews.set(input.review.id, input.review);
+				return relinkTrip(findTrip(input.id), input.review);
 			}),
 		chooseCandidate: (input: TripCandidateChoiceInput) =>
 			respond(() => {

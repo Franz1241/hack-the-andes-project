@@ -4,21 +4,34 @@ import { type QueryClient, queryOptions } from "@tanstack/react-query";
 import { routeReviewFixtureClient } from "@/fixtures/route-review/client";
 import { client } from "@/utils/orpc";
 
-// Revisar ruta is evaluated by the API; vehicles and planned trips stay on the
-// fixture client until they have endpoints of their own.
+async function evaluateRouteReview({ vehicleId, ...input }: RouteReviewInput) {
+	const review = await client.routeReview.evaluate({
+		...input,
+		vehicleAxleCount:
+			routeReviewFixtureClient.routeReview.vehicleAxleCount(vehicleId),
+	});
+	return routeReviewFixtureClient.routeReview.register({
+		...review,
+		vehicleId,
+	});
+}
+
+// Route reviews are evaluated by the API; vehicles and planned trips stay on
+// the fixture client until they have endpoints of their own.
 export const routeReviewClient = {
 	...routeReviewFixtureClient,
-	routeReview: {
-		evaluate: async ({ vehicleId, ...input }: RouteReviewInput) => {
-			const review = await client.routeReview.evaluate({
-				...input,
-				vehicleAxleCount:
-					routeReviewFixtureClient.routeReview.vehicleAxleCount(vehicleId),
+	routeReview: { evaluate: evaluateRouteReview },
+	trips: {
+		...routeReviewFixtureClient.trips,
+		reevaluate: async ({ id }: { id: string }) => {
+			const trip = await routeReviewFixtureClient.trips.get({ id });
+			const review = await evaluateRouteReview({
+				originPlaceId: trip.originPlaceId,
+				destinationPlaceId: trip.destinationPlaceId,
+				vehicleId: trip.vehicleId,
+				departureAt: trip.departureAt,
 			});
-			return routeReviewFixtureClient.routeReview.register({
-				...review,
-				vehicleId,
-			});
+			return routeReviewFixtureClient.trips.adoptReview({ id, review });
 		},
 	},
 };
