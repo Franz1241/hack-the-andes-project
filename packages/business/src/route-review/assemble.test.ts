@@ -131,7 +131,7 @@ describe("assembleRouteReview", () => {
 		const [candidate] = review({ assessments }).candidates;
 
 		expect(candidate?.segments[1]?.risk).toEqual([
-			{ horizon: "now", level: "low", score: expect.closeTo(16.2, 5) },
+			{ horizon: "now", level: "low", score: 16 },
 			{ horizon: "24h", level: "high", score: 62 },
 			{ horizon: "48h", level: "high", score: 70 },
 			{ horizon: "72h", level: "critical", score: 80 },
@@ -383,5 +383,32 @@ describe("assembleRouteReview", () => {
 		});
 
 		expect(result.recommendedCandidateId).toBe("illapa:fastest");
+	});
+
+	it("rounds scores to whole points", () => {
+		const assessments = quietAssessments.map((assessment) => ({
+			...assessment,
+			score: 26.6,
+		}));
+
+		expect(review({ assessments }).candidates[0]?.risk[1]).toEqual({
+			horizon: "24h",
+			level: "moderate",
+			score: 27,
+		});
+	});
+
+	it("names a route after its main roads and drops short urban roads", () => {
+		const urbanStreet = {
+			...edge(12, "LM-618"),
+			roadName: "Avenida Nicolás Ayllón",
+			lengthM: 200,
+		};
+		const [candidate] = review({
+			routes: [illapaRoute("fastest", [...road, urbanStreet])],
+		}).candidates;
+
+		expect(candidate?.name).toBe("Carretera Central");
+		expect(candidate?.roadCodes).toEqual(["PE-22"]);
 	});
 });

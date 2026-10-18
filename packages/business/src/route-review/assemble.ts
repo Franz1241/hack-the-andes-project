@@ -16,6 +16,8 @@ import {
 	MS_PER_HOUR,
 	MS_PER_SECOND,
 	RECOMMENDATION_MAX_UNASSESSED_SHARE,
+	ROUTE_CODE_MIN_SHARE,
+	ROUTE_NAME_ROAD_MIN_SHARE,
 	ROUTE_REVIEW_ROUTING_HORIZON_HOURS,
 	ROUTE_REVIEW_SEGMENT_LENGTH_M,
 } from "../constants";
@@ -200,10 +202,10 @@ function riskAssessments(
 	scoreFor: (horizon: RouteRiskHorizon) => number | null,
 ): ReviewRiskAssessment[] {
 	return REVIEW_HORIZONS.flatMap((horizon) => {
-		const score = scoreFor(horizon);
-		return score === null
-			? []
-			: [{ horizon, level: routeRiskLevelForScore(score), score }];
+		const rawScore = scoreFor(horizon);
+		if (rawScore === null) return [];
+		const score = Math.round(rawScore);
+		return [{ horizon, level: routeRiskLevelForScore(score), score }];
 	});
 }
 
@@ -473,8 +475,9 @@ function buildCandidateDraft(
 			);
 		}
 	}
-	const byLength = (lengths: Map<string, number>) =>
+	const byLength = (lengths: Map<string, number>, minShare: number) =>
 		[...lengths]
+			.filter(([, lengthM]) => lengthM >= minShare * distanceM)
 			.toSorted(([, first], [, second]) => second - first)
 			.map(([label]) => label);
 
@@ -483,8 +486,11 @@ function buildCandidateDraft(
 		source: route.source,
 		name:
 			route.name ??
-			(byLength(lengthByRoad).slice(0, 2).join(" – ") || candidateId),
-		roadCodes: route.roadCodes ?? byLength(lengthByCode),
+			(byLength(lengthByRoad, ROUTE_NAME_ROAD_MIN_SHARE)
+				.slice(0, 2)
+				.join(" – ") ||
+				candidateId),
+		roadCodes: route.roadCodes ?? byLength(lengthByCode, ROUTE_CODE_MIN_SHARE),
 		geometry: concatenateLines(route.edges.map(({ geometry }) => geometry)),
 		distanceM,
 		durationS,
