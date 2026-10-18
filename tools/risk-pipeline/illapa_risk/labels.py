@@ -54,6 +54,8 @@ def main() -> None:
             hazard_code not in LABEL_HAZARD_CODES
             or geometry.get("type") != "Point"
             or len(geometry.get("coordinates") or []) < 2
+            # Some emergencies carry a Point with [null, null] coordinates.
+            or any(value is None for value in geometry["coordinates"][:2])
             or not occurred_at
         ):
             continue

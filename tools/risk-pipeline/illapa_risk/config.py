@@ -11,6 +11,9 @@ USER_AGENT = "illapa-risk-pipeline/0.1 (+https://illapa.app)"
 HTTP_TIMEOUT_S = 60
 HTTP_RETRIES = 3
 HTTP_RETRY_BACKOFF_S = 5
+HTTP_TOO_MANY_REQUESTS = 429
+QUOTA_MINUTELY_PAUSE_S = 65
+QUOTA_HOURLY_PAUSE_S = 600
 
 GEOFABRIK_PERU_URL = "https://download.geofabrik.de/south-america/peru-latest.osm.pbf"
 # Copernicus DEM GLO-90 (the DEM behind Open-Meteo's elevation API) as public

@@ -15,6 +15,9 @@ from .config import (
     HTTP_RETRIES,
     HTTP_RETRY_BACKOFF_S,
     HTTP_TIMEOUT_S,
+    HTTP_TOO_MANY_REQUESTS,
+    QUOTA_HOURLY_PAUSE_S,
+    QUOTA_MINUTELY_PAUSE_S,
     INGEMMET_IMAGE_SERVER_URL,
     INGEMMET_SAMPLE_BATCH_POINTS,
     USER_AGENT,
@@ -30,6 +33,17 @@ session = requests.Session()
 session.headers["User-Agent"] = USER_AGENT
 
 
+# Open-Meteo answers 429 with the exhausted window in `reason`: minutely and
+# hourly windows are waited out; the daily one stops the run, and because every
+# finished response is cached a rerun the next day resumes where it stopped.
+def wait_for_quota(reason: str) -> None:
+    if reason.startswith("Daily"):
+        raise SystemExit(f"Open-Meteo daily quota exhausted ({reason}); rerun tomorrow to resume from the cache")
+    pause_s = QUOTA_HOURLY_PAUSE_S if reason.startswith("Hourly") else QUOTA_MINUTELY_PAUSE_S
+    print(f"Open-Meteo quota: {reason} Waiting {pause_s} s", flush=True)
+    time.sleep(pause_s)
+
+
 # Every upstream response is cached on disk by request content so a rerun
 # after a failure (or with new scoring code) does not hit the public services
 # again; delete output/cache to force fresh data.
@@ -41,9 +55,15 @@ def cached_request(method: str, url: str, **kwargs) -> dict:
     if cache_file.exists():
         return json.loads(cache_file.read_text())
 
-    for attempt in range(1, HTTP_RETRIES + 1):
+    attempt = 0
+    while True:
+        attempt += 1
         try:
             response = session.request(method, url, timeout=HTTP_TIMEOUT_S, **kwargs)
+            if response.status_code == HTTP_TOO_MANY_REQUESTS:
+                wait_for_quota(response.json().get("reason", ""))
+                attempt = 0
+                continue
             response.raise_for_status()
             payload = response.json()
             if "error" in payload:
