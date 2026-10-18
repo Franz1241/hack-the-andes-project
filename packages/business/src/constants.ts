@@ -71,3 +71,7 @@ export const DETOUR_TRAMO_SAMPLE_POINTS = 20;
 // still be recommended: a mostly unscored detour looks safe only for lack of
 // data.
 export const RECOMMENDATION_MAX_UNASSESSED_SHARE = 0.2;
+// Shares of a route's length from which a road names the route (up to two)
+// or is listed among its road codes; shorter urban streets are left out.
+export const ROUTE_NAME_ROAD_MIN_SHARE = 0.25;
+export const ROUTE_CODE_MIN_SHARE = 0.05;

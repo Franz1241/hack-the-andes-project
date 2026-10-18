@@ -16,6 +16,8 @@ import {
 	MS_PER_HOUR,
 	MS_PER_SECOND,
 	RECOMMENDATION_MAX_UNASSESSED_SHARE,
+	ROUTE_CODE_MIN_SHARE,
+	ROUTE_NAME_ROAD_MIN_SHARE,
 	ROUTE_REVIEW_ROUTING_HORIZON_HOURS,
 	ROUTE_REVIEW_SEGMENT_LENGTH_M,
 } from "../constants";
@@ -201,9 +203,17 @@ function riskAssessments(
 ): ReviewRiskAssessment[] {
 	return REVIEW_HORIZONS.flatMap((horizon) => {
 		const score = scoreFor(horizon);
+		// The level follows the engine's unrounded score; only the shown score
+		// is rounded, so 49.6 stays moderate.
 		return score === null
 			? []
-			: [{ horizon, level: routeRiskLevelForScore(score), score }];
+			: [
+					{
+						horizon,
+						level: routeRiskLevelForScore(score),
+						score: Math.round(score),
+					},
+				];
 	});
 }
 
@@ -473,8 +483,9 @@ function buildCandidateDraft(
 			);
 		}
 	}
-	const byLength = (lengths: Map<string, number>) =>
+	const byLength = (lengths: Map<string, number>, minShare: number) =>
 		[...lengths]
+			.filter(([, lengthM]) => lengthM >= minShare * distanceM)
 			.toSorted(([, first], [, second]) => second - first)
 			.map(([label]) => label);
 
@@ -483,20 +494,17 @@ function buildCandidateDraft(
 		source: route.source,
 		name:
 			route.name ??
-			(byLength(lengthByRoad).slice(0, 2).join(" – ") || candidateId),
-		roadCodes: route.roadCodes ?? byLength(lengthByCode),
+			(byLength(lengthByRoad, ROUTE_NAME_ROAD_MIN_SHARE)
+				.slice(0, 2)
+				.join(" – ") ||
+				candidateId),
+		roadCodes: route.roadCodes ?? byLength(lengthByCode, ROUTE_CODE_MIN_SHARE),
 		geometry: concatenateLines(route.edges.map(({ geometry }) => geometry)),
 		distanceM,
 		durationS,
 		eligibility: route.eligibility,
 		risk: riskAssessments((horizon) =>
-			maxOf(
-				segments.flatMap(
-					(segment) =>
-						segment.risk.find((assessment) => assessment.horizon === horizon)
-							?.score ?? [],
-				),
-			),
+			maxOf(chunks.flatMap((chunk) => chunkScore(chunk, horizon) ?? [])),
 		),
 		segments,
 		signals,
@@ -564,10 +572,14 @@ export function assembleRouteReview({
 		];
 	});
 
-	const windowScore = (draft: ReviewCandidateDraft) =>
+	const windowAssessment = (draft: ReviewCandidateDraft) =>
 		draft.risk.find(
 			({ horizon }) => horizon === HORIZON_BY_HOURS[draft.windowHours],
-		)?.score ?? 0;
+		);
+	const windowScore = (draft: ReviewCandidateDraft) =>
+		windowAssessment(draft)?.score ?? 0;
+	const windowLevel = (draft: ReviewCandidateDraft): RouteRiskLevel =>
+		windowAssessment(draft)?.level ?? "low";
 	const isInterrupted = (draft: ReviewCandidateDraft) =>
 		draft.signals.some(
 			(signal) =>
@@ -587,9 +599,9 @@ export function assembleRouteReview({
 			...candidate,
 			recommendation: recommendRoute({
 				signals: draft.signals,
-				windowLevel: routeRiskLevelForScore(score),
+				windowLevel: windowLevel(draft),
 				hasLowerRiskAlternative: drafts.some((other) => {
-					const otherLevel = routeRiskLevelForScore(windowScore(other));
+					const otherLevel = windowLevel(other);
 					return (
 						other.id !== draft.id &&
 						other.eligibility.eligible &&

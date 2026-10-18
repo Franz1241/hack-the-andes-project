@@ -11,7 +11,20 @@
 - `fleet/load-alertable-incidents.ts`: `loadAlertableIncidents` reads active incidents that pass `ALERTABLE_INCIDENTS`, for fleet-sync and demo trip planning.
 - `fleet/prune-positions.ts`: `pruneVehiclePositions` removes up to 10,000 history rows older than 30 days. Vehicle checkpoints remain available.
 - `hazards/`: `projectOntoRoute`, `findHazardsAhead`, `chooseAlternativeRoute`, `estimateEta`, and `isAlertableIncident`. A buffered route bounding box rejects distant geometry before buffering individual hazards. Polygon alerts remain active while the vehicle is inside the hazard.
-- `routing/osrm.ts`: `fetchRouteCandidates` requests driving alternatives with full GeoJSON geometry. Requests time out after 15 seconds; HTTP failures and unusable routes are rejected.
+- `routing/osrm.ts`: `fetchRouteCandidates` requests driving alternatives with full GeoJSON geometry, optionally through ordered `waypoints` (U-turns are allowed at them, or OSRM's car profile loops to the next turnaround). Requests time out after 15 seconds; HTTP failures and unusable routes are rejected.
+- `route-review/evaluate.ts`: `evaluateRouteReview` backs `routeReview.evaluate`, the API behind Revisar ruta.
+  - **ILLAPA paths:** it routes the graph three ways. The direct fastest path ignores closures, so an interruption on it shows up and reroutes. The fastest and the safest paths are routed with SUTRAN `interrumpido` closures blocked.
+  - **SUTRAN detours:** they are added when their region's `interrumpido` stretch runs on the direct path; for Lima to Huancayo these are Rutas 1 to 5. Each detour is routed with OSRM through the midpoints of its fragments. Its axle limit is parsed from `restriccion` ("hasta N ejes").
+- `route-review/assemble.ts`: `assembleRouteReview` is the pure part of the evaluation.
+  - **Segments:** it splits each path into segments of about 5 km. A detour is first cut into 1 km pieces, and each piece takes the nearest road segment within 600 m.
+  - **Risk per segment:** each segment scores its riskiest road segment for `now`, `24h`, `48h` and `72h`. `now` is `scoreCurrentRisk`: the stored components without forecast rain. Scores are rounded to whole points, and `very_high` maps to `critical`.
+  - **Signals:**
+    - `confirmed`: SUTRAN `interrumpido` and `restringido` incidents within 300 m.
+    - `forecast`: official weather alerts that touch the path, plus segments that are `high` or worse inside the trip window.
+    - `baseline`: segments with a static susceptibility of at least 0.6.
+  - **Recommendation:** `recommendRoute` applies the PRD rule table. The trip window is the shortest stored horizon that covers arrival. Assessments keep only the wettest 24 h block, so a high forecast reroutes when an eligible, well-assessed path is lower, and otherwise delays without a suggested departure.
+  - **Recommended path:** it is chosen among eligible, uninterrupted paths by `compareRouteCandidates`, preferring paths with at most 20% of their length unassessed.
+  - **Deduplication:** a path on a detour's segments for 80% of its length is listed once, as the detour.
 - `risk/score.ts`: `scoreSegmentRisk` is the heuristic index.
   - Static susceptibility: mass movement 40 %, terrain slope 20 %, fluvial flood × river proximity 25 %, nearby historical landslides and floods 15 %.
   - Rain trigger: the wettest forecast day inside the horizon, saturating at 25 mm, plus half-weighted 72 h antecedent rain, saturating at 60 mm. Dry days keep a 20 % floor.
