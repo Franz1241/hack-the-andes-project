@@ -56,13 +56,14 @@ colors:
     risk-critical: { fill: "#FF5148", ink: "#06181F" }
     chart: ["#34C6C2", "#6B9BFF", "#A78BFA", "#7FA6B0", "#F3E7C9"]
 typography:
-  display: { family: "Fraunces Variable", weight: 600, axes: "opsz 144, SOFT 100", size: "clamp(40px, 5vw + 12px, 72px)", line-height: 1, tracking: "-0.015em", utility: type-display }
-  title: { family: "Fraunces Variable", weight: 600, axes: "opsz 96, SOFT 100", size: "clamp(28px, 2.4vw + 14px, 44px)", line-height: 1.08, tracking: "-0.012em", utility: type-title }
-  heading: { family: "Fraunces Variable", weight: 600, axes: "opsz 36, SOFT 100", size: 19px, line-height: 1.2, tracking: "-0.005em", utility: type-heading }
-  lead: { family: "Figtree Variable", weight: 400, size: "clamp(17px, 0.5vw + 14px, 20px)", line-height: 1.6, utility: type-lead }
-  body: { family: "Figtree Variable", weight: 400, size: 15px, line-height: 1.6, utility: type-body }
-  label: { family: "Geist Mono Variable", weight: 600, size: 11px, line-height: 1.4, tracking: "0.1em", case: uppercase, utility: type-label }
-  data: { family: "Geist Mono Variable", weight: 500, size: 13px, line-height: 1.45, numerals: tabular, utility: type-data }
+  display: { family: "Archivo Variable", weight: 800, stretch: 125%, size: "clamp(40px, 5vw + 12px, 68px)", line-height: 1, tracking: "0.005em", case: uppercase, utility: type-display }
+  title: { family: "Archivo Variable", weight: 800, stretch: 125%, size: "clamp(28px, 2.6vw + 12px, 44px)", line-height: 1.05, tracking: "0.005em", case: uppercase, utility: type-title }
+  heading: { family: "Archivo Variable", weight: 800, stretch: 125%, size: 17px, line-height: 1.2, tracking: "0.005em", case: uppercase, utility: type-heading }
+  lead: { family: "Archivo Variable", weight: 400, size: "clamp(17px, 0.5vw + 14px, 20px)", line-height: 1.6, utility: type-lead }
+  body: { family: "Archivo Variable", weight: 400, size: 15px, line-height: 1.6, utility: type-body }
+  label: { family: "JetBrains Mono Variable", weight: 600, size: 11px, line-height: 1.4, tracking: "0.1em", case: uppercase, utility: type-label }
+  data: { family: "JetBrains Mono Variable", weight: 500, size: 13px, line-height: 1.45, numerals: tabular, utility: type-data }
+  button: { family: "Archivo Variable", weight: 600, size: 12px, tracking: "0.06em", case: uppercase }
 rounded:
   base: 14px
   xs: 4px
@@ -94,7 +95,7 @@ Live reference: `/design-system` in the web app (`pnpm dev:web`, http://localhos
 The mark is **Gota de rayo**: an aqua raindrop carrying a starlight lightning bolt, Illapa's rain and lightning in one shape and the two things the product watches.
 
 - Component: `IllapaMark` (mark) and `IllapaLockup` (mark + wordmark) in `packages/ui/src/components/illapa-logo.tsx`. The drop uses `brand-river` and the bolt `brand-starlight`, so the logo follows light and dark on its own.
-- Wordmark: "illapa" in lowercase, Fraunces 600 with `opsz 144` and `SOFT 100`, tracking -0.01em.
+- Wordmark: "illapa" in lowercase, Archivo Expanded 800 (`font-stretch` 125%), tracking -0.01em.
 - App icon and favicon: the mark on the night tile (`#0B252F` to `#06181F`), so it reads in light and dark browser tabs. Files in each app's `public/`: `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` (180 px, square; iOS rounds it).
 - Clear space: the width of the bolt on every side. Minimum size: 16 px for the mark or icon, 96 px wide for the lockup.
 - Colour: brand-river with brand-starlight, or a single solid colour (`foreground`) where only one ink is available. Never in risk colours, never a gradient on the drop.
@@ -121,18 +122,22 @@ Contrast: every text pair passes WCAG AA (4.5:1) in both modes; the `/design-sys
 
 | Role | Utility | Face | Where |
 | --- | --- | --- | --- |
-| Display | `type-display` | Fraunces Soft 600 | Hero headlines, one per page. |
-| Title | `type-title` | Fraunces Soft 600 | Section and page titles. |
-| Heading | `type-heading` | Fraunces Soft 600 | Card, panel, dialog and sheet titles. |
-| Lead | `type-lead` | Figtree 400 | Marketing intros and short summaries under a title. |
-| Body | `type-body` | Figtree 400 | Running text and descriptions. |
-| Label | `type-label` | Geist Mono 600, uppercase | Kickers, badges, table heads, small metadata. |
-| Data | `type-data` | Geist Mono 500, tabular | Kilometres, times, counts, coordinates, horizons. |
+The type comes from the Rayo direction the team kept alongside Mayu's colours, radius and art: Archivo Expanded for headlines, Archivo for reading, JetBrains Mono for labels and data.
 
-- Fonts come from Fontsource (`@fontsource-variable/fraunces` `full.css` for the `opsz` and `SOFT` axes, `@fontsource-variable/figtree`, `@fontsource-variable/geist-mono`), imported once in `globals.css`. `--font-sans` is Figtree, `--font-mono` Geist Mono, `--font-heading` Fraunces.
-- Headlines are sentence case. Only `type-label` is uppercase.
+| Role | Utility | Face | Where |
+| --- | --- | --- | --- |
+| Display | `type-display` | Archivo Expanded 800, uppercase | Hero headlines, one per page. |
+| Title | `type-title` | Archivo Expanded 800, uppercase | Section and page titles. |
+| Heading | `type-heading` | Archivo Expanded 800, uppercase | Card, panel, dialog and sheet titles. |
+| Lead | `type-lead` | Archivo 400 | Marketing intros and short summaries under a title. |
+| Body | `type-body` | Archivo 400 | Running text and descriptions. |
+| Label | `type-label` | JetBrains Mono 600, uppercase | Kickers, badges, table heads, small metadata. |
+| Data | `type-data` | JetBrains Mono 500, tabular | Kilometres, times, counts, coordinates, horizons. |
+
+- Fonts come from Fontsource (`@fontsource-variable/archivo` `wdth.css` for the width axis, `@fontsource-variable/jetbrains-mono`), imported once in `globals.css`. `--font-sans` and `--font-heading` are Archivo, `--font-mono` JetBrains Mono. Headlines get the expanded cut through `font-stretch: 125%` (`font-stretch-expanded` in Tailwind).
+- Headlines, labels and buttons are uppercase; write them in sentence case in the source and let the utility transform them. Running text stays sentence case.
 - Use the utilities instead of hand-rolled sizes (`text-3xl font-bold`). Avoid `text-*` theme keys for type roles; `cn()` treats them as colours.
-- Buttons and form labels use the sans: `text-sm font-semibold` and `text-sm font-medium`.
+- Buttons use Archivo 600 at 12px, uppercase with 0.06em tracking (the `link` variant stays in running-text case). Form labels use `text-sm font-medium`.
 
 ## Layout and spacing
 
@@ -233,6 +238,6 @@ ILLAPA's core output is a risk level per road segment, so the risk scale is prot
 
 ## Known gaps
 
-- The preset `b4DfkM0rNw` on ui.shadcn.com/create only approximates Mayu (Lora instead of Fraunces, rhea geometry); use it to preview, not to install.
+- The preset `b4DfkM0rNw` on ui.shadcn.com/create only approximates Mayu (rhea geometry, and its fonts differ from the Rayo type above); use it to preview, not to install.
 - Franz's dashboard screens are still hard-coded in Spanish (about 230 strings); they need Paraglide keys before the English toggle covers them.
 - The native app (`apps/native`) does not use these tokens yet.

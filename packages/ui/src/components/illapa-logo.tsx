@@ -51,7 +51,7 @@ export function IllapaLockup({
 			<IllapaMark className={cn("size-6", markClassName)} />
 			<span
 				className={cn(
-					"font-heading font-semibold text-2xl normal-case leading-none tracking-[-0.01em] [font-variation-settings:'opsz'_144,'SOFT'_100]",
+					"font-extrabold font-heading font-stretch-expanded text-2xl normal-case leading-none tracking-[-0.01em]",
 					wordmarkClassName,
 				)}
 			>
