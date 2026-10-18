@@ -55,3 +55,19 @@ export const BASELINE_SUSCEPTIBILITY_MIN = 0.6;
 // Route review routing weighs the next 24 h, the window of a departure today,
 // and derives "now" from that horizon's stored components.
 export const ROUTE_REVIEW_ROUTING_HORIZON_HOURS = 24;
+// Share of a routed path's length on a SUTRAN detour's segments from which the
+// path is listed once, as the detour.
+export const DETOUR_MATCH_MIN_SHARE = 0.8;
+// SUTRAN detour routing: anchors sent to OSRM through the detour, the piece
+// length used to score a detour against road segments, how far a piece may be
+// from a segment's midpoint to take its risk, and how close an interrupted
+// tramo must run to a route for the region's detours to apply.
+export const DETOUR_MAX_ANCHORS = 8;
+export const DETOUR_PIECE_LENGTH_M = 1_000;
+export const DETOUR_SEGMENT_MATCH_RADIUS_M = 600;
+export const DETOUR_TRAMO_MATCH_RADIUS_M = 1_000;
+export const DETOUR_TRAMO_SAMPLE_POINTS = 20;
+// Share of a candidate's length that may lack a current assessment for it to
+// still be recommended: a mostly unscored detour looks safe only for lack of
+// data.
+export const RECOMMENDATION_MAX_UNASSESSED_SHARE = 0.2;
