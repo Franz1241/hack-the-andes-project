@@ -55,6 +55,7 @@ export interface AssessRoadRiskResult {
 	segments: number;
 	weatherCells: number;
 	weatherCellsFailed: number;
+	segmentsWithoutWeather: number;
 	assessments: number;
 }
 
@@ -97,8 +98,7 @@ async function fetchWeatherByCell(
 				if (cellSeries) series.set(key, cellSeries);
 			});
 		} catch (error) {
-			// Segments without weather are still scored (as dry) but persist a
-			// null forecast and weatherFetchedAt so consumers see the gap.
+			// Segments of failed cells keep their previous assessment (see below).
 			failed += batchKeys.length;
 			log.set({ riskWeatherError: String(error) });
 		}
@@ -128,6 +128,7 @@ export async function assessRoadRisk({
 			segments: 0,
 			weatherCells: 0,
 			weatherCellsFailed: 0,
+			segmentsWithoutWeather: 0,
 			assessments: 0,
 		};
 	}
@@ -193,10 +194,18 @@ export async function assessRoadRisk({
 			OFFICIAL_ALERT_RADIUS_M,
 		);
 		const series = weather.series.get(weatherCellKey(segment));
+		// Without weather the rain trigger would read as dry and overwrite a
+		// rainy assessment with a lower score; the last known assessment, with
+		// its older assessedAt, is the honest answer until the next run.
+		if (!series) {
+			return [];
+		}
 		return RISK_HORIZONS_HOURS.map((horizonHours) => {
-			const precipitation = series
-				? summarizePrecipitation(series, now.getTime(), horizonHours)
-				: { antecedentMm: null, forecastMm: null };
+			const precipitation = summarizePrecipitation(
+				series,
+				now.getTime(),
+				horizonHours,
+			);
 			const features = {
 				...segment,
 				historicalEventCount: historyCounts[index] ?? 0,
@@ -236,7 +245,7 @@ export async function assessRoadRisk({
 				components: assessment.components,
 				forecastPrecipitationMm: precipitation.forecastMm,
 				antecedentPrecipitationMm: precipitation.antecedentMm,
-				weatherFetchedAt: series ? now : null,
+				weatherFetchedAt: now,
 				validFrom: now,
 				validUntil: new Date(now.getTime() + horizonHours * MS_PER_HOUR),
 				assessedAt: now,
@@ -279,6 +288,8 @@ export async function assessRoadRisk({
 		segments: segments.length,
 		weatherCells: weather.series.size + weather.failed,
 		weatherCellsFailed: weather.failed,
+		segmentsWithoutWeather:
+			segments.length - rows.length / RISK_HORIZONS_HOURS.length,
 		assessments: rows.length,
 	};
 }

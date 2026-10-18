@@ -5,8 +5,10 @@ import type { LatLng } from "../hazards/types";
 import {
 	ANTECEDENT_RAIN_WINDOW_DAYS,
 	HOURS_PER_DAY,
+	HTTP_TOO_MANY_REQUESTS,
 	OPEN_METEO_FORECAST_DAYS,
 	OPEN_METEO_FORECAST_URL,
+	OPEN_METEO_RATE_LIMIT_RETRY_DELAY_MS,
 	OPEN_METEO_REQUEST_TIMEOUT_MS,
 	SECONDS_PER_HOUR,
 } from "./constants";
@@ -38,12 +40,14 @@ export interface FetchHourlyPrecipitationInput {
 	points: LatLng[];
 	baseUrl?: string;
 	fetchImpl?: typeof fetch;
+	rateLimitRetryDelayMs?: number;
 }
 
 export async function fetchHourlyPrecipitation({
 	points,
 	baseUrl = OPEN_METEO_FORECAST_URL,
 	fetchImpl = fetch,
+	rateLimitRetryDelayMs = OPEN_METEO_RATE_LIMIT_RETRY_DELAY_MS,
 }: FetchHourlyPrecipitationInput): Promise<PrecipitationSeries[]> {
 	const url = new URL(baseUrl);
 	url.searchParams.set("latitude", points.map((point) => point.lat).join(","));
@@ -54,9 +58,18 @@ export async function fetchHourlyPrecipitation({
 	url.searchParams.set("timeformat", "unixtime");
 	url.searchParams.set("timezone", "GMT");
 
-	const response = await fetchImpl(url, {
-		signal: AbortSignal.timeout(OPEN_METEO_REQUEST_TIMEOUT_MS),
-	});
+	const request = () =>
+		fetchImpl(url, {
+			signal: AbortSignal.timeout(OPEN_METEO_REQUEST_TIMEOUT_MS),
+		});
+	let response = await request();
+	// Open-Meteo bills every location as one call against a per-minute quota,
+	// so a manual run right next to the hourly cron can trip it; the window
+	// resets within a minute.
+	if (response.status === HTTP_TOO_MANY_REQUESTS) {
+		await new Promise((resolve) => setTimeout(resolve, rateLimitRetryDelayMs));
+		response = await request();
+	}
 	if (!response.ok) {
 		throw new Error(`Open-Meteo forecast failed with HTTP ${response.status}`);
 	}
