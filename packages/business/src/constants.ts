@@ -47,3 +47,11 @@ export const MS_PER_HOUR = MINUTES_PER_HOUR * MS_PER_MINUTE;
 export const KG_PER_TONNE = 1_000;
 export const ROUTE_REVIEW_DEPARTURE_WINDOW_MS = HOURS_PER_DAY * MS_PER_HOUR;
 export { VEHICLE_PLATE_LENGTH_CHARS } from "@hack-the-andes-project/db/schema/constants";
+// PRD step 3: each path is split into segments of about 5 km.
+export const ROUTE_REVIEW_SEGMENT_LENGTH_M = 5_000;
+// Static susceptibility (0–1, risk/score.ts) from which a segment counts as
+// baseline exposure: roughly mass-movement class 4 on a steep slope.
+export const BASELINE_SUSCEPTIBILITY_MIN = 0.6;
+// Route review routing weighs the next 24 h, the window of a departure today,
+// and derives "now" from that horizon's stored components.
+export const ROUTE_REVIEW_ROUTING_HORIZON_HOURS = 24;
