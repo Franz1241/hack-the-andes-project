@@ -14,6 +14,8 @@ import {
 	samsaraProvider,
 } from "@hack-the-andes-project/business/providers/index";
 import * as riskRoutes from "@hack-the-andes-project/business/risk/compare-routes";
+import * as routeReviewEvaluation from "@hack-the-andes-project/business/route-review/evaluate";
+import { ROUTE_REVIEW_PLACES } from "@hack-the-andes-project/business/route-review/places";
 import * as routing from "@hack-the-andes-project/business/routing/osrm";
 import type { vehicle } from "@hack-the-andes-project/db/schema/fleet";
 import { call, createRouterClient } from "@orpc/server";
@@ -935,6 +937,70 @@ describe("risk procedures", () => {
 			...comparison,
 			horizonHours: 24,
 			disclaimer: RISK_DISCLAIMER_MESSAGE,
+		});
+	});
+});
+
+describe("route review procedures", () => {
+	const departureAt = new Date("2026-10-18T13:00:00Z");
+	const input = {
+		originPlaceId: "lima" as const,
+		destinationPlaceId: "huancayo" as const,
+		departureAt,
+		vehicleAxleCount: 6,
+	};
+
+	it("rejects unauthenticated route reviews", async () => {
+		const client = createRouterClient(appRouter, {
+			context: contextFor(null),
+		});
+		await expect(client.routeReview.evaluate(input)).rejects.toMatchObject({
+			code: "UNAUTHORIZED",
+		});
+	});
+
+	it("rejects the same origin and destination", async () => {
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+		await expect(
+			client.routeReview.evaluate({ ...input, destinationPlaceId: "lima" }),
+		).rejects.toMatchObject({ code: "BAD_REQUEST" });
+	});
+
+	it("evaluates the places' coordinates for the vehicle's axles", async () => {
+		const evaluation = {
+			horizons: ["now" as const, "24h" as const],
+			recommendedCandidateId: null,
+			candidates: [],
+		};
+		const evaluate = vi
+			.spyOn(routeReviewEvaluation, "evaluateRouteReview")
+			.mockResolvedValue(evaluation);
+		const client = createRouterClient(appRouter, {
+			context: contextFor(session),
+		});
+
+		const review = await client.routeReview.evaluate(input);
+
+		expect(evaluate).toHaveBeenCalledWith(
+			expect.objectContaining({
+				origin: ROUTE_REVIEW_PLACES.lima,
+				destination: ROUTE_REVIEW_PLACES.huancayo,
+				departureAt,
+				axleCount: 6,
+				osrmBaseUrl: expect.any(String),
+				now: expect.any(Date),
+			}),
+		);
+		expect(review).toEqual({
+			id: expect.any(String),
+			originPlaceId: "lima",
+			destinationPlaceId: "huancayo",
+			vehicleAxleCount: 6,
+			departureAt,
+			...evaluation,
+			evaluatedAt: expect.any(Date),
 		});
 	});
 });

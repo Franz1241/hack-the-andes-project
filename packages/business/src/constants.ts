@@ -47,3 +47,31 @@ export const MS_PER_HOUR = MINUTES_PER_HOUR * MS_PER_MINUTE;
 export const KG_PER_TONNE = 1_000;
 export const ROUTE_REVIEW_DEPARTURE_WINDOW_MS = HOURS_PER_DAY * MS_PER_HOUR;
 export { VEHICLE_PLATE_LENGTH_CHARS } from "@hack-the-andes-project/db/schema/constants";
+// PRD step 3: each path is split into segments of about 5 km.
+export const ROUTE_REVIEW_SEGMENT_LENGTH_M = 5_000;
+// Static susceptibility (0–1, risk/score.ts) from which a segment counts as
+// baseline exposure: roughly mass-movement class 4 on a steep slope.
+export const BASELINE_SUSCEPTIBILITY_MIN = 0.6;
+// Route review routing weighs the next 24 h, the window of a departure today,
+// and derives "now" from that horizon's stored components.
+export const ROUTE_REVIEW_ROUTING_HORIZON_HOURS = 24;
+// Share of a routed path's length on a SUTRAN detour's segments from which the
+// path is listed once, as the detour.
+export const DETOUR_MATCH_MIN_SHARE = 0.8;
+// SUTRAN detour routing: anchors sent to OSRM through the detour, the piece
+// length used to score a detour against road segments, how far a piece may be
+// from a segment's midpoint to take its risk, and how close an interrupted
+// tramo must run to a route for the region's detours to apply.
+export const DETOUR_MAX_ANCHORS = 8;
+export const DETOUR_PIECE_LENGTH_M = 1_000;
+export const DETOUR_SEGMENT_MATCH_RADIUS_M = 600;
+export const DETOUR_TRAMO_MATCH_RADIUS_M = 1_000;
+export const DETOUR_TRAMO_SAMPLE_POINTS = 20;
+// Share of a candidate's length that may lack a current assessment for it to
+// still be recommended: a mostly unscored detour looks safe only for lack of
+// data.
+export const RECOMMENDATION_MAX_UNASSESSED_SHARE = 0.2;
+// Shares of a route's length from which a road names the route (up to two)
+// or is listed among its road codes; shorter urban streets are left out.
+export const ROUTE_NAME_ROAD_MIN_SHARE = 0.25;
+export const ROUTE_CODE_MIN_SHARE = 0.05;
