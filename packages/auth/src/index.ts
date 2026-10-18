@@ -1,12 +1,18 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { expo } from "@better-auth/expo";
 import { MIN_PASSWORD_LENGTH_CHARS } from "@hack-the-andes-project/business/constants";
+import {
+	DEMO_SIGN_IN_AUTH_PATH,
+	isDemoAccountEmail,
+} from "@hack-the-andes-project/business/demo-account";
 import type { Database } from "@hack-the-andes-project/db";
 import * as schema from "@hack-the-andes-project/db/schema/auth";
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { organization } from "better-auth/plugins";
 
 import {
+	DEMO_CHANGE_FORBIDDEN_MESSAGE,
 	EXPO_DEV_ORIGINS,
 	NATIVE_APP_SCHEME_ORIGIN,
 	RATE_LIMIT_MAX_REQUESTS,
@@ -15,6 +21,7 @@ import {
 	SIGN_IN_RATE_LIMIT_MAX_REQUESTS,
 	SIGN_UP_RATE_LIMIT_MAX_REQUESTS,
 } from "./constants";
+import { demoAccess } from "./demo";
 import { ensurePersonalOrganization } from "./organization";
 import { parseAllowedOrigins } from "./origins";
 import { hashPassword, verifyPassword } from "./password";
@@ -55,8 +62,32 @@ export function createAuth(env: AuthConfig, database: Database) {
 		databaseHooks: {
 			user: {
 				create: {
+					before: async (user, context) => {
+						if (
+							isDemoAccountEmail(user.email) &&
+							context?.path !== DEMO_SIGN_IN_AUTH_PATH
+						) {
+							throw new APIError("FORBIDDEN", {
+								message: DEMO_CHANGE_FORBIDDEN_MESSAGE,
+							});
+						}
+					},
 					after: async (user) => {
 						await ensurePersonalOrganization(database, user);
+					},
+				},
+			},
+			account: {
+				create: {
+					before: async (account) => {
+						if (account.providerId !== "credential") return;
+						const user = await database.query.user.findFirst({
+							where: { id: account.userId },
+						});
+						if (isDemoAccountEmail(user?.email))
+							throw new APIError("FORBIDDEN", {
+								message: DEMO_CHANGE_FORBIDDEN_MESSAGE,
+							});
 					},
 				},
 			},
@@ -133,7 +164,7 @@ export function createAuth(env: AuthConfig, database: Database) {
 				ipAddressHeaders: ["cf-connecting-ip"],
 			},
 		},
-		plugins: [expo(), organization()],
+		plugins: [expo(), organization(), demoAccess],
 	});
 }
 

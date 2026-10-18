@@ -1,5 +1,9 @@
 import { PUBLIC_PROCEDURE_PATHS } from "@hack-the-andes-project/api/constants";
 import type { Context as ApiContext } from "@hack-the-andes-project/api/context";
+import {
+	resetDemo,
+	verifyDemoResetSecret,
+} from "@hack-the-andes-project/api/demo-reset";
 import { appRouter } from "@hack-the-andes-project/api/routers/index";
 import {
 	type Auth,
@@ -7,6 +11,10 @@ import {
 	parseAllowedOrigins,
 	type Session,
 } from "@hack-the-andes-project/auth";
+import {
+	DEMO_RESET_PATH,
+	DEMO_RESET_SECRET_HEADER,
+} from "@hack-the-andes-project/business/demo-account";
 import { createDb, type Database } from "@hack-the-andes-project/db";
 import { OpenAPIHandler } from "@orpc/openapi/fetch";
 import { OpenAPIReferencePlugin } from "@orpc/openapi/plugins";
@@ -202,6 +210,31 @@ app.use("/*", async (c, next) => {
 	}
 
 	return next();
+});
+
+app.post(DEMO_RESET_PATH, async (context) => {
+	if (!ENV.DEMO_RESET_SECRET) {
+		return context.notFound();
+	}
+	if (
+		!verifyDemoResetSecret(
+			context.req.header(DEMO_RESET_SECRET_HEADER),
+			ENV.DEMO_RESET_SECRET,
+		)
+	) {
+		return context.json({ error: "unauthorized" }, 401);
+	}
+	const db = await createDb(ENV.HYPERDRIVE);
+	context.set("db", db);
+	const result = await resetDemo({
+		db,
+		encryptionKey: ENV.CREDENTIALS_ENCRYPTION_KEY,
+		osrmBaseUrl: ENV.OSRM_BASE_URL,
+		log: context.get("log"),
+	});
+	if (!result) return context.json({ error: "demo_not_found" }, 404);
+	context.get("log").set({ demo: { reset: true, ...result } });
+	return context.json(result);
 });
 
 app.get("/", (c) => c.text("OK"));

@@ -43,6 +43,10 @@ export const server = Cloudflare.Worker("server", {
 		APP_ENV: Config.String("APP_ENV"),
 		ALLOWED_ORIGINS: Config.String("ALLOWED_ORIGINS"),
 		BETTER_AUTH_SECRET: Config.Redacted("BETTER_AUTH_SECRET"),
+		// Unset means the demo reset endpoint stays switched off.
+		...(process.env.DEMO_RESET_SECRET
+			? { DEMO_RESET_SECRET: Config.Redacted("DEMO_RESET_SECRET") }
+			: {}),
 		BETTER_AUTH_URL: Config.String("BETTER_AUTH_URL"),
 		CREDENTIALS_ENCRYPTION_KEY: Config.Redacted("CREDENTIALS_ENCRYPTION_KEY"),
 		OSRM_BASE_URL: Config.String("OSRM_BASE_URL"),

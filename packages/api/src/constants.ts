@@ -2,7 +2,6 @@ export const MAX_LOGGED_ID_CHARS = 64;
 
 export const MIN_FLEET_TEXT_LENGTH_CHARS = 1;
 export const SINGLE_RESULT_LIMIT_ROWS = 1;
-export const VEHICLE_IMPORT_BATCH_SIZE_ROWS = 250;
 export const CONNECTION_STATUS_ACTIVE = "active";
 export const CONNECTION_STATUS_ERROR = "error";
 export const TRIP_STATUS_PLANNED = "planned";
@@ -77,3 +76,10 @@ export const GEOJSON_GEOMETRY_COLLECTION = "GeometryCollection";
 export const PUBLIC_PROCEDURE_PATHS: ReadonlySet<string> = new Set([
 	"healthCheck",
 ]);
+
+export const DEMO_CONNECTION_CREATE_FORBIDDEN_MESSAGE =
+	"La cuenta demo solo permite conexiones demo.";
+export const DEMO_CONNECTION_REMOVE_FORBIDDEN_MESSAGE =
+	"La cuenta demo no permite eliminar conexiones.";
+export const DEMO_PREPARE_FORBIDDEN_MESSAGE =
+	"Esta acción solo está disponible para la cuenta demo.";

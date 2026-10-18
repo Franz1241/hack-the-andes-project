@@ -26,13 +26,14 @@ import {
 	FieldLabel,
 } from "@hack-the-andes-project/ui/components/field";
 import { Input } from "@hack-the-andes-project/ui/components/input";
-import { useId, useRef, useState } from "react";
+import { type ComponentProps, useId, useRef, useState } from "react";
 
 interface DemoRequestDialogProps {
 	endpoint: string;
 	contactPhone: string;
 	contactPhoneDisplay: string;
 	triggerClassName?: string;
+	triggerVariant?: ComponentProps<typeof Button>["variant"];
 }
 
 interface DemoRequestValidationError {
@@ -45,6 +46,7 @@ export default function DemoRequestDialog({
 	contactPhone,
 	contactPhoneDisplay,
 	triggerClassName,
+	triggerVariant = "default",
 }: DemoRequestDialogProps) {
 	const formId = useId();
 	const submissionPending = useRef(false);
@@ -67,7 +69,11 @@ export default function DemoRequestDialog({
 		>
 			<DialogTrigger
 				render={
-					<Button variant="default" size="lg" className={triggerClassName} />
+					<Button
+						variant={triggerVariant}
+						size="lg"
+						className={triggerClassName}
+					/>
 				}
 			>
 				Solicitar una demo

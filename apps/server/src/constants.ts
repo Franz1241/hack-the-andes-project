@@ -1,3 +1,5 @@
+import { DEMO_RESET_PATH } from "@hack-the-andes-project/business/demo-account";
+
 export const SERVICE_NAME = "hack-the-andes-server";
 
 // Browsers cap Access-Control-Max-Age; ask for the 24h upper bound so
@@ -8,4 +10,7 @@ export const RPC_PREFIX = "/rpc";
 export const OPENAPI_PREFIX = "/api-reference";
 export const AUTH_PREFIX = "/api/auth";
 
-export const PUBLIC_PATHS: ReadonlySet<string> = new Set(["/"]);
+export const PUBLIC_PATHS: ReadonlySet<string> = new Set([
+	"/",
+	DEMO_RESET_PATH,
+]);

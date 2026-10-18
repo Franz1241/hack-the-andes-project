@@ -17,6 +17,7 @@ export const SAMSARA_VALIDATION_LIMIT_ROWS = 1;
 export const DEMO_TIME_ACCELERATION_FACTOR = 10;
 export const DEMO_HEADING_LOOKAHEAD_M = 50;
 export const FULL_TURN_DEG = 360;
+export const DEMO_CLEAR_VEHICLE_EXTERNAL_ID = "demo-trujillo";
 export const DEMO_VEHICLES: DemoVehicle[] = [
 	{
 		externalId: "demo-callao",

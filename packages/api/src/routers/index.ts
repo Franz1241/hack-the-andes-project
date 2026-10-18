@@ -3,6 +3,7 @@ import type { RouterClient } from "@orpc/server";
 import { protectedProcedure, publicProcedure } from "../index";
 import { alertsRouter } from "./alerts";
 import { connectionsRouter } from "./connections";
+import { demoRouter } from "./demo";
 import { incidentsRouter } from "./incidents";
 import { newsRouter } from "./news";
 import { poisRouter } from "./pois";
@@ -17,6 +18,7 @@ export const appRouter = {
 	incidents: incidentsRouter,
 	pois: poisRouter,
 	news: newsRouter,
+	demo: demoRouter,
 	healthCheck: publicProcedure.handler(() => {
 		return "OK";
 	}),

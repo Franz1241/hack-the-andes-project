@@ -190,6 +190,7 @@ export const STALE_TRIP_EVALUATION_MS = MS_PER_HOUR;
 export const SEEN_ALERTS_STORAGE_PREFIX = "illapa-seen-alerts-v1";
 
 export const TOO_MANY_REQUESTS_STATUS = 429;
+export const DEMO_START_ROUTE = "/dashboard/revisar-ruta";
 export const DEFAULT_AUTH_ERROR_MESSAGE =
 	"No pudimos completar la solicitud. Inténtalo de nuevo.";
 export const AUTH_ERROR_MESSAGES: Record<string, string> = {

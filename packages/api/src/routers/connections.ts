@@ -1,6 +1,8 @@
 import { encryptJson } from "@hack-the-andes-project/business/crypto/index";
+import { isDemoAccountEmail } from "@hack-the-andes-project/business/demo-account";
+import { ensureDemoConnection } from "@hack-the-andes-project/business/demo-fleet";
+import { importFleetVehicles } from "@hack-the-andes-project/business/fleet/import-vehicles";
 import { resolveObsoleteAlerts } from "@hack-the-andes-project/business/fleet/resolve-obsolete-alerts";
-import { syncConnection } from "@hack-the-andes-project/business/fleet/sync-connection";
 import {
 	gpsCredentialsSchema,
 	providerFor,
@@ -13,7 +15,7 @@ import {
 	vehiclePosition,
 } from "@hack-the-andes-project/db/schema/fleet";
 import { ORPCError } from "@orpc/server";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -21,10 +23,11 @@ import {
 	CONNECTION_STATUS_ACTIVE,
 	CONNECTION_STATUS_ERROR,
 	CREDENTIALS_VALIDATION_FAILED_MESSAGE,
+	DEMO_CONNECTION_CREATE_FORBIDDEN_MESSAGE,
+	DEMO_CONNECTION_REMOVE_FORBIDDEN_MESSAGE,
 	SINGLE_RESULT_LIMIT_ROWS,
 	TRIP_STATUS_ACTIVE,
 	TRIP_STATUS_CANCELLED,
-	VEHICLE_IMPORT_BATCH_SIZE_ROWS,
 	VEHICLE_IMPORT_FAILED_MESSAGE,
 } from "../constants";
 import { organizationProcedure } from "../index";
@@ -89,6 +92,54 @@ export const connectionsRouter = {
 		)
 		.output(connectionSummarySchema)
 		.handler(async ({ context, input }) => {
+			if (
+				isDemoAccountEmail(context.session.user.email) &&
+				input.credentials.provider !== "demo"
+			) {
+				throw new ORPCError("FORBIDDEN", {
+					message: DEMO_CONNECTION_CREATE_FORBIDDEN_MESSAGE,
+				});
+			}
+			if (input.credentials.provider === "demo") {
+				context.log.set({
+					fleet: {
+						organizationId: context.organizationId,
+						provider: input.credentials.provider,
+					},
+				});
+				const sharedDemo = isDemoAccountEmail(context.session.user.email);
+				const existingConnection = sharedDemo
+					? await context.db.query.gpsConnection.findFirst({
+							where: {
+								organizationId: context.organizationId,
+								provider: "demo",
+							},
+						})
+					: undefined;
+				const createdConnection = await ensureDemoConnection({
+					...context,
+					label: input.label,
+					connectionId:
+						existingConnection?.id ??
+						(sharedDemo ? undefined : crypto.randomUUID()),
+				});
+				const [connection] = await connectionSummaries(
+					context.db,
+					context.organizationId,
+					createdConnection.id,
+				).limit(SINGLE_RESULT_LIMIT_ROWS);
+				if (!connection)
+					throw new ORPCError("NOT_FOUND", {
+						message: CONNECTION_NOT_FOUND_MESSAGE,
+					});
+				context.log.set({
+					fleet: {
+						connectionId: createdConnection.id,
+						vehiclesImported: connection.vehicleCount,
+					},
+				});
+				return connection;
+			}
 			const provider = providerFor(input.credentials.provider);
 			context.log.set({
 				fleet: {
@@ -142,45 +193,11 @@ export const connectionsRouter = {
 						message: VEHICLE_IMPORT_FAILED_MESSAGE,
 					});
 				});
-			for (
-				let offset = 0;
-				offset < providerVehicles.length;
-				offset += VEHICLE_IMPORT_BATCH_SIZE_ROWS
-			) {
-				await context.db
-					.insert(vehicle)
-					.values(
-						providerVehicles
-							.slice(offset, offset + VEHICLE_IMPORT_BATCH_SIZE_ROWS)
-							.map((providerVehicle) => ({
-								id: crypto.randomUUID(),
-								organizationId: context.organizationId,
-								connectionId,
-								externalId: providerVehicle.externalId,
-								name: providerVehicle.name,
-								plate: providerVehicle.plate,
-								active: true,
-							})),
-					)
-					.onDuplicateKeyUpdate({
-						set: {
-							name: sql`values(${sql.identifier(vehicle.name.name)})`,
-							plate: sql`values(${sql.identifier(vehicle.plate.name)})`,
-							active: true,
-						},
-					});
-			}
-			// The simulated fleet answers instantly, so place it on the map now
-			// instead of leaving the demo idle until the next fleet-sync tick.
-			if (input.credentials.provider === "demo") {
-				await syncConnection({
-					db: context.db,
-					encryptionKey: context.encryptionKey,
-					connection: createdConnection,
-					now: createdAt,
-					log: context.log,
-				});
-			}
+			await importFleetVehicles({
+				db: context.db,
+				connection: createdConnection,
+				vehicles: providerVehicles,
+			});
 			const [connection] = await connectionSummaries(
 				context.db,
 				context.organizationId,
@@ -197,6 +214,11 @@ export const connectionsRouter = {
 		.input(entityIdInputSchema)
 		.output(entityIdInputSchema)
 		.handler(async ({ context, input }) => {
+			if (isDemoAccountEmail(context.session.user.email)) {
+				throw new ORPCError("FORBIDDEN", {
+					message: DEMO_CONNECTION_REMOVE_FORBIDDEN_MESSAGE,
+				});
+			}
 			const connection = await context.db.query.gpsConnection.findFirst({
 				columns: { id: true },
 				where: { id: input.id, organizationId: context.organizationId },
