@@ -1,7 +1,11 @@
 import type { RiskComponents } from "@hack-the-andes-project/db/schema/risk";
 import { describe, expect, it } from "vitest";
 
-import { assembleRouteReview, type ReviewEdge } from "./assemble";
+import {
+	assembleRouteReview,
+	type ReviewEdge,
+	type ReviewRoute,
+} from "./assemble";
 
 const now = new Date("2026-10-18T12:00:00Z");
 const departureAt = new Date("2026-10-18T13:00:00Z");
@@ -30,6 +34,17 @@ function edge(index: number, roadCode = "PE-22"): ReviewEdge {
 }
 
 const road = Array.from({ length: 12 }, (_, index) => edge(index));
+
+function illapaRoute(role: string, edges: ReviewEdge[]): ReviewRoute {
+	return {
+		id: `illapa:${role}`,
+		source: "illapa",
+		name: null,
+		roadCodes: null,
+		eligibility: { eligible: true, maxAxleCount: null, restriction: null },
+		edges,
+	};
+}
 
 function components(overrides: Partial<RiskComponents> = {}): RiskComponents {
 	return {
@@ -70,7 +85,7 @@ function review(
 	overrides: Partial<Parameters<typeof assembleRouteReview>[0]> = {},
 ) {
 	return assembleRouteReview({
-		routes: [{ role: "fastest", edges: road }],
+		routes: [illapaRoute("fastest", road)],
 		assessments: quietAssessments,
 		incidents: [],
 		departureAt,
@@ -279,10 +294,7 @@ describe("assembleRouteReview", () => {
 			),
 		];
 		const result = review({
-			routes: [
-				{ role: "fastest", edges: road },
-				{ role: "safest", edges: detour },
-			],
+			routes: [illapaRoute("fastest", road), illapaRoute("safest", detour)],
 			assessments,
 		});
 
@@ -301,15 +313,75 @@ describe("assembleRouteReview", () => {
 	it("merges routes that follow the same edges", () => {
 		expect(
 			review({
-				routes: [
-					{ role: "fastest", edges: road },
-					{ role: "safest", edges: road },
-				],
+				routes: [illapaRoute("fastest", road), illapaRoute("safest", road)],
 			}).candidates.map(({ id }) => id),
 		).toEqual(["illapa:fastest"]);
 	});
 
 	it("lists the four horizons", () => {
 		expect(review().horizons).toEqual(["now", "24h", "48h", "72h"]);
+	});
+
+	it("lists a route that follows a SUTRAN detour once, as the detour", () => {
+		const detour: ReviewRoute = {
+			id: "sutran:carretera-central:canta",
+			source: "sutran",
+			name: "LIMA – CANTA – HUAYLLAY – UNISH – DV. PASCO",
+			roadCodes: [],
+			eligibility: {
+				eligible: false,
+				maxAxleCount: 5,
+				restriction:
+					"Transitabilidad de vehículos ligeros, medianos y grandes (hasta 5 ejes)",
+			},
+			edges: road.map((roadEdge) => ({
+				...roadEdge,
+				id: `sutran-${roadEdge.id}`,
+				roadCode: null,
+				roadName: null,
+			})),
+		};
+		const result = review({
+			routes: [illapaRoute("fastest", road), detour],
+		});
+
+		expect(
+			result.candidates.map(({ id, source, name, eligibility }) => [
+				id,
+				source,
+				name,
+				eligibility.eligible,
+			]),
+		).toEqual([
+			[
+				"sutran:carretera-central:canta",
+				"sutran",
+				"LIMA – CANTA – HUAYLLAY – UNISH – DV. PASCO",
+				false,
+			],
+		]);
+		expect(result.recommendedCandidateId).toBeNull();
+	});
+
+	it("does not recommend a mostly unassessed route over an assessed one", () => {
+		const unscored = road.map((roadEdge) => ({
+			...roadEdge,
+			id: `u${roadEdge.id}`,
+			segmentId: `u${roadEdge.segmentId}`,
+		}));
+		const assessments = [
+			...quietAssessments.map((assessment) => ({ ...assessment, score: 30 })),
+			...unscored
+				.slice(0, 2)
+				.flatMap((unscoredEdge) =>
+					assessmentsFor(unscoredEdge.segmentId, { 24: 5, 48: 5, 72: 5 }),
+				),
+		];
+		const result = review({
+			routes: [illapaRoute("fastest", road), illapaRoute("safest", unscored)],
+			assessments,
+		});
+
+		expect(result.recommendedCandidateId).toBe("illapa:fastest");
 	});
 });

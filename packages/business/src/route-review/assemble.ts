@@ -12,8 +12,10 @@ import type { Geometry, LineString, Position } from "geojson";
 
 import {
 	BASELINE_SUSCEPTIBILITY_MIN,
+	DETOUR_MATCH_MIN_SHARE,
 	MS_PER_HOUR,
 	MS_PER_SECOND,
+	RECOMMENDATION_MAX_UNASSESSED_SHARE,
 	ROUTE_REVIEW_ROUTING_HORIZON_HOURS,
 	ROUTE_REVIEW_SEGMENT_LENGTH_M,
 } from "../constants";
@@ -72,10 +74,19 @@ export interface ReviewEdge extends LatLng {
 	geometry: LineString;
 }
 
-export type IllapaRouteRole = "fastest" | "avoiding_closures" | "safest";
+export interface ReviewEligibility {
+	eligible: boolean;
+	maxAxleCount: number | null;
+	restriction: string | null;
+}
 
 export interface ReviewRoute {
-	role: IllapaRouteRole;
+	id: string;
+	source: RouteCandidateSource;
+	// Derived from the edges' road names and codes when null.
+	name: string | null;
+	roadCodes: string[] | null;
+	eligibility: ReviewEligibility;
 	edges: ReviewEdge[];
 }
 
@@ -145,11 +156,7 @@ export interface ReviewCandidate {
 	geometry: LineString;
 	distanceM: number;
 	durationS: number;
-	eligibility: {
-		eligible: boolean;
-		maxAxleCount: number | null;
-		restriction: string | null;
-	};
+	eligibility: ReviewEligibility;
 	risk: ReviewRiskAssessment[];
 	recommendation: RouteRecommendationDecision;
 	segments: ReviewSegment[];
@@ -157,14 +164,13 @@ export interface ReviewCandidate {
 	explanation: string | null;
 }
 
-export interface ReviewCandidateDraft
-	extends Omit<ReviewCandidate, "recommendation"> {
+interface ReviewCandidateDraft extends Omit<ReviewCandidate, "recommendation"> {
 	windowHours: RiskHorizonHours;
+	unassessedShare: number;
 }
 
 export interface AssembleRouteReviewInput {
 	routes: ReviewRoute[];
-	extraCandidates?: ReviewCandidateDraft[];
 	assessments: ReviewAssessment[];
 	incidents: ReviewIncident[];
 	departureAt: Date;
@@ -245,14 +251,14 @@ export function incidentSignal(
 	};
 }
 
-function buildIllapaDraft(
+function buildCandidateDraft(
 	route: ReviewRoute,
 	assessmentsBySegment: Map<string, ReviewAssessment[]>,
 	incidents: ReviewIncident[],
 	departureAt: Date,
 	now: Date,
 ): ReviewCandidateDraft {
-	const candidateId = `illapa:${route.role}`;
+	const candidateId = route.id;
 	const chunks: ReviewEdge[][] = [];
 	let chunkLengthM = ROUTE_REVIEW_SEGMENT_LENGTH_M;
 	for (const routeEdge of route.edges) {
@@ -321,6 +327,15 @@ function buildIllapaDraft(
 	);
 	const windowHours = tripWindowHours(departureAt, durationS, now);
 	const windowHorizon = HORIZON_BY_HOURS[windowHours];
+	const distanceM = route.edges.reduce(
+		(total, { lengthM }) => total + lengthM,
+		0,
+	);
+	const unassessedLengthM = segments
+		.filter(
+			({ risk }) => !risk.some(({ horizon }) => horizon === windowHorizon),
+		)
+		.reduce((total, { startM, endM }) => total + endM - startM, 0);
 
 	const signals: ReviewSignal[] = [];
 	for (const incident of incidents) {
@@ -465,13 +480,15 @@ function buildIllapaDraft(
 
 	return {
 		id: candidateId,
-		source: "illapa",
-		name: byLength(lengthByRoad).slice(0, 2).join(" – ") || candidateId,
-		roadCodes: byLength(lengthByCode),
+		source: route.source,
+		name:
+			route.name ??
+			(byLength(lengthByRoad).slice(0, 2).join(" – ") || candidateId),
+		roadCodes: route.roadCodes ?? byLength(lengthByCode),
 		geometry: concatenateLines(route.edges.map(({ geometry }) => geometry)),
-		distanceM: route.edges.reduce((total, { lengthM }) => total + lengthM, 0),
+		distanceM,
 		durationS,
-		eligibility: { eligible: true, maxAxleCount: null, restriction: null },
+		eligibility: route.eligibility,
 		risk: riskAssessments((horizon) =>
 			maxOf(
 				segments.flatMap(
@@ -485,12 +502,12 @@ function buildIllapaDraft(
 		signals,
 		explanation: null,
 		windowHours,
+		unassessedShare: distanceM > 0 ? unassessedLengthM / distanceM : 1,
 	};
 }
 
 export function assembleRouteReview({
 	routes,
-	extraCandidates = [],
 	assessments,
 	incidents,
 	departureAt,
@@ -504,24 +521,48 @@ export function assembleRouteReview({
 		]);
 	}
 
+	// PRD: "A path that matches a SUTRAN detour is listed once, as the detour."
+	const detourSegmentIds = routes
+		.filter(({ source }) => source === "sutran")
+		.map(
+			(route) =>
+				new Set(route.edges.flatMap(({ segmentId }) => segmentId ?? [])),
+		);
+	const matchesDetour = (route: ReviewRoute) => {
+		const lengthM = route.edges.reduce(
+			(total, edge) => total + edge.lengthM,
+			0,
+		);
+		return detourSegmentIds.some(
+			(segmentIds) =>
+				route.edges
+					.filter(
+						({ segmentId }) => segmentId !== null && segmentIds.has(segmentId),
+					)
+					.reduce((total, edge) => total + edge.lengthM, 0) >=
+				DETOUR_MATCH_MIN_SHARE * lengthM,
+		);
+	};
 	const seenRoutes = new Set<string>();
-	const drafts = [
-		...routes.flatMap((route) => {
-			const routeKey = route.edges.map(({ id }) => id).join(",");
-			if (seenRoutes.has(routeKey)) return [];
-			seenRoutes.add(routeKey);
-			return [
-				buildIllapaDraft(
-					route,
-					assessmentsBySegment,
-					incidents,
-					departureAt,
-					now,
-				),
-			];
-		}),
-		...extraCandidates,
-	];
+	const drafts = routes.flatMap((route) => {
+		const routeKey = route.edges.map(({ id }) => id).join(",");
+		if (
+			seenRoutes.has(routeKey) ||
+			(route.source === "illapa" && matchesDetour(route))
+		) {
+			return [];
+		}
+		seenRoutes.add(routeKey);
+		return [
+			buildCandidateDraft(
+				route,
+				assessmentsBySegment,
+				incidents,
+				departureAt,
+				now,
+			),
+		];
+	});
 
 	const windowScore = (draft: ReviewCandidateDraft) =>
 		draft.risk.find(
@@ -533,36 +574,49 @@ export function assembleRouteReview({
 				signal.kind === "confirmed" && signal.roadStatus === "interrumpido",
 		);
 
-	const candidates = drafts.map(
-		({ windowHours, ...draft }): ReviewCandidate => {
-			const score = windowScore({ ...draft, windowHours });
-			return {
-				...draft,
-				recommendation: recommendRoute({
-					signals: draft.signals,
-					windowLevel: routeRiskLevelForScore(score),
-					hasLowerRiskAlternative: drafts.some((other) => {
-						const otherLevel = routeRiskLevelForScore(windowScore(other));
-						return (
-							other.id !== draft.id &&
-							other.eligibility.eligible &&
-							!isInterrupted(other) &&
-							windowScore(other) < score &&
-							otherLevel !== "high" &&
-							otherLevel !== "critical"
-						);
-					}),
+	const isWellAssessed = (draft: ReviewCandidateDraft) =>
+		draft.unassessedShare <= RECOMMENDATION_MAX_UNASSESSED_SHARE;
+	const candidates = drafts.map((draft): ReviewCandidate => {
+		const {
+			windowHours: _windowHours,
+			unassessedShare: _share,
+			...candidate
+		} = draft;
+		const score = windowScore(draft);
+		return {
+			...candidate,
+			recommendation: recommendRoute({
+				signals: draft.signals,
+				windowLevel: routeRiskLevelForScore(score),
+				hasLowerRiskAlternative: drafts.some((other) => {
+					const otherLevel = routeRiskLevelForScore(windowScore(other));
+					return (
+						other.id !== draft.id &&
+						other.eligibility.eligible &&
+						isWellAssessed(other) &&
+						!isInterrupted(other) &&
+						windowScore(other) < score &&
+						otherLevel !== "high" &&
+						otherLevel !== "critical"
+					);
 				}),
-			};
-		},
-	);
+			}),
+		};
+	});
 
+	// A mostly unscored path looks safe only for lack of data, so it is
+	// recommended only when no well-assessed path can be.
+	const recommendable = drafts.filter(
+		(draft) => draft.eligibility.eligible && !isInterrupted(draft),
+	);
+	const recommendableIds = new Set(
+		(recommendable.some(isWellAssessed)
+			? recommendable.filter(isWellAssessed)
+			: recommendable
+		).map(({ id }) => id),
+	);
 	const [recommended] = candidates
-		.filter(
-			(candidate) =>
-				candidate.eligibility.eligible &&
-				candidate.recommendation.rule !== "confirmed_interruption",
-		)
+		.filter(({ id }) => recommendableIds.has(id))
 		.toSorted(compareRouteCandidates);
 
 	return {
