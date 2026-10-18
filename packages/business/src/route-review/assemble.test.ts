@@ -411,4 +411,24 @@ describe("assembleRouteReview", () => {
 		expect(candidate?.name).toBe("Carretera Central");
 		expect(candidate?.roadCodes).toEqual(["PE-22"]);
 	});
+
+	it("keeps the engine level of a score just under a threshold", () => {
+		const assessments = [
+			...quietAssessments.filter(({ segmentId }) => segmentId !== "s1"),
+			...assessmentsFor("s1", { 24: 49.6, 48: 49.6, 72: 49.6 }),
+		];
+		const [candidate] = review({ assessments }).candidates;
+
+		expect(candidate?.segments[0]?.risk[1]).toEqual({
+			horizon: "24h",
+			level: "moderate",
+			score: 50,
+		});
+		expect(candidate?.risk[1]).toEqual({
+			horizon: "24h",
+			level: "moderate",
+			score: 50,
+		});
+		expect(candidate?.recommendation.rule).not.toBe("forecast_in_window");
+	});
 });

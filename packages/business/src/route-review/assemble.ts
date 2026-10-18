@@ -202,10 +202,18 @@ function riskAssessments(
 	scoreFor: (horizon: RouteRiskHorizon) => number | null,
 ): ReviewRiskAssessment[] {
 	return REVIEW_HORIZONS.flatMap((horizon) => {
-		const rawScore = scoreFor(horizon);
-		if (rawScore === null) return [];
-		const score = Math.round(rawScore);
-		return [{ horizon, level: routeRiskLevelForScore(score), score }];
+		const score = scoreFor(horizon);
+		// The level follows the engine's unrounded score; only the shown score
+		// is rounded, so 49.6 stays moderate.
+		return score === null
+			? []
+			: [
+					{
+						horizon,
+						level: routeRiskLevelForScore(score),
+						score: Math.round(score),
+					},
+				];
 	});
 }
 
@@ -496,13 +504,7 @@ function buildCandidateDraft(
 		durationS,
 		eligibility: route.eligibility,
 		risk: riskAssessments((horizon) =>
-			maxOf(
-				segments.flatMap(
-					(segment) =>
-						segment.risk.find((assessment) => assessment.horizon === horizon)
-							?.score ?? [],
-				),
-			),
+			maxOf(chunks.flatMap((chunk) => chunkScore(chunk, horizon) ?? [])),
 		),
 		segments,
 		signals,
@@ -570,10 +572,14 @@ export function assembleRouteReview({
 		];
 	});
 
-	const windowScore = (draft: ReviewCandidateDraft) =>
+	const windowAssessment = (draft: ReviewCandidateDraft) =>
 		draft.risk.find(
 			({ horizon }) => horizon === HORIZON_BY_HOURS[draft.windowHours],
-		)?.score ?? 0;
+		);
+	const windowScore = (draft: ReviewCandidateDraft) =>
+		windowAssessment(draft)?.score ?? 0;
+	const windowLevel = (draft: ReviewCandidateDraft): RouteRiskLevel =>
+		windowAssessment(draft)?.level ?? "low";
 	const isInterrupted = (draft: ReviewCandidateDraft) =>
 		draft.signals.some(
 			(signal) =>
@@ -593,9 +599,9 @@ export function assembleRouteReview({
 			...candidate,
 			recommendation: recommendRoute({
 				signals: draft.signals,
-				windowLevel: routeRiskLevelForScore(score),
+				windowLevel: windowLevel(draft),
 				hasLowerRiskAlternative: drafts.some((other) => {
-					const otherLevel = routeRiskLevelForScore(windowScore(other));
+					const otherLevel = windowLevel(other);
 					return (
 						other.id !== draft.id &&
 						other.eligibility.eligible &&
